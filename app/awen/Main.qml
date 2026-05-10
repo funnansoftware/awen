@@ -6,6 +6,7 @@ Window {
     height: 720
     visible: true
     title: "Awen"
+    color: '#ff274b6a'
 
     Canvas {
         anchors.centerIn: parent
@@ -20,8 +21,8 @@ Window {
             var startAngle = (30 - 90) * Math.PI / 180;
             var endAngle = (30 + 10 - 90) * Math.PI / 180;
 
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 3;
             ctx.lineCap = "round";
 
             ctx.beginPath();
