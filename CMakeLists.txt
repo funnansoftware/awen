@@ -23,6 +23,7 @@ endif()
 
 include(CTest)
 include(GoogleTest)
+include(cmake/qt-vcpkg-fixup.cmake)
 
 find_package(Qt6 6.10 CONFIG REQUIRED COMPONENTS Quick)
 
