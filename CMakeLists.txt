@@ -36,4 +36,3 @@ set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate .qmlls.ini for qmlls" FORC
 
 
 add_subdirectory(app)
-add_subdirectory(src)
