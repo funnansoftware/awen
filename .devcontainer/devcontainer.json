@@ -4,7 +4,6 @@
         "dockerfile": "Dockerfile"
     },
     "runArgs": [
-        "--privileged",
         "--device",
         "/dev/kvm",
         "--volume",
@@ -19,7 +18,8 @@
                 "github.vscode-github-actions",
                 "mhutchie.git-graph",
                 "ms-vscode.live-server",
-                "tonybaloney.vscode-pets"
+                "tonybaloney.vscode-pets",
+                "theqtcompany.qt-qml"
             ]
         }
     },

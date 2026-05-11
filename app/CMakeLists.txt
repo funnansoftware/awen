@@ -1,2 +1,1 @@
-add_subdirectory(awen-pong)
-add_subdirectory(caerwyn)
+add_subdirectory(awen)

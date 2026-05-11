@@ -33,7 +33,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  lint:
+  linux-lint:
     runs-on: ubuntu-24.04
     needs: docker
     strategy:
@@ -68,14 +68,20 @@ jobs:
         shell: bash
         run: cmake --build --preset x64-linux-clang-debug --target ${{ matrix.target }}
 
-  build:
+  linux-build:
     runs-on: ubuntu-24.04
     needs: docker
     strategy:
       matrix:
-        preset:
-          - x64-linux-gcc-release
-          - x64-linux-clang-debug
+        include:
+          - preset: x64-linux-gcc-release
+            test: true
+          - preset: x64-linux-clang-debug
+            test: true
+          - preset: x64-linux-clang-arm64-android-release
+            test: false
+          - preset: x64-linux-wasm-release
+            test: false
 
     container:
       image: ${{ needs.docker.outputs.image }}
@@ -99,6 +105,7 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }} --parallel $(( $(nproc --all) + 1 ))
 
       - name: cmake-test
+        if: matrix.test
         shell: bash
         run: ctest --preset ${{ matrix.preset }} --parallel $(( $(nproc --all) + 1 ))
 
