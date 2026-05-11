@@ -8,7 +8,8 @@ auto main(int argc, char **argv) -> int
     QQmlApplicationEngine engine;
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
-    engine.loadFromModule("AwenApp", "Main");
+    // engine.loadFromModule("AwenApp", "Main");
+    engine.load(QUrl::fromLocalFile("D:\\dev\\awen\\app\\awen\\Main.qml"));
 
     return QGuiApplication::exec();
 }
