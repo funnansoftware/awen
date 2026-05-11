@@ -10,10 +10,19 @@ qt_add_qml_module(${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
         Main.qml
+    IMPORTS
+        awen.entity
+)
+
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        $<$<CONFIG:Debug>:QT_QML_DEBUG>
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE Qt6::Quick
+    PRIVATE
+        awen-entity
+        Qt6::Quick
 )
 
 install(TARGETS ${PROJECT_NAME}
