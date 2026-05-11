@@ -35,6 +35,6 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.cache-path }}
-        key: vcpkg-${{ runner.os }}-${{ hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json') }}
+        key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
         restore-keys: |
           vcpkg-${{ runner.os }}-
