@@ -1,7 +1,6 @@
 {
-    "recommendations": [
-        "github.vscode-github-actions",
-        "ms-vscode.cpp-devtools",
-        "xaver.clang-format"
-    ]
+        "recommendations": [
+                "github.vscode-github-actions",
+                "theqtcompany.qt-qml"
+        ]
 }
