@@ -42,7 +42,9 @@
             "name": "qtbase",
             "default-features": false,
             "features": [
-                "gles2"
+                "freetype",
+                "gles2",
+                "opengl"
             ],
             "platform": "emscripten"
         },
