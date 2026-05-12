@@ -43,5 +43,5 @@ set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml" CACHE PATH
 set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate .qmlls.ini for qmlls" FORCE)
 
 
-add_subdirectory(app)
 add_subdirectory(src)
+add_subdirectory(app)
