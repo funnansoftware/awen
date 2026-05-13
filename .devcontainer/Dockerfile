@@ -78,6 +78,7 @@ RUN mkdir -p /opt/android/sdk \
     && rm -f /tmp/commandlinetools.zip
 
 ENV ANDROID_HOME=/opt/android/sdk
+ENV ANDROID_SDK_HOME=/opt/android/sdk
 
 RUN mkdir -p /opt/android/sdk/cmdline-tools/latest \
     && mv /opt/android/sdk/cmdline-tools/bin /opt/android/sdk/cmdline-tools/latest/ \
