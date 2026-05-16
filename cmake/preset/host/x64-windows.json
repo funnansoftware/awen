@@ -1,17 +1,17 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "host-x64-windows",
-            "hidden": true,
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Windows"
-            },
-            "cacheVariables": {
-                "VCPKG_HOST_TRIPLET": "x64-windows-static-md"
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "host-x64-windows",
+      "hidden": true,
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "VCPKG_HOST_TRIPLET": "x64-windows-static-md"
+      }
+    }
+  ]
 }

@@ -1,10 +1,10 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "config-ninja",
-            "hidden": true,
-            "generator": "Ninja"
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "config-ninja",
+      "hidden": true,
+      "generator": "Ninja"
+    }
+  ]
 }

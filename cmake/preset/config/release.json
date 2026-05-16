@@ -1,12 +1,12 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "config-release",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "config-release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ]
 }

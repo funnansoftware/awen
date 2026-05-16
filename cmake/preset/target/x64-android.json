@@ -1,16 +1,16 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "target-x64-android",
-            "hidden": true,
-            "cacheVariables": {
-                "ANDROID_ABI": "x86_64",
-                "ANDROID_PLATFORM": "android-35",
-                "ANDROID_SDK_ROOT": "$env{ANDROID_HOME}",
-                "VCPKG_TARGET_TRIPLET": "x64-android-release",
-                "BUILD_TESTING": false
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "target-x64-android",
+      "hidden": true,
+      "cacheVariables": {
+        "ANDROID_ABI": "x86_64",
+        "ANDROID_PLATFORM": "android-35",
+        "ANDROID_SDK_ROOT": "$env{ANDROID_HOME}",
+        "VCPKG_TARGET_TRIPLET": "x64-android-release",
+        "BUILD_TESTING": false
+      }
+    }
+  ]
 }

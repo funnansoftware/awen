@@ -1,16 +1,19 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "compiler-msvc",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "cl",
-                "CMAKE_C_COMPILER": "cl",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-                "CMAKE_CXX_FLAGS": "/MP /permissive- /W4 /WX /EHsc /Zc:preprocessor",
-                "BUILD_SHARED_LIBS": false
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "compiler-msvc",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": false,
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CXX_FLAGS": "/MP /permissive- /W4 /WX /EHsc /Zc:preprocessor",
+        "CMAKE_CXX_STANDARD": "23",
+        "CMAKE_CXX_EXTENSIONS": false,
+        "CMAKE_CXX_STANDARD_REQUIRED": true,
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    }
+  ]
 }
