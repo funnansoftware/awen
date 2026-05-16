@@ -5,6 +5,8 @@ add_library(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PUBLIC
     FILE_SET cxx_module TYPE CXX_MODULES
         FILES
+            Engine.ixx
+            Module.ixx
             Object.ixx
 )
 

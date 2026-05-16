@@ -100,3 +100,25 @@ TEST(Object, GetChildrenOfType)
     EXPECT_EQ(children.size(), 1);
     EXPECT_EQ(children.at(0), child1);
 }
+
+TEST(Object, UpdateSignal)
+{
+    Object obj;
+    std::optional<float> expected;
+    std::ignore = obj.onUpdate([&](auto x) { expected = x.count(); });
+
+    constexpr auto duration = std::chrono::duration<float>(0.1F);
+    obj.update(duration);
+    EXPECT_TRUE(expected.has_value());
+}
+
+TEST(Object, UpdateFixedSignal)
+{
+    Object obj;
+    std::optional<float> expected;
+    std::ignore = obj.onUpdateFixed([&](auto x) { expected = x.count(); });
+    
+    constexpr auto duration = std::chrono::duration<float>(0.1F);
+    obj.updateFixed(duration);
+    EXPECT_TRUE(expected.has_value());
+}

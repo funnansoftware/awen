@@ -33,6 +33,7 @@ find_package(raylib CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         raylib
+        awen-core
 )
 
 if(NOT EMSCRIPTEN)
