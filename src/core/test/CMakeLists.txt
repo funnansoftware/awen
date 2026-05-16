@@ -3,6 +3,7 @@ project(awen-core-test)
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
+    Engine.test.cpp
     Object.test.cpp
 )
 

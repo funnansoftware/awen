@@ -1,6 +1,8 @@
 #include <raylib.h>
 #include <cstdlib>
 
+import awen.core;
+
 auto main() -> int
 {
     constexpr auto width{1280};
@@ -8,6 +10,9 @@ auto main() -> int
     constexpr auto fontSize{50};
     constexpr auto textPosX{350};
     constexpr auto testPosY{200};
+
+    const awen::core::Engine engine;
+    (void)engine;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(width, height, "Awen");

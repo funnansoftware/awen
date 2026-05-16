@@ -1,6 +1,7 @@
 module;
 
 #include <algorithm>
+#include <chrono>
 #include <concepts>
 #include <memory>
 #include <ranges>
@@ -30,6 +31,33 @@ export namespace awen::core
         virtual ~Object()
         {
             destroyed_();
+        }
+
+        /// @brief Updates this object and all its children. The update is performed by emitting the update signal, which can be connected to by any
+        /// slot. The update signal is emitted with a duration parameter that represents the time elapsed since the last update. The update function
+        /// also recursively calls the update function of all its children, passing the same duration parameter.
+        /// @param x The duration parameter that represents the time elapsed since the last update. This parameter is passed to the update signal and
+        /// to the update function of all children.
+        // NOLINTNEXTLINE(misc-no-recursion)
+        auto update(std::chrono::duration<float> x) -> void
+        {
+            update_(x);
+
+            for (const auto& child : children_)
+            {
+                child->update(x);
+            }
+        }
+        
+        // NOLINTNEXTLINE(misc-no-recursion)
+        auto updateFixed(std::chrono::duration<float> x) -> void
+        {
+            updateFixed_(x);
+
+            for (const auto& child : children_)
+            {
+                child->updateFixed(x);
+            }
         }
 
         /// @brief Adds a child object to this object. The child will be automatically destroyed when the parent is destroyed.
@@ -142,6 +170,16 @@ export namespace awen::core
             return destroyed_.connect(x);
         }
 
+        auto onUpdate(auto x) -> sigslot::connection
+        {
+            return update_.connect(x);
+        }
+
+        auto onUpdateFixed(auto x) -> sigslot::connection
+        {
+            return updateFixed_.connect(x);
+        }
+
     private:
         auto removeChild(Object* child) -> std::unique_ptr<Object>
         {
@@ -174,5 +212,7 @@ export namespace awen::core
         std::unordered_map<std::type_index, std::vector<Object*>> typeChildren_;
         Object* parent_{};
         sigslot::signal<> destroyed_;
+        sigslot::signal<std::chrono::duration<float>> update_;
+        sigslot::signal<std::chrono::duration<float>> updateFixed_;
     };
 }
