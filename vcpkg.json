@@ -1,55 +1,11 @@
 {
     "name": "awen",
-    "version-string": "2026.3.20",
+    "version-string": "2026.5.15",
     "port-version": 1,
     "description": "A modern C++ game engine for creation and exploration.",
     "homepage": "https://github.com/funnansoftwarellc/awen",
     "dependencies": [
-        {
-            "name": "qtbase",
-            "default-features": false,
-            "host": true
-        },
-        {
-            "name": "qtbase",
-            "default-features": false,
-            "features": [
-                "png"
-            ]
-        },
-        {
-            "name": "qtbase",
-            "default-features": false,
-            "features": [
-                "egl",
-                "fontconfig",
-                "xcb",
-                "xcb-xlib",
-                "xrender"
-            ],
-            "platform": "linux"
-        },
-        {
-            "name": "qtbase",
-            "default-features": false,
-            "features": [
-                "egl",
-                "gles2"
-            ],
-            "platform": "android"
-        },
-        {
-            "name": "qtbase",
-            "default-features": false,
-            "features": [
-                "freetype",
-                "gles2",
-                "opengl"
-            ],
-            "platform": "emscripten"
-        },
-        "qtdeclarative",
-        "gtest",
-        "flecs"
+        "raylib",
+        "gtest"
     ]
 }

@@ -1,12 +1,12 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "target-x64-linux",
-            "hidden": true,
-            "cacheVariables": {
-                "VCPKG_TARGET_TRIPLET": "x64-linux-release"
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "target-x64-linux",
+      "hidden": true,
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux-release"
+      }
+    }
+  ]
 }

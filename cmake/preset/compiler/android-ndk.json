@@ -1,16 +1,19 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "compiler-android-ndk",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-                "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -pedantic -Wno-unused-command-line-argument",
-                "CMAKE_C_FLAGS": "-Werror -Wall -Wextra -pedantic -Wno-unused-command-line-argument",
-                "BUILD_SHARED_LIBS": false,
-                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake"
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "compiler-android-ndk",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": false,
+        "CMAKE_C_FLAGS": "-Werror -Wall -Wextra -pedantic -Wno-unused-command-line-argument",
+        "CMAKE_CXX_EXTENSIONS": false,
+        "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -pedantic -Wno-unused-command-line-argument",
+        "CMAKE_CXX_STANDARD_REQUIRED": true,
+        "CMAKE_CXX_STANDARD": "23",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake"
+      }
+    }
+  ]
 }

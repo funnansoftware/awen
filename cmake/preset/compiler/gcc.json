@@ -1,17 +1,20 @@
 {
-    "version": 7,
-    "configurePresets": [
-        {
-            "name": "compiler-gcc",
-            "hidden": true,
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "g++",
-                "CMAKE_C_COMPILER": "gcc",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-                "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -pedantic",
-                "CMAKE_C_FLAGS": "-Werror -Wall -Wextra -pedantic",
-                "BUILD_SHARED_LIBS": false
-            }
-        }
-    ]
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "compiler-gcc",
+      "hidden": true,
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": false,
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_C_FLAGS": "-Werror -Wall -Wextra -pedantic",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_CXX_EXTENSIONS": false,
+        "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -pedantic",
+        "CMAKE_CXX_STANDARD_REQUIRED": true,
+        "CMAKE_CXX_STANDARD": "23",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    }
+  ]
 }

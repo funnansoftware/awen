@@ -1,127 +1,127 @@
 {
-    "version": 7,
-    "include": [
-        "../compiler/mingw-gcc.json",
-        "../compiler/msvc.json",
-        "../compiler/visualstudio.json",
-        "../config/binarydir.json",
-        "../config/debug.json",
-        "../config/ninja.json",
-        "../config/release.json",
-        "../config/vcpkg.json",
-        "../host/x64-windows.json",
-        "../target/x64-mingw.json",
-        "../target/x64-windows.json"
-    ],
-    "configurePresets": [
-        {
-            "name": "x64-windows-visualstudio",
-            "inherits": [
-                "compiler-visualstudio",
-                "config-binarydir",
-                "config-vcpkg",
-                "host-x64-windows"
-            ]
-        },
-        {
-            "name": "x64-windows-msvc-debug",
-            "inherits": [
-                "compiler-msvc",
-                "config-binarydir",
-                "config-debug",
-                "config-ninja",
-                "config-vcpkg",
-                "host-x64-windows",
-                "target-x64-windows"
-            ]
-        },
-        {
-            "name": "x64-windows-msvc-release",
-            "inherits": [
-                "compiler-msvc",
-                "config-binarydir",
-                "config-ninja",
-                "config-release",
-                "config-vcpkg",
-                "host-x64-windows",
-                "target-x64-windows"
-            ]
-        },
-        {
-            "name": "x64-windows-mingw-gcc-debug",
-            "inherits": [
-                "compiler-mingw-gcc",
-                "config-binarydir",
-                "config-debug",
-                "config-ninja",
-                "config-vcpkg",
-                "host-x64-windows",
-                "target-x64-mingw"
-            ]
-        },
-        {
-            "name": "x64-windows-mingw-gcc-release",
-            "inherits": [
-                "compiler-mingw-gcc",
-                "config-binarydir",
-                "config-ninja",
-                "config-release",
-                "config-vcpkg",
-                "host-x64-windows",
-                "target-x64-mingw"
-            ]
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "x64-windows-visualstudio",
-            "configurePreset": "x64-windows-visualstudio"
-        },
-        {
-            "name": "x64-windows-msvc-debug",
-            "configurePreset": "x64-windows-msvc-debug"
-        },
-        {
-            "name": "x64-windows-msvc-release",
-            "configurePreset": "x64-windows-msvc-release"
-        },
-        {
-            "name": "x64-windows-mingw-gcc-debug",
-            "configurePreset": "x64-windows-mingw-gcc-debug"
-        },
-        {
-            "name": "x64-windows-mingw-gcc-release",
-            "configurePreset": "x64-windows-mingw-gcc-release"
-        }
-    ],
-    "testPresets": [
-        {
-            "name": "x64-windows-msvc-debug",
-            "configurePreset": "x64-windows-msvc-debug",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "x64-windows-msvc-release",
-            "configurePreset": "x64-windows-msvc-release",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "x64-windows-mingw-gcc-debug",
-            "configurePreset": "x64-windows-mingw-gcc-debug",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "x64-windows-mingw-gcc-release",
-            "configurePreset": "x64-windows-mingw-gcc-release",
-            "output": {
-                "outputOnFailure": true
-            }
-        }
-    ]
+  "version": 7,
+  "include": [
+    "../compiler/mingw-gcc.json",
+    "../compiler/msvc.json",
+    "../compiler/visualstudio.json",
+    "../config/binarydir.json",
+    "../config/debug.json",
+    "../config/ninja.json",
+    "../config/release.json",
+    "../config/vcpkg.json",
+    "../host/x64-windows.json",
+    "../target/x64-mingw.json",
+    "../target/x64-windows.json"
+  ],
+  "configurePresets": [
+    {
+      "name": "x64-windows-visualstudio",
+      "inherits": [
+        "compiler-visualstudio",
+        "config-binarydir",
+        "config-vcpkg",
+        "host-x64-windows"
+      ]
+    },
+    {
+      "name": "x64-windows-msvc-debug",
+      "inherits": [
+        "compiler-msvc",
+        "config-binarydir",
+        "config-debug",
+        "config-ninja",
+        "config-vcpkg",
+        "host-x64-windows",
+        "target-x64-windows"
+      ]
+    },
+    {
+      "name": "x64-windows-msvc-release",
+      "inherits": [
+        "compiler-msvc",
+        "config-binarydir",
+        "config-ninja",
+        "config-release",
+        "config-vcpkg",
+        "host-x64-windows",
+        "target-x64-windows"
+      ]
+    },
+    {
+      "name": "x64-windows-mingw-gcc-debug",
+      "inherits": [
+        "compiler-mingw-gcc",
+        "config-binarydir",
+        "config-debug",
+        "config-ninja",
+        "config-vcpkg",
+        "host-x64-windows",
+        "target-x64-mingw"
+      ]
+    },
+    {
+      "name": "x64-windows-mingw-gcc-release",
+      "inherits": [
+        "compiler-mingw-gcc",
+        "config-binarydir",
+        "config-ninja",
+        "config-release",
+        "config-vcpkg",
+        "host-x64-windows",
+        "target-x64-mingw"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x64-windows-visualstudio",
+      "configurePreset": "x64-windows-visualstudio"
+    },
+    {
+      "name": "x64-windows-msvc-debug",
+      "configurePreset": "x64-windows-msvc-debug"
+    },
+    {
+      "name": "x64-windows-msvc-release",
+      "configurePreset": "x64-windows-msvc-release"
+    },
+    {
+      "name": "x64-windows-mingw-gcc-debug",
+      "configurePreset": "x64-windows-mingw-gcc-debug"
+    },
+    {
+      "name": "x64-windows-mingw-gcc-release",
+      "configurePreset": "x64-windows-mingw-gcc-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "x64-windows-msvc-debug",
+      "configurePreset": "x64-windows-msvc-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "x64-windows-msvc-release",
+      "configurePreset": "x64-windows-msvc-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "x64-windows-mingw-gcc-debug",
+      "configurePreset": "x64-windows-mingw-gcc-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "x64-windows-mingw-gcc-release",
+      "configurePreset": "x64-windows-mingw-gcc-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
 }

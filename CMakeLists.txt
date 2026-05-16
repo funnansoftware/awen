@@ -8,10 +8,6 @@ include(CMakePackageConfigHelpers)
 include(cmake/target/clang-format.cmake)
 include(cmake/target/clang-tidy.cmake)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
 	find_program(nodeExecutable node REQUIRED)
 
@@ -25,31 +21,31 @@ endif()
 include(CTest)
 include(GoogleTest)
 
-set(AWEN_DATADIR "${CMAKE_INSTALL_DATADIR}/awen")
+# set(AWEN_DATADIR "${CMAKE_INSTALL_DATADIR}/awen")
 
-configure_package_config_file(
-	cmake/awen-config.cmake.in
-	"${CMAKE_CURRENT_BINARY_DIR}/awen-config.cmake"
-	INSTALL_DESTINATION "${AWEN_DATADIR}"
-)
+# configure_package_config_file(
+# 	cmake/awen-config.cmake.in
+# 	"${CMAKE_CURRENT_BINARY_DIR}/awen-config.cmake"
+# 	INSTALL_DESTINATION "${AWEN_DATADIR}"
+# )
 
-write_basic_package_version_file(
-	"${CMAKE_CURRENT_BINARY_DIR}/awen-config-version.cmake"
-	VERSION "${PROJECT_VERSION}"
-	COMPATIBILITY SameMajorVersion
-)
+# write_basic_package_version_file(
+# 	"${CMAKE_CURRENT_BINARY_DIR}/awen-config-version.cmake"
+# 	VERSION "${PROJECT_VERSION}"
+# 	COMPATIBILITY SameMajorVersion
+# )
 
-# add_subdirectory(app)
+add_subdirectory(app)
 # add_subdirectory(src)
 
-install(EXPORT awen-targets
-	FILE awen-targets.cmake
-	NAMESPACE awen::
-	DESTINATION "${AWEN_DATADIR}"
-)
+# install(EXPORT awen-targets
+# 	FILE awen-targets.cmake
+# 	NAMESPACE awen::
+# 	DESTINATION "${AWEN_DATADIR}"
+# )
 
-install(FILES
-	"${CMAKE_CURRENT_BINARY_DIR}/awen-config.cmake"
-	"${CMAKE_CURRENT_BINARY_DIR}/awen-config-version.cmake"
-	DESTINATION "${AWEN_DATADIR}"
-)
+# install(FILES
+# 	"${CMAKE_CURRENT_BINARY_DIR}/awen-config.cmake"
+# 	"${CMAKE_CURRENT_BINARY_DIR}/awen-config-version.cmake"
+# 	DESTINATION "${AWEN_DATADIR}"
+# )
