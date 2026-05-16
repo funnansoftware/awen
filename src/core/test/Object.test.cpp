@@ -8,14 +8,14 @@ TEST(Object, OnDestroyedSignal)
 {
     Object obj;
     bool destroyed = false;
-    std::ignore = obj.onDestroyed.connect([&]() { destroyed = true; });
+    std::ignore = obj.onDestroyed([&]() { destroyed = true; });
     EXPECT_FALSE(destroyed);
 }
 
 TEST(Object, AddChild)
 {
     Object parent;
-    auto child = parent.addChild(std::make_unique<Object>());
+    auto* child = parent.addChild(std::make_unique<Object>());
     EXPECT_NE(child, nullptr);
 }
 
@@ -31,7 +31,72 @@ TEST(Object, AddChildWithArgs)
     };
 
     Object parent;
-    auto child = parent.addChild<DerivedObject>(42);
+    constexpr auto expectedValue = 42;
+    auto* child = parent.addChild<DerivedObject>(expectedValue);
     EXPECT_NE(child, nullptr);
-    EXPECT_EQ(child->value, 42);
+    EXPECT_EQ(child->value, expectedValue);
+}
+
+TEST(Object, RemoveChild)
+{
+    Object parent;
+    auto* child = parent.addChild(std::make_unique<Object>());
+    EXPECT_NE(child, nullptr);
+
+    auto removedChild = child->remove();
+    EXPECT_NE(removedChild, nullptr);
+    EXPECT_EQ(removedChild.get(), child);
+    EXPECT_EQ(child->getParent(), nullptr);
+}
+
+TEST(Object, GetParent)
+{
+    Object parent;
+    auto* child = parent.addChild(std::make_unique<Object>());
+    EXPECT_NE(child, nullptr);
+    EXPECT_EQ(child->getParent(), &parent);
+}
+
+TEST(Object, GetChildren)
+{
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<Object>());
+    auto* child2 = parent.addChild(std::make_unique<Object>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    const auto& children = parent.getChildren();
+    EXPECT_EQ(children.size(), 2);
+    EXPECT_EQ(children.at(0).get(), child1);
+    EXPECT_EQ(children.at(1).get(), child2);
+}
+
+TEST(Object, GetChildrenWithPredicate)
+{
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<Object>());
+    auto* child2 = parent.addChild(std::make_unique<Object>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    auto children = parent.getChildren([child1](const Object* child) { return child == child1; });
+    EXPECT_EQ(children.size(), 1);
+    EXPECT_EQ(children.at(0), child1);
+}
+
+TEST(Object, GetChildrenOfType)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<DerivedObject>());
+    auto* child2 = parent.addChild(std::make_unique<Object>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    auto children = parent.getChildren<DerivedObject>();
+    EXPECT_EQ(children.size(), 1);
+    EXPECT_EQ(children.at(0), child1);
 }
