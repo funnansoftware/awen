@@ -2,11 +2,11 @@
     "version": 7,
     "include": [
         "../compiler/android-ndk.json",
-        "../binarydir.json",
-        "../debug.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
+        "../config/binarydir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
         "../host/x64-linux.json",
         "../host/x64-windows.json",
         "../target/arm64-android.json",
@@ -17,10 +17,10 @@
             "name": "x64-linux-clang-arm64-android-debug",
             "inherits": [
                 "compiler-android-ndk",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-arm64-android"
             ]
@@ -29,10 +29,10 @@
             "name": "x64-linux-clang-arm64-android-release",
             "inherits": [
                 "compiler-android-ndk",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-arm64-android"
             ]
@@ -41,10 +41,10 @@
             "name": "x64-windows-clang-arm64-android-debug",
             "inherits": [
                 "compiler-android-ndk",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-arm64-android"
             ]
@@ -53,10 +53,10 @@
             "name": "x64-windows-clang-arm64-android-release",
             "inherits": [
                 "compiler-android-ndk",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-arm64-android"
             ]
@@ -65,10 +65,10 @@
             "name": "x64-windows-clang-x64-android-debug",
             "inherits": [
                 "compiler-android-ndk",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-x64-android"
             ]
@@ -77,10 +77,10 @@
             "name": "x64-windows-clang-x64-android-release",
             "inherits": [
                 "compiler-android-ndk",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-x64-android"
             ]

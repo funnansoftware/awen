@@ -1,12 +1,12 @@
 {
     "version": 7,
     "include": [
-        "../binarydir.json",
         "../compiler/clang.json",
-        "../debug.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
+        "../config/binarydir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
         "../host/arm64-osx.json",
         "../target/arm64-osx.json"
     ],
@@ -14,11 +14,11 @@
         {
             "name": "arm64-osx-clang-debug",
             "inherits": [
-                "binarydir",
-                "debug",
                 "compiler-clang",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-arm64-osx",
                 "target-arm64-osx"
             ]
@@ -26,11 +26,11 @@
         {
             "name": "arm64-osx-clang-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-clang",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-arm64-osx",
                 "target-arm64-osx"
             ]

@@ -42,12 +42,3 @@
 
 # build directory
 build/
-
-# vcpkg
-.vcpkg/
-
-# Qt
-.qmlls.ini
-
-# Briarthorn
-briarthorn/

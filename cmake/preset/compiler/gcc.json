@@ -10,7 +10,7 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_CXX_FLAGS": "-Werror -Wall -Wextra -pedantic",
                 "CMAKE_C_FLAGS": "-Werror -Wall -Wextra -pedantic",
-                "BUILD_SHARED_LIBS": true
+                "BUILD_SHARED_LIBS": false
             }
         }
     ]
