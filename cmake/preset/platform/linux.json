@@ -1,13 +1,13 @@
 {
     "version": 7,
     "include": [
-        "../binarydir.json",
         "../compiler/clang.json",
-        "../debug.json",
         "../compiler/gcc.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
+        "../config/binarydir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
         "../host/arm64-linux.json",
         "../host/x64-linux.json",
         "../target/arm64-linux.json",
@@ -17,11 +17,11 @@
         {
             "name": "arm64-linux-gcc-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-gcc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-arm64-linux",
                 "target-arm64-linux"
             ]
@@ -29,11 +29,11 @@
         {
             "name": "x64-linux-gcc-debug",
             "inherits": [
-                "binarydir",
-                "debug",
                 "compiler-gcc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-x64-linux"
             ]
@@ -41,11 +41,11 @@
         {
             "name": "x64-linux-gcc-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-gcc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-x64-linux"
             ]
@@ -53,11 +53,11 @@
         {
             "name": "x64-linux-clang-debug",
             "inherits": [
-                "binarydir",
-                "debug",
                 "compiler-clang",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-x64-linux"
             ]
@@ -65,11 +65,11 @@
         {
             "name": "x64-linux-clang-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-clang",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-x64-linux"
             ]

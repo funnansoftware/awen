@@ -1,36 +1,36 @@
 {
     "version": 7,
     "include": [
-        "../binarydir.json",
-        "../debug.json",
         "../compiler/mingw-gcc.json",
         "../compiler/msvc.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
+        "../compiler/visualstudio.json",
+        "../config/binarydir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
         "../host/x64-windows.json",
-        "../target/x64-windows.json",
         "../target/x64-mingw.json",
-        "../compiler/visualstudio.json"
+        "../target/x64-windows.json"
     ],
     "configurePresets": [
         {
             "name": "x64-windows-visualstudio",
             "inherits": [
-                "binarydir",
                 "compiler-visualstudio",
-                "vcpkg",
+                "config-binarydir",
+                "config-vcpkg",
                 "host-x64-windows"
             ]
         },
         {
             "name": "x64-windows-msvc-debug",
             "inherits": [
-                "binarydir",
-                "debug",
                 "compiler-msvc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-x64-windows"
             ]
@@ -38,11 +38,11 @@
         {
             "name": "x64-windows-msvc-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-msvc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-x64-windows"
             ]
@@ -50,11 +50,11 @@
         {
             "name": "x64-windows-mingw-gcc-debug",
             "inherits": [
-                "binarydir",
-                "debug",
                 "compiler-mingw-gcc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-x64-mingw"
             ]
@@ -62,11 +62,11 @@
         {
             "name": "x64-windows-mingw-gcc-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-mingw-gcc",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-x64-windows",
                 "target-x64-mingw"
             ]

@@ -2,10 +2,10 @@
     "version": 7,
     "configurePresets": [
         {
-            "name": "debug",
+            "name": "config-release",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Release"
             }
         }
     ]

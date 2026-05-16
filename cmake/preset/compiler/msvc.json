@@ -9,7 +9,7 @@
                 "CMAKE_C_COMPILER": "cl",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_CXX_FLAGS": "/MP /permissive- /W4 /WX /EHsc /Zc:preprocessor",
-                "BUILD_SHARED_LIBS": true
+                "BUILD_SHARED_LIBS": false
             }
         }
     ]

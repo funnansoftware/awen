@@ -1,14 +1,14 @@
 {
     "version": 7,
     "include": [
-        "../binarydir.json",
-        "../debug.json",
         "../compiler/emcc.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
-        "../host/x64-linux.json",
+        "../config/binarydir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
         "../host/arm64-linux.json",
+        "../host/x64-linux.json",
         "../target/wasm32-emscripten.json"
     ],
     "configurePresets": [
@@ -16,10 +16,10 @@
             "name": "x64-linux-wasm-debug",
             "inherits": [
                 "compiler-emscripten",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-wasm32-emscripten"
             ]
@@ -28,10 +28,10 @@
             "name": "x64-linux-wasm-release",
             "inherits": [
                 "compiler-emscripten",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-x64-linux",
                 "target-wasm32-emscripten"
             ]
@@ -40,10 +40,10 @@
             "name": "arm64-linux-wasm-debug",
             "inherits": [
                 "compiler-emscripten",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "host-arm64-linux",
                 "target-wasm32-emscripten"
             ]
@@ -52,10 +52,10 @@
             "name": "arm64-linux-wasm-release",
             "inherits": [
                 "compiler-emscripten",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
+                "config-binarydir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
                 "host-arm64-linux",
                 "target-wasm32-emscripten"
             ]

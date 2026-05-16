@@ -49,6 +49,7 @@
             "platform": "emscripten"
         },
         "qtdeclarative",
-        "gtest"
+        "gtest",
+        "flecs"
     ]
 }
