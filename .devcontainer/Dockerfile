@@ -68,3 +68,11 @@ RUN git clone https://github.com/emscripten-core/emsdk.git /opt/emsdk \
 ENV EMSDK=/opt/emsdk
 ENV EMSCRIPTEN_ROOT=/opt/emsdk/upstream/emscripten
 ENV PATH=${EMSDK}:${EMSCRIPTEN_ROOT}:${PATH}
+
+# Raylib dependencies.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libxinerama-dev \
+    libxcursor-dev \
+    xorg-dev \
+    libglu1-mesa-dev \
+    pkg-config
