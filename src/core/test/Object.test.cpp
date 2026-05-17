@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
+#include <awen/test/Test.hpp>
 
 import awen.core.object;
 
 using awen::core::Object;
 
-TEST(Object, OnDestroyedSignal)
+UNIT_TEST(Object, OnDestroyedSignal)
 {
     Object obj;
     bool destroyed = false;
@@ -12,14 +12,14 @@ TEST(Object, OnDestroyedSignal)
     EXPECT_FALSE(destroyed);
 }
 
-TEST(Object, AddChild)
+UNIT_TEST(Object, AddChild)
 {
     Object parent;
     auto* child = parent.addChild(std::make_unique<Object>());
     EXPECT_NE(child, nullptr);
 }
 
-TEST(Object, AddChildWithArgs)
+UNIT_TEST(Object, AddChildWithArgs)
 {
     struct DerivedObject : public Object
     {
@@ -37,7 +37,7 @@ TEST(Object, AddChildWithArgs)
     EXPECT_EQ(child->value, expectedValue);
 }
 
-TEST(Object, RemoveChild)
+UNIT_TEST(Object, RemoveChild)
 {
     Object parent;
     auto* child = parent.addChild(std::make_unique<Object>());
@@ -49,7 +49,7 @@ TEST(Object, RemoveChild)
     EXPECT_EQ(child->getParent(), nullptr);
 }
 
-TEST(Object, GetParent)
+UNIT_TEST(Object, GetParent)
 {
     Object parent;
     auto* child = parent.addChild(std::make_unique<Object>());
@@ -57,7 +57,7 @@ TEST(Object, GetParent)
     EXPECT_EQ(child->getParent(), &parent);
 }
 
-TEST(Object, GetChildren)
+UNIT_TEST(Object, GetChildren)
 {
     Object parent;
     auto* child1 = parent.addChild(std::make_unique<Object>());
@@ -67,11 +67,25 @@ TEST(Object, GetChildren)
 
     const auto& children = parent.getChildren();
     EXPECT_EQ(children.size(), 2);
-    EXPECT_EQ(children.at(0).get(), child1);
-    EXPECT_EQ(children.at(1).get(), child2);
+    EXPECT_EQ(children.at(0), child1);
+    EXPECT_EQ(children.at(1), child2);
 }
 
-TEST(Object, GetChildrenWithPredicate)
+UNIT_TEST(Object, GetChildrenRecursive)
+{
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<Object>());
+    auto* child2 = child1->addChild(std::make_unique<Object>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    const auto& children = parent.getChildren(Object::FindOption::Recursive);
+    EXPECT_EQ(children.size(), 2);
+    EXPECT_EQ(children.at(0), child1);
+    EXPECT_EQ(children.at(1), child2);
+}
+
+UNIT_TEST(Object, GetChildrenWithPredicate)
 {
     Object parent;
     auto* child1 = parent.addChild(std::make_unique<Object>());
@@ -84,7 +98,21 @@ TEST(Object, GetChildrenWithPredicate)
     EXPECT_EQ(children.at(0), child1);
 }
 
-TEST(Object, GetChildrenOfType)
+UNIT_TEST(Object, GetChildrenWithPredicateRecursive)
+{
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<Object>());
+    auto* child2 = child1->addChild(std::make_unique<Object>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    auto children = parent.getChildren([](const Object*) { return true; }, Object::FindOption::Recursive);
+    EXPECT_EQ(children.size(), 2);
+    EXPECT_EQ(children.at(0), child1);
+    EXPECT_EQ(children.at(1), child2);
+}
+
+UNIT_TEST(Object, GetChildrenOfType)
 {
     struct DerivedObject : public Object
     {
@@ -101,7 +129,56 @@ TEST(Object, GetChildrenOfType)
     EXPECT_EQ(children.at(0), child1);
 }
 
-TEST(Object, UpdateSignal)
+UNIT_TEST(Object, GetChildrenOfTypeRecursive)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<DerivedObject>());
+    auto* child2 = child1->addChild(std::make_unique<DerivedObject>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    auto children = parent.getChildren<DerivedObject>(Object::FindOption::Recursive);
+    EXPECT_EQ(children.size(), 2);
+    EXPECT_EQ(children.at(0), child1);
+    EXPECT_EQ(children.at(1), child2);
+}
+
+UNIT_TEST(Object, GetChildrenOfTypeNegative)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    struct Negative : public Object
+    {
+    };
+
+    Object parent;
+    auto* child1 = parent.addChild(std::make_unique<DerivedObject>());
+    auto* child2 = parent.addChild(std::make_unique<Object>());
+    EXPECT_NE(child1, nullptr);
+    EXPECT_NE(child2, nullptr);
+
+    auto children = parent.getChildren<Negative>();
+    EXPECT_TRUE(children.empty());
+}
+
+UNIT_TEST(Object, UpdatePreSignal)
+{
+    Object obj;
+    bool called = false;
+    std::ignore = obj.onUpdatePre([&]() { called = true; });
+
+    constexpr auto duration = std::chrono::duration<float>(0.1F);
+    obj.update(duration);
+    EXPECT_TRUE(called);
+}
+
+UNIT_TEST(Object, UpdateSignal)
 {
     Object obj;
     std::optional<float> expected;
@@ -112,7 +189,7 @@ TEST(Object, UpdateSignal)
     EXPECT_TRUE(expected.has_value());
 }
 
-TEST(Object, UpdateFixedSignal)
+UNIT_TEST(Object, UpdateFixedSignal)
 {
     Object obj;
     std::optional<float> expected;
@@ -123,29 +200,13 @@ TEST(Object, UpdateFixedSignal)
     EXPECT_TRUE(expected.has_value());
 }
 
-TEST(Object, RenderPreSignal)
+UNIT_TEST(Object, UpdatePostSignal)
 {
     Object obj;
-    bool rendered = false;
-    std::ignore = obj.onRenderPre([&]() { rendered = true; });
-    obj.renderPre();
-    EXPECT_TRUE(rendered);
-}
+    bool called = false;
+    std::ignore = obj.onUpdatePost([&]() { called = true; });
 
-TEST(Object, RenderSignal)
-{
-    Object obj;
-    bool rendered = false;
-    std::ignore = obj.onRender([&]() { rendered = true; });
-    obj.render();
-    EXPECT_TRUE(rendered);
-}
-
-TEST(Object, RenderPostSignal)
-{
-    Object obj;
-    bool rendered = false;
-    std::ignore = obj.onRenderPost([&]() { rendered = true; });
-    obj.renderPost();
-    EXPECT_TRUE(rendered);
+    constexpr auto duration = std::chrono::duration<float>(0.1F);
+    obj.update(duration);
+    EXPECT_TRUE(called);
 }

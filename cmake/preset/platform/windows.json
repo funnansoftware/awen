@@ -103,10 +103,46 @@
       }
     },
     {
+      "name": "x64-windows-msvc-debug-unit",
+      "inherits": "x64-windows-msvc-debug",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "x64-windows-msvc-debug-graphics",
+      "inherits": "x64-windows-msvc-debug",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
+      }
+    },
+    {
       "name": "x64-windows-msvc-release",
       "configurePreset": "x64-windows-msvc-release",
       "output": {
         "outputOnFailure": true
+      }
+    },
+    {
+      "name": "x64-windows-msvc-release-unit",
+      "inherits": "x64-windows-msvc-release",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "x64-windows-msvc-release-graphics",
+      "inherits": "x64-windows-msvc-release",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
       }
     },
     {

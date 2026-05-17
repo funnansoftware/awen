@@ -1,6 +1,7 @@
 module;
 
 #include <raylib.h>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <typeinfo>
@@ -8,6 +9,7 @@ module;
 export module awen.raylib.window;
 import awen.core;
 import awen.raylib.color;
+import awen.raylib.node;
 
 export namespace awen::raylib
 {
@@ -33,30 +35,41 @@ export namespace awen::raylib
             SetConfigFlags(FLAG_WINDOW_RESIZABLE);
             InitWindow(width_, height_, title_.c_str());
 
-            onRenderPre(
+            onUpdatePost(
                 [this]
                 {
-                    auto* engine = dynamic_cast<awen::core::Engine*>(getParent());
-
-                    if (engine == nullptr)
-                    {
-                        return;
-                    }
-
                     if (WindowShouldClose())
                     {
-                        engine->stop();
+                        auto* engine = dynamic_cast<awen::core::Engine*>(getParent());
+
+                        if (engine != nullptr)
+                        {
+                            engine->stop();
+                        }
+                    }
+
+                    const auto& nodes = rootNode_->getNodes();
+
+                    for (const auto& node : nodes)
+                    {
+                        node->renderPre();
                     }
 
                     BeginDrawing();
                     ClearBackground(ToRaylibColor(color_));
-                });
 
-            onRenderPost(
-                [this]
-                {
+                    for (const auto& node : nodes)
+                    {
+                        node->render();
+                    }
+
                     DrawFPS(0, 0);
                     EndDrawing();
+
+                    for (const auto& node : nodes)
+                    {
+                        node->renderPost();
+                    }
 
                     const auto pos = GetWindowPosition();
                     posX_ = static_cast<int>(pos.x);
@@ -141,6 +154,16 @@ export namespace awen::raylib
             return color_;
         }
 
+        auto setRootNode(std::unique_ptr<Node> node) -> void
+        {
+            rootNode_ = std::move(node);
+        }
+
+        [[nodiscard]] auto getRootNode() const -> Node*
+        {
+            return rootNode_.get();
+        }
+
     private:
         std::string title_;
         int posX_{};
@@ -148,5 +171,6 @@ export namespace awen::raylib
         int width_{};
         int height_{};
         awen::raylib::Color color_{colors::Black};
+        std::unique_ptr<awen::raylib::Node> rootNode_{std::make_unique<awen::raylib::Node>()};
     };
 }

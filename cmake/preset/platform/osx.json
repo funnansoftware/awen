@@ -55,10 +55,46 @@
       }
     },
     {
+      "name": "arm64-osx-clang-debug-unit",
+      "inherits": "arm64-osx-clang-debug",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "arm64-osx-clang-debug-graphics",
+      "inherits": "arm64-osx-clang-debug",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
+      }
+    },
+    {
       "name": "arm64-osx-clang-release",
       "configurePreset": "arm64-osx-clang-release",
       "output": {
         "outputOnFailure": true
+      }
+    },
+    {
+      "name": "arm64-osx-clang-release-unit",
+      "inherits": "arm64-osx-clang-release",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "arm64-osx-clang-release-graphics",
+      "inherits": "arm64-osx-clang-release",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
       }
     }
   ]

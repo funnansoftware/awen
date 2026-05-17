@@ -107,7 +107,7 @@ jobs:
       - name: cmake-test
         if: matrix.test
         shell: bash
-        run: ctest --preset ${{ matrix.preset }} --parallel $(( $(nproc --all) + 1 ))
+        run: ctest --preset ${{ matrix.preset }}-unit --parallel $(( $(nproc --all) + 1 ))
 
       - name: cmake-install
         shell: bash

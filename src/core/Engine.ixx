@@ -74,6 +74,7 @@ export namespace awen::core
                 start_ = now;
                 accumulate_ += elapsed;
 
+                updatePre();
                 update(elapsed);
 
                 auto count = 0;
@@ -85,9 +86,7 @@ export namespace awen::core
                     ++count;
                 }
 
-                renderPre();
-                render();
-                renderPost();
+                updatePost();
             }
 
             return EXIT_SUCCESS;
