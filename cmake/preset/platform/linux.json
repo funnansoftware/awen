@@ -113,6 +113,24 @@
       }
     },
     {
+      "name": "x64-linux-gcc-debug-unit",
+      "inherits": "x64-linux-gcc-debug",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "x64-linux-gcc-debug-graphics",
+      "inherits": "x64-linux-gcc-debug",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
+      }
+    },
+    {
       "name": "x64-linux-gcc-release",
       "configurePreset": "x64-linux-gcc-release",
       "output": {
@@ -127,10 +145,46 @@
       }
     },
     {
+      "name": "x64-linux-clang-debug-unit",
+      "inherits": "x64-linux-clang-debug",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "x64-linux-clang-debug-graphics",
+      "inherits": "x64-linux-clang-debug",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
+      }
+    },
+    {
       "name": "x64-linux-clang-release",
       "configurePreset": "x64-linux-clang-release",
       "output": {
         "outputOnFailure": true
+      }
+    },
+    {
+      "name": "x64-linux-clang-release-unit",
+      "inherits": "x64-linux-clang-release",
+      "filter": {
+        "include": {
+          "name": "^UNIT_"
+        }
+      }
+    },
+    {
+      "name": "x64-linux-clang-release-graphics",
+      "inherits": "x64-linux-clang-release",
+      "filter": {
+        "include": {
+          "name": "^GRAPHICS_"
+        }
       }
     }
   ]

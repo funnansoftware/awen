@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include <awen/test/Test.hpp>
 
 import awen.core.engine;
 
@@ -14,7 +14,7 @@ TEST(Engine, Run)
     EXPECT_EQ(engine.run(), EXIT_SUCCESS);
 }
 
-TEST(Engine, Update)
+UNIT_TEST(Engine, Update)
 {
     awen::core::Engine engine;
 
@@ -23,7 +23,7 @@ TEST(Engine, Update)
     EXPECT_EQ(engine.run(), EXIT_SUCCESS);
 }
 
-TEST(Engine, UpdateFixed)
+UNIT_TEST(Engine, UpdateFixed)
 {
     awen::core::Engine engine;
 
@@ -32,7 +32,7 @@ TEST(Engine, UpdateFixed)
     EXPECT_EQ(engine.run(), EXIT_SUCCESS);
 }
 
-TEST(Engine, UpdateFixedLimit)
+UNIT_TEST(Engine, UpdateFixedLimit)
 {
     awen::core::Engine engine;
 
@@ -41,7 +41,7 @@ TEST(Engine, UpdateFixedLimit)
     EXPECT_EQ(engine.getUpdateFixedLimit(), expectedLimit);
 }
 
-TEST(Engine, UpdateFixedInterval)
+UNIT_TEST(Engine, UpdateFixedInterval)
 {
     awen::core::Engine engine;
 

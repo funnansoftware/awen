@@ -5,22 +5,26 @@ module;
 #include <typeinfo>
 
 export module awen.raylib.text;
-import awen.core;
 import awen.raylib.color;
+import awen.raylib.node;
 
 export namespace awen::raylib
 {
-    class Text : public awen::core::Object
+    class Text : public Node
     {
     public:
         Text()
         {
-            constexpr auto posX = 350;
-            constexpr auto posY = 200;
             constexpr auto fontSize = 50;
             constexpr auto text = "Hello, Awen!";
             text_ = text;
-            onRender([this] { DrawText(text_.c_str(), posX, posY, fontSize, ToRaylibColor(colors::Orange)); });
+
+            onRender(
+                [this]
+                {
+                    //
+                    DrawText(text_.c_str(), 0, 0, fontSize, ToRaylibColor(colors::Orange));
+                });
         }
 
         Text(const Text&) = delete;

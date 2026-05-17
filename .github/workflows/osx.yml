@@ -45,7 +45,7 @@ jobs:
         run: cmake --build --preset ${{ matrix.preset }} --parallel $(( $(sysctl -n hw.logicalcpu) + 1 ))
 
       - name: cmake-test
-        run: ctest --preset ${{ matrix.preset }} --parallel $(( $(sysctl -n hw.logicalcpu) + 1 ))
+        run: ctest --preset ${{ matrix.preset }}-unit --parallel $(( $(sysctl -n hw.logicalcpu) + 1 ))
 
       - name: cmake-${{ matrix.target }}
         run: cmake --build --preset ${{ matrix.preset }} --target ${{ matrix.target }}

@@ -7,13 +7,10 @@ target_sources(${PROJECT_NAME} PRIVATE
     Object.test.cpp
 )
 
-find_package(GTest REQUIRED)
-
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        GTest::gtest
-        GTest::gtest_main
         awen-core
+        awen-test
 )
 
 gtest_discover_tests(${PROJECT_NAME})

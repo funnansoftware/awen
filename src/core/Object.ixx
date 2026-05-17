@@ -23,6 +23,12 @@ export namespace awen::core
     class Object
     {
     public:
+        enum class FindOption : std::uint8_t
+        {
+            Direct,
+            Recursive,
+        };
+
         Object() = default;
         Object(const Object&) = delete;
         auto operator=(const Object&) -> Object& = delete;
@@ -34,19 +40,44 @@ export namespace awen::core
             destroyed_();
         }
 
+        auto updatePre() -> void
+        {
+            updatePre_();
+
+            const auto& children = getChildren();
+
+            for (const auto& child : children)
+            {
+                child->updatePre();
+            }
+        }
+
         /// @brief Updates this object and all its children. The update is performed by emitting the update signal, which can be connected to by any
         /// slot. The update signal is emitted with a duration parameter that represents the time elapsed since the last update. The update function
         /// also recursively calls the update function of all its children, passing the same duration parameter.
         /// @param x The duration parameter that represents the time elapsed since the last update. This parameter is passed to the update signal and
         /// to the update function of all children.
-        // NOLINTNEXTLINE(misc-no-recursion)
         auto update(std::chrono::duration<float> x) -> void
         {
             update_(x);
 
-            for (const auto& child : children_)
+            const auto& children = getChildren();
+
+            for (const auto& child : children)
             {
                 child->update(x);
+            }
+        }
+
+        auto updatePost() -> void
+        {
+            updatePost_();
+
+            const auto& children = getChildren();
+
+            for (const auto& child : children)
+            {
+                child->updatePost();
             }
         }
 
@@ -55,49 +86,15 @@ export namespace awen::core
         /// last fixed update. The updateFixed function also recursively calls the updateFixed function of all its children, passing the same duration
         /// parameter.
         /// @param x The duration parameter that represents the time elapsed since the last fixed update.
-        // NOLINTNEXTLINE(misc-no-recursion)
         auto updateFixed(std::chrono::duration<float> x) -> void
         {
             updateFixed_(x);
 
-            for (const auto& child : children_)
+            const auto& children = getChildren();
+
+            for (const auto& child : children)
             {
                 child->updateFixed(x);
-            }
-        }
-
-        // NOLINTNEXTLINE(misc-no-recursion)
-        auto renderPre() -> void
-        {
-            renderPre_();
-
-            for (const auto& child : children_)
-            {
-                child->renderPre();
-            }
-        }
-
-        /// @brief Renders this object and all its children. The render is performed by emitting the render signal, which can be connected to by any
-        /// slot. The render signal is emitted with no parameters. The render function also recursively calls the render function of all its children.
-        // NOLINTNEXTLINE(misc-no-recursion)
-        auto render() -> void
-        {
-            render_();
-
-            for (const auto& child : children_)
-            {
-                child->render();
-            }
-        }
-
-        // NOLINTNEXTLINE(misc-no-recursion)
-        auto renderPost() -> void
-        {
-            renderPost_();
-
-            for (const auto& child : children_)
-            {
-                child->renderPost();
             }
         }
 
@@ -158,45 +155,120 @@ export namespace awen::core
 
         /// @brief Get the child objects of this object.
         /// @return The vector of unique pointers to the child objects.
-        auto getChildren() const -> const std::vector<std::unique_ptr<Object>>&
+        auto getChildren(FindOption option = FindOption::Direct) const -> std::vector<Object*>
         {
-            return children_;
+            std::vector<Object*> v;
+            v.reserve(std::size(children_));
+
+            switch (option)
+            {
+                case FindOption::Recursive:
+                {
+                    std::vector<Object*> visitor;
+                    visitor.reserve(std::size(children_));
+
+                    for (const auto& child : std::views::reverse(children_))
+                    {
+                        visitor.emplace_back(child.get());
+                    }
+
+                    while (!std::empty(visitor))
+                    {
+                        // Process the first child/parent.
+                        auto* parent = visitor.back();
+                        visitor.pop_back();
+                        v.emplace_back(parent);
+
+                        for (const auto& child : std::views::reverse(parent->children_))
+                        {
+                            visitor.emplace_back(child.get());
+                        }
+                    }
+                }
+                break;
+
+                case FindOption::Direct:
+                    [[fallthrough]];
+                default:
+                    for (const auto& child : children_)
+                    {
+                        v.emplace_back(child.get());
+                    }
+                    break;
+            }
+
+            return v;
         }
 
         /// @brief Get the child objects of this object that satisfy a given predicate.
         /// @param x The predicate to filter the child objects. Must be a callable that takes a pointer to an Object and returns a boolean.
+        /// @param option The option to specify whether to search recursively or not.
         /// @return The vector of pointers to the child objects that satisfy the predicate.
-        auto getChildren(auto x) const -> std::vector<Object*>
+        auto getChildren(auto x, FindOption option = FindOption::Direct) const -> std::vector<Object*>
         {
-            std::vector<Object*> children;
-            children.reserve(children_.size());
-
-            for (const auto& child : children_)
-            {
-                if (x(child.get()))
-                {
-                    children.emplace_back(child.get());
-                }
-            }
-
-            return children;
+            auto temp = getChildren(option);
+            std::vector<Object*> v;
+            std::ranges::copy_if(temp, std::back_inserter(v), x);
+            return v;
         }
 
         template <TypeObject T>
-        auto getChildren() const -> std::vector<T*>
+        auto getChildren(FindOption option = FindOption::Direct) const -> std::vector<T*>
         {
-            std::vector<T*> children;
+            std::vector<T*> v;
 
             auto it = typeChildren_.find(std::type_index(typeid(T)));
 
             if (it == std::end(typeChildren_))
             {
-                return children;
+                return v;
             }
 
-            std::ranges::transform(it->second, std::back_inserter(children), [](auto* obj) { return static_cast<T*>(obj); });
+            const auto& tc = it->second;
 
-            return children;
+            switch (option)
+            {
+                case FindOption::Recursive:
+                {
+                    std::vector<Object*> visitor;
+                    visitor.reserve(std::size(tc));
+
+                    for (const auto& child : std::views::reverse(tc))
+                    {
+                        visitor.emplace_back(child);
+                    }
+
+                    while (!std::empty(visitor))
+                    {
+                        auto* parent = visitor.back();
+                        visitor.pop_back();
+                        v.emplace_back(static_cast<T*>(parent));
+
+                        it = parent->typeChildren_.find(std::type_index(typeid(T)));
+
+                        if (it == std::end(parent->typeChildren_))
+                        {
+                            continue;
+                        }
+
+                        for (const auto& child : std::views::reverse(it->second))
+                        {
+                            visitor.emplace_back(child);
+                        }
+                    }
+                }
+                break;
+
+                case FindOption::Direct:
+                    [[fallthrough]];
+                default:
+                {
+                    std::ranges::transform(it->second, std::back_inserter(v), [](auto* obj) { return static_cast<T*>(obj); });
+                }
+                break;
+            }
+
+            return v;
         }
 
         /// @brief Gets the parent object of this object.
@@ -211,29 +283,24 @@ export namespace awen::core
             return destroyed_.connect(x);
         }
 
+        auto onUpdatePre(auto x) -> sigslot::connection
+        {
+            return updatePre_.connect(x);
+        }
+
         auto onUpdate(auto x) -> sigslot::connection
         {
             return update_.connect(x);
         }
 
+        auto onUpdatePost(auto x) -> sigslot::connection
+        {
+            return updatePost_.connect(x);
+        }
+
         auto onUpdateFixed(auto x) -> sigslot::connection
         {
             return updateFixed_.connect(x);
-        }
-
-        auto onRenderPre(auto x) -> sigslot::connection
-        {
-            return renderPre_.connect(x);
-        }
-
-        auto onRender(auto x) -> sigslot::connection
-        {
-            return render_.connect(x);
-        }
-
-        auto onRenderPost(auto x) -> sigslot::connection
-        {
-            return renderPost_.connect(x);
         }
 
     private:
@@ -267,11 +334,10 @@ export namespace awen::core
         std::vector<std::unique_ptr<Object>> children_;
         std::unordered_map<std::type_index, std::vector<Object*>> typeChildren_;
         Object* parent_{};
-        sigslot::signal<> destroyed_;
-        sigslot::signal<std::chrono::duration<float>> update_;
-        sigslot::signal<std::chrono::duration<float>> updateFixed_;
-        sigslot::signal<> renderPre_;
-        sigslot::signal<> render_;
-        sigslot::signal<> renderPost_;
+        sigslot::signal_st<> destroyed_;
+        sigslot::signal_st<> updatePre_;
+        sigslot::signal_st<std::chrono::duration<float>> update_;
+        sigslot::signal_st<std::chrono::duration<float>> updateFixed_;
+        sigslot::signal_st<> updatePost_;
     };
 }

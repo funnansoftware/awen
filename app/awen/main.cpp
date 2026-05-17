@@ -21,7 +21,15 @@ auto main() -> int
         .height = height,
     });
 
-    std::ignore = window->addChild<awen::raylib::Text>();
+    auto* rootNode = window->getRootNode();
+    auto* pos = rootNode->addNode<awen::raylib::Node>();
+
+    // NOLINTBEGIN
+    pos->setPosition({.x = width / 2.0F, .y = height / 2.0F});
+    pos->setRotation(45.0F);
+    pos->setScale({.x = 2.0F, .y = 2.0F});
+    // NOLINTEND
+    std::ignore = pos->addNode<awen::raylib::Text>();
 
     return engine.run();
 }
