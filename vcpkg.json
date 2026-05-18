@@ -4,5 +4,10 @@
   "port-version": 1,
   "description": "A modern C++ game engine for creation and exploration.",
   "homepage": "https://github.com/funnansoftwarellc/awen",
-  "dependencies": ["raylib", "gtest", "palsigslot"]
+  "dependencies": [
+    "raylib",
+    "gtest",
+    "palsigslot",
+    "magic-enum"
+  ]
 }

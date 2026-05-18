@@ -9,6 +9,7 @@ module;
 
 export module awen.raylib.node;
 import awen.core;
+import awen.raylib.events;
 
 export namespace awen::raylib
 {
@@ -87,6 +88,11 @@ export namespace awen::raylib
             return nodes_;
         }
 
+        auto events(Event x) -> void
+        {
+            events_(x);
+        }
+
         auto renderPre() -> void
         {
             renderPre_();
@@ -122,6 +128,11 @@ export namespace awen::raylib
             {
                 child->renderPost();
             }
+        }
+
+        auto onEvents(auto x) -> sigslot::connection
+        {
+            return events_.connect(x);
         }
 
         auto onRenderPre(auto x) -> sigslot::connection
@@ -168,6 +179,7 @@ export namespace awen::raylib
         Vector2 position_{};
         Vector2 scale_{.x = 1.0F, .y = 1.0F};
         float rotation_{};
+        sigslot::signal_st<Event> events_;
         sigslot::signal_st<> renderPre_;
         sigslot::signal_st<> render_;
         sigslot::signal_st<> renderPost_;

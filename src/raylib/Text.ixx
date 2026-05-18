@@ -35,6 +35,16 @@ export namespace awen::raylib
 
         ~Text() override = default;
 
+        auto setText(std::string_view text) -> void
+        {
+            text_ = text;
+        }
+
+        [[nodiscard]] auto getText() const noexcept -> std::string_view
+        {
+            return text_;
+        }
+
     private:
         std::string text_;
     };

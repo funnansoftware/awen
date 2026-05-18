@@ -6,6 +6,7 @@ target_sources(${PROJECT_NAME} PUBLIC
     FILE_SET cxx_module TYPE CXX_MODULES
         FILES
             Color.ixx
+            Events.ixx
             Module.ixx
             Node.ixx
             Text.ixx
