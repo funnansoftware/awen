@@ -8,6 +8,7 @@ module;
 
 export module awen.raylib.window;
 import awen.core;
+import awen.raylib.events;
 import awen.raylib.color;
 import awen.raylib.node;
 
@@ -34,6 +35,17 @@ export namespace awen::raylib
         {
             SetConfigFlags(FLAG_WINDOW_RESIZABLE);
             InitWindow(width_, height_, title_.c_str());
+
+            onUpdatePre(
+                [this]
+                {
+                    auto events = ProcessEvents();
+
+                    for (const auto& event : events)
+                    {
+                        rootNode_->events(event);
+                    }
+                });
 
             onUpdatePost(
                 [this]
