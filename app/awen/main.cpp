@@ -43,7 +43,7 @@ auto main() -> int
 
     pos->setPosition({.x = width / 2.0F, .y = height / 2.0F});
     // NOLINTEND
-    
+
     auto* text = pos->addNode<awen::raylib::Text>();
 
     rootNode->onEvents(

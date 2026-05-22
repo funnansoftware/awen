@@ -1,6 +1,7 @@
 module;
 
 #include <raylib.h>
+#include <typeinfo>
 #include <variant>
 
 export module awen.raylib.rectangle;
