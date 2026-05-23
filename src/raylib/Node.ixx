@@ -169,29 +169,6 @@ export namespace awen::raylib
             return renderPost_.connect(x);
         }
 
-        [[nodiscard]] auto getEngine() noexcept -> core::Engine*
-        {
-            if (engine_ != nullptr)
-            {
-                return engine_;
-            }
-
-            auto* parent = getParent();
-
-            while (parent != nullptr)
-            {
-                if (auto* engine = dynamic_cast<core::Engine*>(parent))
-                {
-                    engine_ = engine;
-                    break;
-                }
-
-                parent = parent->getParent();
-            }
-
-            return engine_;
-        }
-
         /// @brief Map a point in world coordinates into this node's local coordinate space.
         /// @param point The point in world coordinates to map.
         /// @return The point expressed in this node's local coordinate space.
