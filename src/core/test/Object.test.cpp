@@ -57,6 +57,63 @@ UNIT_TEST(Object, GetParent)
     EXPECT_EQ(child->getParent(), &parent);
 }
 
+UNIT_TEST(Object, GetParentWithType)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    DerivedObject parent;
+    auto* child = parent.addChild<Object>();
+    EXPECT_NE(child, nullptr);
+    EXPECT_EQ(child->getParent<DerivedObject>(), &parent);
+}
+
+UNIT_TEST(Object, GetParentWithTypeNotFound)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    Object parent;
+    auto* child = parent.addChild<Object>();
+    EXPECT_NE(child, nullptr);
+    EXPECT_EQ(child->getParent<DerivedObject>(), nullptr);
+}
+
+UNIT_TEST(Object, GetParentWithTypeNoParent)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    Object obj;
+    EXPECT_EQ(obj.getParent<DerivedObject>(), nullptr);
+}
+
+UNIT_TEST(Object, GetParentWithTypeCache)
+{
+    struct DerivedObject : public Object
+    {
+    };
+
+    Object parent;
+    auto* child = parent.addChild(std::make_unique<DerivedObject>());
+    EXPECT_NE(child, nullptr);
+    EXPECT_EQ(child->getParent<DerivedObject>(), nullptr);
+
+    auto* derivedChild = child->addChild(std::make_unique<DerivedObject>());
+    EXPECT_NE(derivedChild, nullptr);
+    EXPECT_EQ(derivedChild->getParent<DerivedObject>(), child);
+}
+
+UNIT_TEST(Object, GetChildrenEmpty)
+{
+    Object parent;
+    const auto& children = parent.getChildren();
+    EXPECT_TRUE(children.empty());
+}
+
 UNIT_TEST(Object, GetChildren)
 {
     Object parent;
@@ -110,61 +167,6 @@ UNIT_TEST(Object, GetChildrenWithPredicateRecursive)
     EXPECT_EQ(children.size(), 2);
     EXPECT_EQ(children.at(0), child1);
     EXPECT_EQ(children.at(1), child2);
-}
-
-UNIT_TEST(Object, GetChildrenOfType)
-{
-    struct DerivedObject : public Object
-    {
-    };
-
-    Object parent;
-    auto* child1 = parent.addChild(std::make_unique<DerivedObject>());
-    auto* child2 = parent.addChild(std::make_unique<Object>());
-    EXPECT_NE(child1, nullptr);
-    EXPECT_NE(child2, nullptr);
-
-    auto children = parent.getChildren<DerivedObject>();
-    EXPECT_EQ(children.size(), 1);
-    EXPECT_EQ(children.at(0), child1);
-}
-
-UNIT_TEST(Object, GetChildrenOfTypeRecursive)
-{
-    struct DerivedObject : public Object
-    {
-    };
-
-    Object parent;
-    auto* child1 = parent.addChild(std::make_unique<DerivedObject>());
-    auto* child2 = child1->addChild(std::make_unique<DerivedObject>());
-    EXPECT_NE(child1, nullptr);
-    EXPECT_NE(child2, nullptr);
-
-    auto children = parent.getChildren<DerivedObject>(Object::FindOption::Recursive);
-    EXPECT_EQ(children.size(), 2);
-    EXPECT_EQ(children.at(0), child1);
-    EXPECT_EQ(children.at(1), child2);
-}
-
-UNIT_TEST(Object, GetChildrenOfTypeNegative)
-{
-    struct DerivedObject : public Object
-    {
-    };
-
-    struct Negative : public Object
-    {
-    };
-
-    Object parent;
-    auto* child1 = parent.addChild(std::make_unique<DerivedObject>());
-    auto* child2 = parent.addChild(std::make_unique<Object>());
-    EXPECT_NE(child1, nullptr);
-    EXPECT_NE(child2, nullptr);
-
-    auto children = parent.getChildren<Negative>();
-    EXPECT_TRUE(children.empty());
 }
 
 UNIT_TEST(Object, UpdatePreSignal)

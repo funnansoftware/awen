@@ -120,7 +120,6 @@ export namespace awen::core
             auto* childPtr = x.get();
             children_.emplace_back(std::move(x));
             childPtr->parent_ = this;
-            typeChildren_[std::type_index(typeid(*childPtr))].emplace_back(childPtr);
             return childPtr;
         }
 
@@ -136,7 +135,6 @@ export namespace awen::core
             auto* childPtr = child.get();
             children_.emplace_back(std::move(child));
             childPtr->parent_ = this;
-            typeChildren_[std::type_index(typeid(*childPtr))].emplace_back(childPtr);
             return childPtr;
         }
 
@@ -157,7 +155,6 @@ export namespace awen::core
                 return nullptr;
             }
 
-            parent_->removeTypeChild(*removeChild);
             removeChild->parent_ = nullptr;
             return removeChild;
         }
@@ -221,70 +218,38 @@ export namespace awen::core
             return v;
         }
 
-        template <TypeObject T>
-        auto getChildren(FindOption option = FindOption::Direct) const -> std::vector<T*>
-        {
-            std::vector<T*> v;
-
-            auto it = typeChildren_.find(std::type_index(typeid(T)));
-
-            if (it == std::end(typeChildren_))
-            {
-                return v;
-            }
-
-            const auto& tc = it->second;
-
-            switch (option)
-            {
-                case FindOption::Recursive:
-                {
-                    std::vector<Object*> visitor;
-                    visitor.reserve(std::size(tc));
-
-                    for (const auto& child : std::views::reverse(tc))
-                    {
-                        visitor.emplace_back(child);
-                    }
-
-                    while (!std::empty(visitor))
-                    {
-                        auto* parent = visitor.back();
-                        visitor.pop_back();
-                        v.emplace_back(static_cast<T*>(parent));
-
-                        it = parent->typeChildren_.find(std::type_index(typeid(T)));
-
-                        if (it == std::end(parent->typeChildren_))
-                        {
-                            continue;
-                        }
-
-                        for (const auto& child : std::views::reverse(it->second))
-                        {
-                            visitor.emplace_back(child);
-                        }
-                    }
-                }
-                break;
-
-                case FindOption::Direct:
-                    [[fallthrough]];
-                default:
-                {
-                    std::ranges::transform(it->second, std::back_inserter(v), [](auto* obj) { return static_cast<T*>(obj); });
-                }
-                break;
-            }
-
-            return v;
-        }
-
         /// @brief Gets the parent object of this object.
         /// @return The pointer to the parent object, or nullptr if this object has no parent.
         auto getParent() const -> Object*
         {
             return parent_;
+        }
+
+        template <TypeObject T>
+        [[nodiscard]] auto getParent() const -> T*
+        {
+            if (parent_ == nullptr)
+            {
+                return nullptr;
+            }
+
+            auto* cached = static_cast<T*>(parentCache_[std::type_index(typeid(T))]);
+
+            if (cached == nullptr)
+            {
+                if (auto* parentT = dynamic_cast<T*>(parent_))
+                {
+                    cached = parentT;
+                }
+                else
+                {
+                    cached = parent_->getParent<T>();
+                }
+
+                parentCache_[std::type_index(typeid(T))] = cached;
+            }
+
+            return cached;
         }
 
         auto onDestroyed(auto x) -> sigslot::connection
@@ -332,21 +297,8 @@ export namespace awen::core
             return removedChild;
         }
 
-        auto removeTypeChild(const Object& child) -> void
-        {
-            for (auto& [type, children] : typeChildren_)
-            {
-                auto it = std::ranges::find(children, &child);
-                if (it != std::end(children))
-                {
-                    children.erase(it);
-                    break;
-                }
-            }
-        }
-
         std::vector<std::unique_ptr<Object>> children_;
-        std::unordered_map<std::type_index, std::vector<Object*>> typeChildren_;
+        mutable std::unordered_map<std::type_index, Object*> parentCache_;
         Object* parent_{};
         sigslot::signal_st<> destroyed_;
         sigslot::signal_st<> startup_;

@@ -52,7 +52,7 @@ export namespace awen::raylib
                 {
                     if (WindowShouldClose())
                     {
-                        auto* engine = rootNode_->getEngine();
+                        auto* engine = rootNode_->getParent<awen::core::Engine>();
 
                         if (engine != nullptr)
                         {
