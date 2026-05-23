@@ -1,6 +1,7 @@
 module;
 
 #include <raylib.h>
+#include <raymath.h>
 #include <rlgl.h>
 #include <concepts>
 #include <sigslot/signal.hpp>
@@ -34,6 +35,7 @@ export namespace awen::raylib
         auto setPosition(Vector2 position) noexcept -> void
         {
             position_ = position;
+            markDirty();
         }
 
         [[nodiscard]] auto getPosition() const noexcept -> Vector2
@@ -44,6 +46,7 @@ export namespace awen::raylib
         auto setScale(Vector2 scale) noexcept -> void
         {
             scale_ = scale;
+            markDirty();
         }
 
         [[nodiscard]] auto getScale() const noexcept -> Vector2
@@ -54,6 +57,7 @@ export namespace awen::raylib
         auto setRotation(float rotation) noexcept -> void
         {
             rotation_ = rotation;
+            markDirty();
         }
 
         [[nodiscard]] auto getRotation() const noexcept -> float
@@ -70,6 +74,8 @@ export namespace awen::raylib
 
             auto* nodePtr = node.get();
             addChild(std::move(node));
+            nodePtr->parentNode_ = this;
+            nodePtr->markDirty();
             nodes_.emplace_back(nodePtr);
             return nodePtr;
         }
@@ -80,6 +86,8 @@ export namespace awen::raylib
             auto node = std::make_unique<T>(std::forward<Args>(args)...);
             auto* nodePtr = node.get();
             addChild(std::move(node));
+            nodePtr->parentNode_ = this;
+            nodePtr->markDirty();
             nodes_.emplace_back(nodePtr);
             return nodePtr;
         }
@@ -117,9 +125,9 @@ export namespace awen::raylib
         auto render() -> void
         {
             rlPushMatrix();
-            rlTranslatef(position_.x, position_.y, 0.0F);
-            rlRotatef(rotation_, 0.0F, 0.0F, 1.0F);
-            rlScalef(scale_.x, scale_.y, 1.0F);
+
+            const auto matf = MatrixToFloatV(getLocalTransform());
+            rlMultMatrixf(static_cast<const float*>(matf.v));
 
             render_();
 
@@ -184,47 +192,108 @@ export namespace awen::raylib
             return engine_;
         }
 
-        /// @brief Map world coordinates to this node's local coordinate space.
+        /// @brief Map a point in world coordinates into this node's local coordinate space.
         /// @param point The point in world coordinates to map.
-        /// @return The point mapped to this node's local coordinate space.
+        /// @return The point expressed in this node's local coordinate space.
         [[nodiscard]] auto mapToNode(Vector2 point) const -> Vector2
         {
-            Vector2 targetPoint = point;
-
-            // Walk up the tree from this node to the common ancestor, applying
-            // inverse transforms to convert the point into world space.
-            const Node* current = this;
-
-            while (current != nullptr)
-            {
-                targetPoint.x = (targetPoint.x * (1.0F / current->scale_.x)) - current->position_.x;
-                targetPoint.y = (targetPoint.y * (1.0F / current->scale_.y)) - current->position_.y;
-                current = dynamic_cast<const Node*>(current->getParent());
-            }
-
-            return targetPoint;
+            ensureWorldClean();
+            return Vector2Transform(point, worldInverse_);
         }
 
+        /// @brief Map a point in this node's local coordinate space into world coordinates.
+        /// @param point The point in this node's local coordinate space.
+        /// @return The point expressed in world coordinates.
         [[nodiscard]] auto mapToWorld(Vector2 point) const -> Vector2
         {
-            Vector2 worldPoint = point;
+            ensureWorldClean();
+            return Vector2Transform(point, worldTransform_);
+        }
 
-            // Walk up the tree from this node to the root, applying transforms to
-            // convert the point into world space.
-            const Node* current = this;
-
-            while (current != nullptr)
+        /// @brief Get the node-local transform matrix (T * R * S), lazily recomputed if dirty.
+        [[nodiscard]] auto getLocalTransform() const -> const Matrix&
+        {
+            if (localDirty_)
             {
-                worldPoint.x = (worldPoint.x * current->scale_.x) + current->position_.x;
-                worldPoint.y = (worldPoint.y * current->scale_.y) + current->position_.y;
-                current = dynamic_cast<const Node*>(current->getParent());
+                const auto t = MatrixTranslate(position_.x, position_.y, 0.0F);
+                const auto r = MatrixRotateZ(rotation_ * DEG2RAD);
+                const auto s = MatrixScale(scale_.x, scale_.y, 1.0F);
+
+                // Match the render-time order: rlTranslatef, then rlRotatef, then rlScalef.
+                localTransform_ = MatrixMultiply(MatrixMultiply(s, r), t);
+                localDirty_ = false;
             }
 
-            return worldPoint;
+            return localTransform_;
+        }
+
+        /// @brief Get the cached world transform matrix, lazily recomputed if dirty.
+        [[nodiscard]] auto getWorldTransform() const -> const Matrix&
+        {
+            ensureWorldClean();
+            return worldTransform_;
         }
 
     private:
         using awen::core::Object::addChild;
+
+        /// @brief Mark this node and all descendants as having stale world transforms.
+        auto markDirty() -> void
+        {
+            localDirty_ = true;
+            worldDirty_ = true;
+
+            // Iteratively walk descendants to invalidate their world caches.
+            std::vector<Node*> visitor;
+            visitor.reserve(std::size(nodes_));
+
+            for (auto* child : nodes_)
+            {
+                visitor.emplace_back(child);
+            }
+
+            while (!std::empty(visitor))
+            {
+                auto* node = visitor.back();
+                visitor.pop_back();
+
+                if (node->worldDirty_)
+                {
+                    continue;
+                }
+
+                node->worldDirty_ = true;
+
+                for (auto* child : node->nodes_)
+                {
+                    visitor.emplace_back(child);
+                }
+            }
+        }
+
+        /// @brief Recompute the cached world transform (and its inverse) if stale.
+        auto ensureWorldClean() const -> void
+        {
+            if (!worldDirty_ && !localDirty_)
+            {
+                return;
+            }
+
+            const auto& local = getLocalTransform();
+
+            if (parentNode_ != nullptr)
+            {
+                worldTransform_ = MatrixMultiply(local, parentNode_->getWorldTransform());
+            }
+            else
+            {
+                worldTransform_ = local;
+            }
+
+            worldInverse_ = MatrixInvert(worldTransform_);
+            worldDirty_ = false;
+        }
+
         std::vector<Node*> nodes_;
         Vector2 position_{};
         Vector2 scale_{.x = 1.0F, .y = 1.0F};
@@ -234,5 +303,14 @@ export namespace awen::raylib
         sigslot::signal_st<> render_;
         sigslot::signal_st<> renderPost_;
         awen::core::Engine* engine_{};
+
+        // TODO: reset parentNode_ if Object::remove() is ever called on a Node;
+        // currently no caller detaches nodes, so this stays valid for the node's lifetime.
+        Node* parentNode_{};
+        mutable Matrix localTransform_{};
+        mutable Matrix worldTransform_{};
+        mutable Matrix worldInverse_{};
+        mutable bool localDirty_{true};
+        mutable bool worldDirty_{true};
     };
 }
