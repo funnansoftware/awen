@@ -49,13 +49,13 @@ export namespace awen::raylib
                 });
         }
 
+        ~Rectangle() override;
+
         Rectangle(const Rectangle&) = delete;
         auto operator=(const Rectangle&) -> Rectangle& = delete;
 
         Rectangle(Rectangle&&) noexcept = delete;
         auto operator=(Rectangle&&) noexcept -> Rectangle& = delete;
-
-        ~Rectangle() override = default;
 
         auto setX(float x) noexcept -> void
         {
@@ -114,4 +114,6 @@ export namespace awen::raylib
         float width_{};
         float height_{};
     };
+
+    Rectangle::~Rectangle() = default;
 }
