@@ -29,6 +29,8 @@ auto main() -> int
     // NOLINTBEGIN
     auto* rectOne = rootNode->addNode<awen::raylib::Rectangle>();
     rectOne->setPosition({.x = 100.0F, .y = 100.0F});
+    rectOne->setRotation(15.0F);
+    rectOne->setScale({.x = 1.5F, .y = 1.0F});
     rectOne->setWidth(200.0F);
     rectOne->setHeight(200.0F);
     rectOne->setColor(awen::raylib::colors::Red);
@@ -42,6 +44,7 @@ auto main() -> int
     auto* pos = rootNode->addNode<awen::raylib::Node>();
 
     pos->setPosition({.x = width / 2.0F, .y = height / 2.0F});
+    pos->setRotation(45.0F);
     // NOLINTEND
 
     auto* text = pos->addNode<awen::raylib::Text>();
