@@ -73,7 +73,6 @@ export namespace awen::raylib
 
                     rootNode_->render();
 
-                    DrawFPS(0, 0);
                     EndDrawing();
 
                     SwapScreenBuffer();

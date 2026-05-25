@@ -32,6 +32,8 @@ auto main() -> int
 
     auto* rootNode = window->getRootNode();
 
+    std::ignore = rootNode->addNode<awen::raylib::TextFPS>();
+
     // NOLINTBEGIN
     auto* rectOne = rootNode->addNode<awen::raylib::Rectangle>();
     rectOne->setPosition({.x = 100.0F, .y = 100.0F});

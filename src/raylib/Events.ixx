@@ -171,7 +171,7 @@ export namespace awen::raylib
 
         enum class Button : std::uint8_t
         {
-            Unknown = 0,
+            Unknown = std::numeric_limits<std::uint8_t>::max(),
             Left = MOUSE_BUTTON_LEFT,
             Right = MOUSE_BUTTON_RIGHT,
             Middle = MOUSE_BUTTON_MIDDLE,
@@ -224,6 +224,14 @@ export namespace awen::raylib
                 const auto pos = GetMousePosition();
                 events.emplace_back(EventMouse{.type = EventMouse::Type::ButtonReleased, .button = button, .x = pos.x, .y = pos.y});
             }
+        }
+
+        const auto mouseDelta = GetMouseDelta();
+
+        if (mouseDelta.x != 0.0F || mouseDelta.y != 0.0F)
+        {
+            const auto pos = GetMousePosition();
+            events.emplace_back(EventMouse{.type = EventMouse::Type::Moved, .x = pos.x, .y = pos.y});
         }
 
         return events;

@@ -11,6 +11,7 @@ target_sources(${PROJECT_NAME} PUBLIC
             Module.ixx
             Node.ixx
             Text.ixx
+            TextFPS.ixx
             Window.ixx
 )
 
