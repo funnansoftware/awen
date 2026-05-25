@@ -58,6 +58,15 @@ auto main() -> int
     auto* txtMouse = groupText->addNode<awen::raylib::Text>();
     txtMouse->setPosition({.x = 0.0F, .y = 50.0F});
     txtMouse->setText("Move the mouse...");
+
+    auto* ring = rootNode->addNode<awen::raylib::Ring>();
+    ring->setPosition({.x = width / 2.0F, .y = height / 2.0F});
+    ring->setOuterRadius(height / 2.0F);
+    ring->setInnerRadius(ring->getOuterRadius() - 4.0F);
+    ring->setStartAngle(0.0F);
+    ring->setEndAngle(330.0F);
+    ring->setSegments(90);
+    ring->setColor(awen::raylib::colors::White);
     // NOLINTEND
 
     rootNode->onEvents(
