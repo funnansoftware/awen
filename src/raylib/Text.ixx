@@ -13,18 +13,11 @@ export namespace awen::raylib
     class Text : public Node
     {
     public:
+        static constexpr auto DefaultFontSize{20};
+
         Text()
         {
-            constexpr auto fontSize = 50;
-            constexpr auto text = "Hello, Awen!";
-            text_ = text;
-
-            onRender(
-                [this]
-                {
-                    //
-                    DrawText(text_.c_str(), 0, 0, fontSize, ToRaylibColor(colors::Orange));
-                });
+            onRender([this] { DrawText(text_.c_str(), 0, 0, fontSize_, ToRaylibColor(colors::Orange)); });
         }
 
         Text(const Text&) = delete;
@@ -45,7 +38,18 @@ export namespace awen::raylib
             return text_;
         }
 
+        auto setFontSize(int x) -> void
+        {
+            fontSize_ = x;
+        }
+
+        [[nodiscard]] auto getFontSize() const -> int
+        {
+            return fontSize_;
+        }
+
     private:
         std::string text_;
+        int fontSize_{DefaultFontSize};
     };
 }
