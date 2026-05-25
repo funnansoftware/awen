@@ -66,8 +66,6 @@ export namespace awen::raylib
                         }
                     }
 
-                    rootNode_->renderPre();
-
                     BeginDrawing();
                     ClearBackground(ToRaylibColor(color_));
 
@@ -76,8 +74,6 @@ export namespace awen::raylib
                     EndDrawing();
 
                     SwapScreenBuffer();
-
-                    rootNode_->renderPost();
 
                     const auto pos = GetWindowPosition();
                     posX_ = static_cast<int>(pos.x);

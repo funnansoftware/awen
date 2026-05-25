@@ -68,7 +68,10 @@ auto main() -> int
     ring->setSegments(90);
     ring->setColor(awen::raylib::colors::White);
 
-    auto* triangleStrip = rootNode->addNode<awen::raylib::TriangleStrip>();
+    auto* camera = rootNode->addNode<awen::raylib::Camera>();
+    camera->setOffset({.x = width / 2.0F, .y = height / 2.0F});
+
+    auto* triangleStrip = camera->addNode<awen::raylib::TriangleStrip>();
     triangleStrip->setVertices({
         {.x = 0.0F, .y = -0.5F},
         {.x = -0.5F, .y = 0.5F},
@@ -76,7 +79,9 @@ auto main() -> int
     });
     triangleStrip->setColor(awen::raylib::colors::Green);
     triangleStrip->setScale({.x = 64.0F, .y = 64.0F});
-    triangleStrip->setPosition({.x = width / 2.0F, .y = height / 2.0F});
+
+    camera->setTarget(triangleStrip->getPosition());
+    // triangleStrip->setPosition({.x = width / 2.0F, .y = height / 2.0F});
     // NOLINTEND
 
     rootNode->onEvents(
