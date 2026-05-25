@@ -53,7 +53,7 @@ GRAPHICS_TEST(Node, renderPre)
 
     nodePtr->onRenderPre([&called] { called = true; });
 
-    nodePtr->renderPre();
+    nodePtr->render();
 
     EXPECT_TRUE(called);
 }
@@ -82,7 +82,7 @@ GRAPHICS_TEST(Node, renderPost)
 
     nodePtr->onRenderPost([&called] { called = true; });
 
-    nodePtr->renderPost();
+    nodePtr->render();
 
     EXPECT_TRUE(called);
 }

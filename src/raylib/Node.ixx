@@ -55,6 +55,17 @@ export namespace awen::raylib
                     std::erase(nodes_, node);
                     node->markDirty();
                 });
+
+            onRenderPre(
+                [this]()
+                {
+                    rlPushMatrix();
+
+                    const auto matf = MatrixToFloatV(getLocalTransform());
+                    rlMultMatrixf(static_cast<const float*>(matf.v));
+                });
+
+            onRenderPost([]() { rlPopMatrix(); });
         }
 
         ~Node() override = default;
@@ -137,22 +148,9 @@ export namespace awen::raylib
             }
         }
 
-        auto renderPre() -> void
-        {
-            renderPre_();
-
-            for (const auto& child : nodes_)
-            {
-                child->renderPre();
-            }
-        }
-
         auto render() -> void
         {
-            rlPushMatrix();
-
-            const auto matf = MatrixToFloatV(getLocalTransform());
-            rlMultMatrixf(static_cast<const float*>(matf.v));
+            renderPre_();
 
             render_();
 
@@ -161,17 +159,7 @@ export namespace awen::raylib
                 child->render();
             }
 
-            rlPopMatrix();
-        }
-
-        auto renderPost() -> void
-        {
             renderPost_();
-
-            for (const auto& child : nodes_)
-            {
-                child->renderPost();
-            }
         }
 
         auto onEvents(auto x) -> sigslot::connection
