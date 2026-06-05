@@ -25,6 +25,7 @@ find_package(Lua REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        awen-raylib
         sol2::sol2
         ${LUA_LIBRARIES}
 )
