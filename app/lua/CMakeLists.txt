@@ -7,6 +7,12 @@ target_sources(${PROJECT_NAME}
         main.cpp
 )
 
+target_sources(${PROJECT_NAME} PRIVATE
+    FILE_SET cxx_module TYPE CXX_MODULES
+        FILES
+            Property.ixx
+)
+
 if(EMSCRIPTEN)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         SUFFIX ".html"

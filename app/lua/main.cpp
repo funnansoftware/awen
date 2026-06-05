@@ -4,6 +4,7 @@
 
 import awen.core;
 import awen.raylib;
+import lua.property;
 
 namespace
 {
@@ -119,6 +120,36 @@ namespace
         registry["Rectangle"] = [](awen::raylib::Node& parent, const ScriptNode& script_node) -> awen::raylib::Rectangle*
         {
             auto rectangle = parent.addNode<awen::raylib::Rectangle>();
+
+            // auto property = std::make_unique<lua::TemplatedProperty<float>>(
+            //     "width", [&rectangle]() { return rectangle->getWidth(); }, [&rectangle](const float& value) { rectangle->setWidth(value); });
+
+            // std::vector<std::unique_ptr<lua::Property>> properties;
+            // properties.emplace_back(std::move(property));
+
+            // for (auto& property : properties)
+            // {
+            // switch(property->getType())
+            // {
+            //     case lua::PropertyType::Float:
+            //         {
+            //             auto* float_property = static_cast<lua::TemplatedProperty<float>*>(property.get());
+            //             float value = float_property->get();
+            //             float_property->set(value + 10.0F);
+            //         }
+            //         break;
+            // }
+
+            // if (property->is<float>())
+            // {
+            //     auto* float_property = static_cast<lua::TemplatedProperty<float>*>(property.get());
+            //     float value = float_property->get();
+            //     float_property->set(value + 10.0F);
+            // }
+
+            // property->setValueAsString(lua.value());
+            // property->setValue(lua.value());
+            // }
 
             apply_common_properties(*rectangle, script_node.properties);
 
