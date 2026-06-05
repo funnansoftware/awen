@@ -3,6 +3,10 @@ local height = 720
 
 -- local keyText = awen.state ""
 
+function value()
+    return 75
+end
+
 return Engine {
     Window {
         title = "Awen",
@@ -21,6 +25,17 @@ return Engine {
                 height   = 50.0,
                 color    = colors.Blue,
             },
+
+            Rectangle {
+                position = { x = 100.0, y = 10.0 },
+                width    = value(),
+                height   = 50.0,
+                color    = colors.Green,
+            },
         },
+
+        Text {
+            text = "Hello Chat!!",
+        }
     }
 }
