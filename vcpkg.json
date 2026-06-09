@@ -13,6 +13,8 @@
     },
     "gtest",
     "palsigslot",
-    "magic-enum"
+    "magic-enum",
+    "lua",
+    "sol2"
   ]
 }
