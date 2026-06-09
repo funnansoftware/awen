@@ -13,7 +13,7 @@ export namespace lua
     class Property
     {
     public:
-        explicit Property(std::string_view name) : name{name}
+        explicit Property(std::string_view name) : name_{name}
         {
         }
 
@@ -24,24 +24,24 @@ export namespace lua
         Property(Property&&) noexcept = delete;
         auto operator=(Property&&) noexcept -> Property& = delete;
 
-        auto getName() const noexcept -> std::string_view
+        [[nodiscard]] auto getName() const noexcept -> std::string_view
         {
-            return name;
+            return name_;
         }
 
         template <typename T>
-        auto is() const -> bool
+        [[nodiscard]] auto is() const -> bool
         {
             return typeInfo() == typeid(T);
         }
 
-        virtual auto typeInfo() const -> const std::type_info& = 0;
+        [[nodiscard]] virtual auto typeInfo() const -> const std::type_info& = 0;
 
         virtual auto setValueAsString(const std::string& value) -> void = 0;
         virtual auto setValue(const std::any& value) -> void = 0;
 
     private:
-        std::string name;
+        std::string name_;
     };
 
     template <typename T>
@@ -51,26 +51,27 @@ export namespace lua
         using Getter = std::function<T()>;
         using Setter = std::function<void(const T&)>;
 
-        TemplatedProperty(std::string_view name, Getter getter, Setter setter) : Property{name}, getter{std::move(getter)}, setter{std::move(setter)}
+        TemplatedProperty(std::string_view name, Getter getter, Setter setter)
+            : Property{name}, getter_{std::move(getter)}, setter_{std::move(setter)}
         {
         }
 
         auto get() const -> T
         {
-            return getter();
+            return getter_();
         }
 
         auto set(const T& value) -> void
         {
-            setter(value);
+            setter_(value);
         }
 
-        auto typeInfo() const -> const std::type_info& override
+        [[nodiscard]] auto typeInfo() const -> const std::type_info& override
         {
             return typeid(T);
         }
 
-        virtual auto setValueAsString([[maybe_unused]] const std::string& value) -> void override
+        auto setValueAsString([[maybe_unused]] const std::string& value) -> void override
         {
             // Implement conversion from string to T and call set()
             // This is a placeholder implementation and should be expanded to handle different types
@@ -101,7 +102,7 @@ export namespace lua
             // Add more type conversions as needed
         }
 
-        virtual auto setValue([[maybe_unused]] const std::any& value) -> void override
+        auto setValue([[maybe_unused]] const std::any& value) -> void override
         {
             // if (value.type() == typeid(T))
             // {
@@ -114,7 +115,7 @@ export namespace lua
         }
 
     private:
-        Getter getter;
-        Setter setter;
+        Getter getter_;
+        Setter setter_;
     };
 }
