@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <filesystem>
+#include <iostream>
 #include <sol/sol.hpp>
 
 import awen.core;
