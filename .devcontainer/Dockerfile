@@ -143,6 +143,7 @@ RUN mkdir -p /root/.android \
     -keysize 2048 \
     -validity 10000 \
     -dname "CN=Android Debug, O=Android, C=US"
+
 # Qt build dependencies — vcpkg builds Qt from source on linux (xcb windowing,
 # EGL, xkbcommon) and its meta-build needs the autotools family.
 RUN apt-get update && apt-get install -y --no-install-recommends \
