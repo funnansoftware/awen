@@ -41,13 +41,15 @@ auto bt::quick::run(Briarthorn& briarthorn, int argc, char** argv) -> int
     // to the given image path first, so rendering itself is assertable headless.
     if (qEnvironmentVariableIsSet("BRIARTHORN_SMOKE_QUIT_MS"))
     {
-        QTimer::singleShot(qEnvironmentVariableIntValue("BRIARTHORN_SMOKE_QUIT_MS"), window, [window] {
-            if (const auto grab = qEnvironmentVariable("BRIARTHORN_SMOKE_GRAB"); !grab.isEmpty())
-            {
-                window->grabWindow().save(grab);
-            }
-            QCoreApplication::quit();
-        });
+        QTimer::singleShot(qEnvironmentVariableIntValue("BRIARTHORN_SMOKE_QUIT_MS"), window,
+                           [window]
+                           {
+                               if (const auto grab = qEnvironmentVariable("BRIARTHORN_SMOKE_GRAB"); !grab.isEmpty())
+                               {
+                                   window->grabWindow().save(grab);
+                               }
+                               QCoreApplication::quit();
+                           });
     }
 
     // The window is up: start real-time stepping now so start-up cost isn't
