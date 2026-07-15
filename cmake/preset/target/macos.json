@@ -1,0 +1,19 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "target-macos",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "cacheVariables": {
+                "VCPKG_HOST_TRIPLET": "arm64-osx",
+                "VCPKG_TARGET_TRIPLET": "arm64-osx",
+                "VCPKG_MANIFEST_FEATURES": "qt"
+            }
+        }
+    ]
+}

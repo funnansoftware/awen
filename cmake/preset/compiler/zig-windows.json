@@ -1,0 +1,18 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "compiler-zig-windows",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_CXX_COMPILER": "${sourceDir}/scripts/zig++.bat",
+                "CMAKE_C_COMPILER": "${sourceDir}/scripts/zigcc.bat",
+                "CMAKE_CXX_COMPILER_TARGET": "x86_64-windows-gnu",
+                "CMAKE_C_COMPILER_TARGET": "x86_64-windows-gnu",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Werror -pedantic",
+                "CMAKE_C_FLAGS": "-Wall -Wextra -Werror -pedantic"
+            }
+        }
+    ]
+}

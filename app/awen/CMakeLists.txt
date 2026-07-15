@@ -14,10 +14,11 @@ qt_add_qml_module(${PROJECT_NAME}
         awen.entity
 )
 
-target_compile_definitions(${PROJECT_NAME}
-    PRIVATE
-        $<$<CONFIG:Debug>:QT_QML_DEBUG>
-)
+# No QT_QML_DEBUG here: enabling the QML debug server makes the engine skip the
+# qmlcachegen-compiled units and re-resolve imports from source, which then
+# demands the optional qtquick2plugin that the deploy step does not ship —
+# loadFromModule("AwenApp", "Main") fails at startup. briarthorn's quick edge
+# omits it for the same reason.
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE

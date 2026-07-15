@@ -1,4 +1,7 @@
 if(ANDROID)
+    # Must match applicationId in android/app/build.gradle.kts.
+    set(APK_PACKAGE "com.funnansoftware.briarthorn")
+
     if(CMAKE_HOST_WIN32)
         set(_GRADLEW "${CMAKE_SOURCE_DIR}/android/gradlew.bat")
     else()
@@ -6,6 +9,15 @@ if(ANDROID)
     endif()
 
     if(EXISTS "${_GRADLEW}")
+        # The checked-in wrapper may lack the executable bit on some checkouts;
+        # run it through sh on POSIX hosts (mirroring build.zig) instead of
+        # exec'ing it directly.
+        if(CMAKE_HOST_WIN32)
+            set(_GRADLE_COMMAND "${_GRADLEW}")
+        else()
+            set(_GRADLE_COMMAND sh "${_GRADLEW}")
+        endif()
+
         if(CMAKE_BUILD_TYPE STREQUAL "Release")
             set(_APK_GRADLE_TASK "assembleRelease")
             set(_APK_VARIANT "release")
@@ -22,7 +34,7 @@ if(ANDROID)
         set(_APK_OUT "${CMAKE_BINARY_DIR}/outputs/apk/${_APK_VARIANT}/${_APK_NAME}")
 
         add_custom_target(apk
-            COMMAND "${_GRADLEW}" ${_APK_GRADLE_TASK}
+            COMMAND ${_GRADLE_COMMAND} ${_APK_GRADLE_TASK}
             COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/outputs/apk/${_APK_VARIANT}"
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${_APK_GRADLE_OUT}" "${_APK_OUT}"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/android"
@@ -30,8 +42,8 @@ if(ANDROID)
             VERBATIM
         )
 
-        # Probe the Android SDK platform-tools dir from the same sources as
-        # cmake/android/toolchain.cmake, so adb is found even when it isn't on PATH.
+        # Probe common Android SDK platform-tools locations so adb is found
+        # even when it isn't on PATH.
         find_program(_ADB adb HINTS
             "$ENV{ANDROID_HOME}/platform-tools"
             "$ENV{LOCALAPPDATA}/Android/Sdk/platform-tools"
@@ -49,7 +61,7 @@ if(ANDROID)
                 COMMAND "${CMAKE_COMMAND}"
                     "-DADB=${_ADB}"
                     "-DAPK=${_APK_OUT}"
-                    "-DPACKAGE=com.funnansoftware.awen"
+                    "-DPACKAGE=${APK_PACKAGE}"
                     -P "${_ADB_INSTALL_SCRIPT}"
                 DEPENDS apk
                 COMMENT "Installing ${_APK_NAME} via adb"

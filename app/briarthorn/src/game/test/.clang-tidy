@@ -1,0 +1,9 @@
+---
+InheritParentConfig: true
+# gtest's TEST macro expands to non-const globals whose constructors run (and
+# may throw) before main, and test assertions use literal values by nature.
+Checks: "-cert-err58-cpp,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers"

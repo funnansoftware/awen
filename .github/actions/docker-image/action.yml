@@ -6,6 +6,17 @@ inputs:
     description: Tag suffix for the shared devcontainer image.
     required: false
     default: devcontainer
+  context:
+    description: Build context (and Dockerfile directory) for the image.
+    required: false
+    default: .devcontainer
+  filters:
+    description: paths-filter rule set deciding whether the image must be rebuilt.
+    required: false
+    default: |
+      changed:
+        - '.devcontainer/Dockerfile'
+        - '.devcontainer/devcontainer.json'
   token:
     description: GitHub token for GHCR authentication.
     required: true
@@ -27,10 +38,7 @@ runs:
       uses: dorny/paths-filter@v3
       with:
         token: ""
-        filters: |
-          changed:
-            - '.devcontainer/Dockerfile'
-            - '.devcontainer/devcontainer.json'
+        filters: ${{ inputs.filters }}
 
     - uses: docker/login-action@v3
       with:
@@ -76,6 +84,6 @@ runs:
     - uses: docker/build-push-action@v6
       if: steps.resolve.outputs.need-build == 'true'
       with:
-        context: .devcontainer
+        context: ${{ inputs.context }}
         push: true
         tags: ${{ steps.resolve.outputs.tags }}

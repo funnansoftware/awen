@@ -1,0 +1,19 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "target-windows",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "VCPKG_HOST_TRIPLET": "x64-windows-static-md",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static-md",
+                "VCPKG_MANIFEST_FEATURES": "qt"
+            }
+        }
+    ]
+}

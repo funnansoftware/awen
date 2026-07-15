@@ -30,16 +30,16 @@ jobs:
 
       - name: cmake-configure
         shell: bash
-        run: cmake --preset x64-windows-msvc-release
+        run: cmake --preset windows-msvc-release
 
       - name: cmake-build
         shell: bash
-        run: cmake --build --preset x64-windows-msvc-release --parallel $(( $(nproc --all) + 1 ))
+        run: cmake --build --preset windows-msvc-release --parallel $(( $(nproc --all) + 1 ))
 
       - name: cmake-test
         shell: bash
-        run: ctest --preset x64-windows-msvc-release --parallel $(( $(nproc --all) + 1 ))
+        run: ctest --preset windows-msvc-release --parallel $(( $(nproc --all) + 1 ))
 
       - name: cmake-install
         shell: bash
-        run: cmake --build --preset x64-windows-msvc-release --target install
+        run: cmake --build --preset windows-msvc-release --target install

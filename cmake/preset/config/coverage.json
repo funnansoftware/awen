@@ -1,0 +1,12 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "config-coverage",
+            "hidden": true,
+            "cacheVariables": {
+                "ENABLE_COVERAGE": true
+            }
+        }
+    ]
+}

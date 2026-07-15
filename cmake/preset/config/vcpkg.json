@@ -1,0 +1,13 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "config-vcpkg",
+            "hidden": true,
+            "toolchainFile": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_INSTALL_OPTIONS": "--x-buildtrees-root=${sourceDir}/.vcpkg/bt"
+            }
+        }
+    ]
+}

@@ -1,0 +1,97 @@
+{
+    "version": 7,
+    "include": [
+        "../compiler/homebrew-clang.json",
+        "../config/binaryDir.json",
+        "../config/coverage.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/macos.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "macos",
+            "displayName": "macos (release build, Clang)",
+            "inherits": [
+                "macos-clang-release"
+            ]
+        },
+        {
+            "name": "macos-clang-debug",
+            "inherits": [
+                "compiler-homebrew-clang",
+                "config-binaryDir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "target-macos"
+            ]
+        },
+        {
+            "name": "macos-clang-coverage",
+            "inherits": [
+                "compiler-homebrew-clang",
+                "config-binaryDir",
+                "config-coverage",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "target-macos"
+            ]
+        },
+        {
+            "name": "macos-clang-release",
+            "inherits": [
+                "compiler-homebrew-clang",
+                "config-binaryDir",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
+                "target-macos"
+            ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "macos",
+            "configurePreset": "macos"
+        },
+        {
+            "name": "macos-clang-debug",
+            "configurePreset": "macos-clang-debug"
+        },
+        {
+            "name": "macos-clang-coverage",
+            "configurePreset": "macos-clang-coverage"
+        },
+        {
+            "name": "macos-clang-release",
+            "configurePreset": "macos-clang-release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "macos-clang-debug",
+            "configurePreset": "macos-clang-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "macos-clang-coverage",
+            "configurePreset": "macos-clang-coverage",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "macos-clang-release",
+            "configurePreset": "macos-clang-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

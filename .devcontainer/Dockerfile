@@ -1,7 +1,4 @@
-# Default to linux/amd64 — Android NDK host binaries are published for Linux x86_64.
-# Override at build time with: --build-arg DEVCONTAINER_PLATFORM=linux/arm64
-ARG DEVCONTAINER_PLATFORM=linux/amd64
-FROM --platform=${DEVCONTAINER_PLATFORM} ubuntu:26.04
+FROM ubuntu:25.10
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -19,33 +16,32 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     xz-utils \
     tar \
-    openjdk-17-jdk \
-    usbutils \
     && rm -rf /var/lib/apt/lists/*
 
-# GCC 16.
+# GCC 15.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc-16 \
-    g++-16 \
+    gcc-15 \
+    g++-15 \
     && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-16 100 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-16 100
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
 # Add the official LLVM apt repository so clang-22 packages are available.
 RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
     -o /usr/share/keyrings/llvm-apt-key.asc \
     && . /etc/os-release \
-    && echo "deb [signed-by=/usr/share/keyrings/llvm-apt-key.asc] http://apt.llvm.org/questing/ llvm-toolchain-questing-22 main" \
+    && echo "deb [signed-by=/usr/share/keyrings/llvm-apt-key.asc] http://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-22 main" \
     > /etc/apt/sources.list.d/llvm-22.list
 
 # Clang 22.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     clang-22 \
+    libclang-rt-22-dev \
+    llvm-22 \
     clang-format-22 \
     clang-tidy-22 \
     clangd-22 \
     lld-22 \
-    llvm-22 \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --install /usr/bin/clang clang /usr/bin/clang-22 100 \
     && update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-22 100 \
@@ -53,10 +49,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-22 100 \
     && update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-22 100 \
     && update-alternatives --install /usr/bin/lld lld /usr/bin/lld-22 100 \
-    && update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-22 100 \
-    && update-alternatives --install /usr/bin/llvm-profdata llvm-profdata /usr/bin/llvm-profdata-22 100 \
     && update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-22 100 \
-    && update-alternatives --install /usr/bin/clang-tidy-diff clang-tidy-diff /usr/bin/clang-tidy-diff-22.py 100
+    && update-alternatives --install /usr/bin/clang-tidy-diff clang-tidy-diff /usr/bin/clang-tidy-diff-22.py 100 \
+    && update-alternatives --install /usr/bin/llvm-profdata llvm-profdata /usr/bin/llvm-profdata-22 100 \
+    && update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-22 100
 
 # Emulator runtime dependencies.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -67,6 +63,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcursor1 \
     libxi6 \
     libxtst6 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
+    usbutils \
     && rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
@@ -94,7 +95,7 @@ RUN mkdir -p /opt/android/sdk/cmdline-tools/latest \
 
 # Create a default AVD for emulator usage inside the container.
 RUN $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
-    -n awen_avd \
+    -n pixel_avd \
     -k "system-images;android-36.1;google_apis;x86_64" \
     --device "pixel_6" \
     --force
@@ -106,20 +107,29 @@ RUN mkdir -p /opt/android/ndk/android-ndk-${NDK_VERSION} \
     && unzip -q /tmp/ndk.zip -d /opt/android/ndk \
     && rm /tmp/ndk.zip
 
+# Gradle (latest from https://gradle.org/releases/).
+ARG GRADLE_VERSION=9.4.1
+RUN curl -fsSLo /tmp/gradle.zip "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
+    && unzip -q /tmp/gradle.zip -d /opt \
+    && ln -sf /opt/gradle-${GRADLE_VERSION}/bin/gradle /usr/local/bin/gradle \
+    && rm /tmp/gradle.zip
+
 ENV ANDROID_NDK_HOME=/opt/android/ndk/android-ndk-${NDK_VERSION}
 
-# Emscripten SDK for wasm toolchains.
-ARG EMSDK_VERSION=latest
-RUN git clone https://github.com/emscripten-core/emsdk.git /opt/emsdk \
-    && /opt/emsdk/emsdk install ${EMSDK_VERSION} \
-    && /opt/emsdk/emsdk activate ${EMSDK_VERSION} \
-    && nodeBin="$(find /opt/emsdk/node -type f -path '*/bin/node' | head -n 1)" \
-    && test -n "${nodeBin}" \
-    && ln -sf "${nodeBin}" /usr/local/bin/node
+ENV PATH=${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}:${PATH}
 
-ENV EMSDK=/opt/emsdk
-ENV EMSCRIPTEN_ROOT=/opt/emsdk/upstream/emscripten
-ENV PATH=${EMSDK}:${EMSCRIPTEN_ROOT}:${ANDROID_HOME}/emulator:${ANDROID_HOME}/platform-tools:${ANDROID_NDK_HOME}:${PATH}
+# Zig (kept in sync with the .zigversion file at the repo root).
+ARG ZIG_VERSION=0.17.0-dev.1275+59a628c6d
+RUN curl -fsSLo /tmp/zig.tar.xz "https://ziglang.org/builds/zig-x86_64-linux-${ZIG_VERSION}.tar.xz" \
+    && mkdir -p /opt/zig \
+    && tar -xJf /tmp/zig.tar.xz -C /opt/zig --strip-components=1 \
+    && ln -sf /opt/zig/zig /usr/local/bin/zig \
+    && rm /tmp/zig.tar.xz
+
+# Raylib
+RUN apt-get update && apt-get install -y \
+    libxinerama-dev libxcursor-dev \
+    xorg-dev libglu1-mesa-dev pkg-config
 
 # Debug keystore so Android debug builds work without extra setup.
 RUN mkdir -p /root/.android \
@@ -133,8 +143,8 @@ RUN mkdir -p /root/.android \
     -keysize 2048 \
     -validity 10000 \
     -dname "CN=Android Debug, O=Android, C=US"
-
-# Qt Dependencies.
+# Qt build dependencies — vcpkg builds Qt from source on linux (xcb windowing,
+# EGL, xkbcommon) and its meta-build needs the autotools family.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf \
     autoconf-archive \

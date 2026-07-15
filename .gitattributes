@@ -1,2 +1,10 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Binary image assets — never normalize line endings or diff as text.
+*.png binary
+*.ico binary
+
+# cmd.exe misparses goto/call labels in LF-only batch files.
+*.bat text eol=crlf
+*.cmd text eol=crlf
