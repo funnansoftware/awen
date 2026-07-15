@@ -2,213 +2,233 @@
 
 ![awen banner](banner.png)
 
-2D game engine developed to explore the latest C++ has to offer.
+[![windows](https://github.com/funnansoftwarellc/awen/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/windows.yml)
+[![macos](https://github.com/funnansoftwarellc/awen/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/macos.yml)
+[![linux](https://github.com/funnansoftwarellc/awen/actions/workflows/linux.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/linux.yml)
+[![coverage](https://github.com/funnansoftwarellc/awen/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/coverage.yml)
+[![web](https://github.com/funnansoftwarellc/awen/actions/workflows/web.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/web.yml)
+[![android](https://github.com/funnansoftwarellc/awen/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/android.yml)
+[![zig](https://github.com/funnansoftwarellc/awen/actions/workflows/zig.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/zig.yml)
+[![steamos](https://github.com/funnansoftwarellc/awen/actions/workflows/steamos.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/steamos.yml)
 
-## Table of Contents
+A C++23 application framework built around Qt Quick. The framework's QML
+modules live under `src/`; the apps built on it live under `app/`:
+
+- **awen** — the framework sample app.
+- **[briarthorn](app/briarthorn)** — a flight/combat roguelike (its own
+  [non-commercial license](app/briarthorn/LICENSE.md)).
+
+Qt is pulled in by the `qt` vcpkg manifest feature, which the desktop CMake
+presets enable; Qt libraries link dynamically (the custom triplets in
+[cmake/triplets](cmake/triplets) build the `qt*` ports shared and everything
+else static). Builds without the feature — the zig build, android, web — skip
+the framework, and briarthorn falls back to its raylib renderer.
+
+# Get Started
+
+Pick your platform below. Each builds two ways — with **Zig** or with **CMake &
+Ninja**:
 
 - [Prerequisites](#prerequisites)
-- [Cloning](#cloning)
-- [Building](#building)
-  - [macOS](#macos)
-  - [Linux](#linux)
-  - [Windows](#windows)
-  - [Android](#android)
-  - [WebAssembly](#webassembly)
+- [Platforms](#platforms)
+  - [windows](#windows)
+  - [linux](#linux)
+  - [mac](#macos)
+  - [web](#web)
+  - [steamos](#steamos)
+  - [android](#android)
+- [License](#license)
 
----
+# Prerequisites
 
-## Prerequisites
-
-### All Platforms
-
-- [Git](https://git-scm.com/)
-- [CMake](https://cmake.org/) 3.25 or later
-- [Ninja](https://ninja-build.org/)
-- [vcpkg](https://vcpkg.io/) — must be cloned into the `vcpkg/` directory at the project root (see [Cloning](#cloning))
-
-### macOS
-
-- macOS 14 (Sonoma) or later, Apple Silicon (arm64)
-- [Homebrew](https://brew.sh/)
-- LLVM 21 via Homebrew:
-  ```sh
-  brew install llvm@21
-  ```
-  After installing, add LLVM to your `PATH`:
-  ```sh
-  echo 'export PATH="/opt/homebrew/opt/llvm@21/bin:$PATH"' >> ~/.zprofile
-  source ~/.zprofile
-  ```
-
-### Linux
-
-- Ubuntu 25.10 (or compatible) — x86-64
-- GCC (latest available) **or** Clang (latest via [apt.llvm.org](https://apt.llvm.org/))
-- The provided [Dev Container](.devcontainer/Dockerfile) sets up a fully configured environment with native Linux, Android, and WebAssembly toolchains. Using it is the recommended approach on Linux.
-
-  To build without the Dev Container, install the required tools manually:
-  ```sh
-  sudo apt-get update
-  sudo apt-get install -y cmake ninja-build git pkg-config python3 zip unzip tar
-  ```
-  Then install GCC or Clang following the instructions in the [Dockerfile](.devcontainer/Dockerfile).
-
-### Windows
-
-- Windows 10/11 — x86-64
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) with the **Desktop development with C++** workload (provides MSVC and the Windows SDK)
-- CMake and Ninja (included with Visual Studio, or install separately)
-
----
-
-## Cloning
-
-Clone the repository and bootstrap vcpkg:
+awen vendors vcpkg and emsdk as submodules, so clone recursively:
 
 ```sh
-git clone https://github.com/funnansoftwarellc/awen.git
-cd awen
-git clone https://github.com/microsoft/vcpkg.git
+git clone --recurse-submodules https://github.com/funnansoftwarellc/awen.git
 ```
 
-Bootstrap vcpkg for your platform:
+Every build also needs [git](https://git-scm.com/) and a few system libraries:
 
-**macOS / Linux:**
-```sh
-./vcpkg/bootstrap-vcpkg.sh
-```
+| OS      | Install                                                                                |
+| ------- | -------------------------------------------------------------------------------------- |
+| Linux   | `sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config` (plus the Qt build deps in the [Dockerfile](.devcontainer/Dockerfile)) |
+| macOS   | Xcode Command Line Tools: `xcode-select --install`                                     |
+| Windows | nothing extra — the Windows SDK from Visual Studio covers it                           |
 
-**Windows (PowerShell):**
-```powershell
-.\vcpkg\bootstrap-vcpkg.bat
-```
+Then set up one toolchain — Zig, or CMake & Ninja.
 
----
+## With Zig
 
-## Building
+- [zig](https://ziglang.org/download/) — a nightly build, pinned in
+  [.zigversion](.zigversion) (currently `0.17.0-dev.1275+59a628c6d`).
+- On macOS, also `brew install pkg-config`.
 
-All build steps use CMake presets. Replace `<preset>` with the preset name appropriate for your platform and configuration (see tables below).
+The zig build skips Qt and builds briarthorn with its raylib renderer.
 
-### macOS
+## With CMake & Ninja
 
-Available presets:
+- [CMake](https://cmake.org/download/) &ge; 3.31,
+  [Ninja](https://github.com/ninja-build/ninja/releases), and a C++23 compiler:
+  Visual Studio 2022 (Windows), GCC (Linux), or Homebrew LLVM (`brew install
+llvm@21`, macOS).
+- The desktop presets build Qt from source via vcpkg on the first configure —
+  expect that one-time step to take a while.
+- **web** also needs the emscripten SDK — run `scripts/bootstrap-emsdk.sh`
+  (Linux/macOS) or `scripts\bootstrap-emsdk.bat` (Windows) once.
+- **android** also needs an [NDK](https://developer.android.com/ndk), plus an SDK
+  and JDK to package an APK.
 
-| Preset | Configuration |
-|---|---|
-| `arm64-osx-clang-debug` | Debug |
-| `arm64-osx-clang-release` | Release |
+# Platforms
 
-```sh
-# Configure
-cmake --preset arm64-osx-clang-debug
+## Windows
 
-# Build
-cmake --build --preset arm64-osx-clang-debug
+Needs [Zig](#with-zig) or [CMake & Ninja](#with-cmake--ninja).
 
-# Test
-ctest --preset arm64-osx-clang-debug
-
-# Install
-cmake --build --preset arm64-osx-clang-debug --target install
-```
-
-### Linux
-
-Available presets:
-
-| Preset | Compiler | Configuration |
-|---|---|---|
-| `x64-linux-gcc-debug` | GCC | Debug |
-| `x64-linux-gcc-release` | GCC | Release |
-| `x64-linux-clang-debug` | Clang | Debug |
-| `x64-linux-clang-release` | Clang | Release |
+### With Zig
 
 ```sh
-# Configure
-cmake --preset x64-linux-clang-debug
-
-# Build
-cmake --build --preset x64-linux-clang-debug
-
-# Test
-ctest --preset x64-linux-clang-debug
-
-# Install
-cmake --build --preset x64-linux-clang-debug --target install
+zig build run
 ```
 
-### Windows
+### With CMake & Ninja
 
-Available presets:
-
-| Preset | Configuration |
-|---|---|
-| `x64-windows-msvc-debug` | Debug |
-| `x64-windows-msvc-release` | Release |
-
-Run the following from a **Developer Command Prompt for VS 2022** (or after running `vcvarsall.bat amd64`):
-
-```bat
-rem Configure
-cmake --preset x64-windows-msvc-release
-
-rem Build
-cmake --build --preset x64-windows-msvc-release
-
-rem Test
-ctest --preset x64-windows-msvc-release
-
-rem Install
-cmake --build --preset x64-windows-msvc-release --target install
-```
-
-The installed binary is written to `build/<preset>/installed/bin/`.
-
-### Android
-
-Android builds target **arm64-v8a** and cross-compile from Linux using the [Android NDK](https://developer.android.com/ndk). The provided [Dev Container](.devcontainer/Dockerfile) sets up the required environment (Ubuntu 25.10 with Clang, NDK r29, and Android SDK) and is the recommended approach.
-
-Available presets:
-
-| Preset | Configuration |
-|---|---|
-| `x64-linux-clang-arm64-android-debug` | Debug |
-| `x64-linux-clang-arm64-android-release` | Release |
-| `x64-windows-clang-arm64-android-debug` | Debug (Windows host) |
-| `x64-windows-clang-arm64-android-release` | Release (Windows host) |
+Run from a Visual Studio 2022 developer shell:
 
 ```sh
-# Configure
-cmake --preset x64-linux-clang-arm64-android-debug
-
-# Build
-cmake --build --preset x64-linux-clang-arm64-android-debug
-
-# Install
-cmake --build --preset x64-linux-clang-arm64-android-debug --target install
+cmake --preset windows                            # configure (release)
+cmake --build --preset windows                    # build
+cmake --build --preset windows --target install   # install
+build/windows/installed/bin/briarthorn.exe        # run the game
+build/windows/installed/bin/awen.exe              # run the framework sample
 ```
 
-### WebAssembly
+## Linux
 
-WebAssembly builds use [Emscripten](https://emscripten.org/) and cross-compile from Linux. The provided [Dev Container](.devcontainer/Dockerfile) includes all required tooling and is the recommended approach.
+Needs [Zig](#with-zig) or [CMake & Ninja](#with-cmake--ninja).
 
-Available presets:
-
-| Preset | Configuration |
-|---|---|
-| `wasm32-emscripten-debug` | Debug |
-| `wasm32-emscripten-release` | Release |
+### With Zig
 
 ```sh
-# Configure
-cmake --preset wasm32-emscripten-debug
-
-# Build
-cmake --build --preset wasm32-emscripten-debug
-
-# Install
-cmake --build --preset wasm32-emscripten-debug --target install
+zig build run
 ```
 
-The installed output is written to `build/<preset>/installed/`.
+### With CMake & Ninja
 
+```sh
+cmake --preset linux                            # configure (release)
+cmake --build --preset linux                    # build
+cmake --build --preset linux --target install   # install
+./build/linux/installed/bin/briarthorn          # run
+```
+
+## MacOS
+
+Needs [Zig](#with-zig) or [CMake & Ninja](#with-cmake--ninja).
+
+### With Zig
+
+```sh
+zig build run
+```
+
+### With CMake & Ninja
+
+```sh
+cmake --preset macos                            # configure (release)
+cmake --build --preset macos                    # build
+cmake --build --preset macos --target install   # install
+./build/macos/installed/bin/briarthorn          # run
+```
+
+## Web
+
+Needs [Zig](#with-zig) or [CMake & Ninja](#with-cmake--ninja). Either way, serve
+the output over http and open the `.html`.
+
+### With Zig
+
+Cross-compiles from any host:
+
+```sh
+zig build -Dtarget=wasm32-emscripten
+python3 -m http.server -d build/wasm32-emscripten-releasefast/installed/web
+# open http://localhost:8000/briarthorn.html
+```
+
+### With CMake & Ninja
+
+Build the `web-release` preset (there's no bare `web` shorthand):
+
+```sh
+cmake --preset web-release
+cmake --build --preset web-release
+cmake --build --preset web-release --target install
+python3 -m http.server -d build/web-release/installed/web
+# open http://localhost:8000/briarthorn.html
+```
+
+## SteamOS
+
+Needs [Zig](#with-zig) or [CMake & Ninja](#with-cmake--ninja), built inside the
+steamos devcontainer (**Dev Containers: Reopen in Container → awen-steamos**).
+
+SteamOS is x86_64 Linux, so a normal build produces a Steam Deck binary — but one
+built in the main devcontainer fails on the Deck with `GLIBC_x.xx not found`,
+because its glibc is newer than the Deck's. The
+[`steamos` devcontainer](.devcontainer/steamos) builds against the older Steam
+Linux Runtime "sniper" glibc (2.31), which the Deck can run.
+
+### With Zig
+
+```sh
+zig build        # release -> build/x86_64-linux-gnu-releasefast/installed
+```
+
+Copy `build/x86_64-linux-gnu-releasefast/installed/` to the Deck and run
+`bin/briarthorn` from Desktop Mode, or add it to Steam as a non-Steam game.
+
+### With CMake & Ninja
+
+The `linux-zig-release` preset drives the same toolchain:
+
+```sh
+cmake --preset linux-zig-release
+cmake --build --preset linux-zig-release
+cmake --build --preset linux-zig-release --target install
+```
+
+## Android
+
+Needs [Zig](#with-zig) or [CMake & Ninja](#with-cmake--ninja).
+
+### With Zig
+
+Cross-compiles from any host:
+
+```sh
+zig build -Dtarget=aarch64-linux-android
+adb install build/aarch64-linux-android-releasefast/installed/apk/app-release.apk
+```
+
+Pass `-Dandroid-api=<level>` for a specific API level (default 35).
+
+### With CMake & Ninja
+
+These presets need a Linux host (build from another host with [Zig](#with-zig-6)
+above). Build `android-release`, then package an APK with the `apk` target:
+
+```sh
+cmake --preset android-release                        # configure
+cmake --build --preset android-release                # build
+cmake --build --preset android-release --target apk   # package the APK
+adb install build/android-release/outputs/apk/release/app-release.apk
+```
+
+Gradle finds your SDK via `android/local.properties` — create it with
+`sdk.dir=/path/to/android-sdk`.
+
+# License
+
+MIT — see [LICENSE](LICENSE). The briarthorn app is the exception: it is
+licensed for non-commercial use only — see
+[app/briarthorn/LICENSE.md](app/briarthorn/LICENSE.md).

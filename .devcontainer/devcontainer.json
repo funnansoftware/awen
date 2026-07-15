@@ -9,6 +9,14 @@
         "--volume",
         "/dev/bus/usb:/dev/bus/usb"
     ],
+    // Keep Zig's build cache off the 9p/drvfs bind-mount (D:\ -> /workspaces/awen).
+    // 9p doesn't reliably support the concurrent directory renames Zig uses to commit
+    // cache entries, causing intermittent "failed to rename ... AccessDenied" errors.
+    // These paths live on the container's overlay fs and persist across restarts.
+    "containerEnv": {
+        "ZIG_LOCAL_CACHE_DIR": "/root/.cache/zig-local/awen",
+        "ZIG_GLOBAL_CACHE_DIR": "/root/.cache/zig-global"
+    },
     "customizations": {
         "vscode": {
             "extensions": [
@@ -18,6 +26,7 @@
                 "github.vscode-github-actions",
                 "mhutchie.git-graph",
                 "ms-vscode.live-server",
+                "ziglang.vscode-zig",
                 "tonybaloney.vscode-pets",
                 "theqtcompany.qt-qml"
             ]

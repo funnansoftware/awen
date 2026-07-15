@@ -48,3 +48,18 @@ build/
 
 # Qt
 .qmlls.ini
+
+# Build directory variants
+build-*/
+
+# vcpkg manifest installs
+vcpkg_installed/
+
+# emscripten per-host toolchain installs (see scripts/bootstrap-emsdk.sh)
+.emsdk/
+
+# test output & cache
+Testing/
+.cache/
+.zig-cache/
+zig-out/

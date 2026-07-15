@@ -1,0 +1,12 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "config-sharedlib",
+            "hidden": true,
+            "cacheVariables": {
+                "BUILD_SHARED_LIBS": false
+            }
+        }
+    ]
+}

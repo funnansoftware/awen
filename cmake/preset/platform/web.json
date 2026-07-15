@@ -1,0 +1,62 @@
+{
+    "version": 7,
+    "include": [
+        "../compiler/emcc.json",
+        "../config/binaryDir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/web.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "web-debug",
+            "inherits": [
+                "config-binaryDir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-emcc",
+                "target-web"
+            ]
+        },
+        {
+            "name": "web-release",
+            "inherits": [
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-emcc",
+                "target-web"
+            ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "web-debug",
+            "configurePreset": "web-debug"
+        },
+        {
+            "name": "web-release",
+            "configurePreset": "web-release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "web-debug",
+            "configurePreset": "web-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "web-release",
+            "configurePreset": "web-release",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

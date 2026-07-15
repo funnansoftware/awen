@@ -1,14 +1,16 @@
 # Work around a vcpkg Qt6 packaging bug on x64-windows: the installed
 # Qt6CoreConfigExtras.cmake hardcodes QT6_DEBUG_POSTFIX to "" even though Qt's
 # debug DLLs are built with a "d" suffix (e.g. Qt6Quickd.dll). The empty
-# postfix causes qt6_deploy_qml_imports to pick release QML plugins for debug
-# builds, after which windeployqt.debug.bat fails trying to resolve their
-# release-named transitive dependencies in the debug bin directory.
+# postfix makes qt6_deploy_qml_imports pick release QML plugins for debug
+# builds, after which windeployqt fails resolving their release-named
+# transitive dependencies in the debug bin directory.
 #
-# Fix it at the root: rewrite the offending line in the installed config file
-# so Qt's normal deploy machinery selects debug plugins on its own. The patch
-# is idempotent (only writes when the content actually changes) and re-applies
-# automatically on every configure, so it survives `vcpkg install` overwrites.
+# Rewrite the offending line in the installed config so Qt's normal deploy
+# machinery selects debug plugins on its own. Idempotent (only writes when the
+# content actually changes) and re-applied on every configure, so it survives
+# `vcpkg install` overwrites — and no-ops entirely if a newer port fixes the
+# postfix. Observed with the qtbase 6.10 port; unverified against 6.11 — delete
+# once a Windows debug deploy succeeds without it.
 
 if(WIN32 AND CMAKE_HOST_WIN32 AND DEFINED VCPKG_INSTALLED_DIR)
     set(_qt6_core_extras

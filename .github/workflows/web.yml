@@ -1,0 +1,78 @@
+name: web
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+
+    outputs:
+      image: ${{ steps.docker-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/docker-image
+        id: docker-image
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  web-build:
+    runs-on: ubuntu-24.04
+    needs: docker
+
+    container:
+      image: ${{ needs.docker.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/get-vcpkg
+
+      # The emsdk submodule ships only the installer scripts; the toolchain
+      # (referenced by the web preset's VCPKG_CHAINLOAD_TOOLCHAIN_FILE) is
+      # bootstrapped into the git-ignored per-host prefix .emsdk/Linux. The
+      # cache key tracks the submodule's pinned release list, which determines
+      # what "latest" resolves to.
+      - name: restore-emscripten-cache
+        uses: actions/cache@v4
+        with:
+          path: .emsdk
+          key: emsdk-${{ runner.os }}-${{ hashFiles('emsdk/emscripten-releases-tags.json') }}
+
+      - name: bootstrap-emscripten
+        shell: bash
+        run: ./scripts/bootstrap-emsdk.sh
+
+      - name: cmake-configure
+        shell: bash
+        run: cmake --preset web-release
+
+      - name: cmake-build
+        shell: bash
+        run: cmake --build --preset web-release --parallel $(( $(nproc --all) + 1 ))
+
+      - name: cmake-install
+        shell: bash
+        run: cmake --build --preset web-release --target install

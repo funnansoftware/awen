@@ -1,134 +1,183 @@
 {
     "version": 7,
     "include": [
-        "../binarydir.json",
         "../compiler/clang.json",
-        "../debug.json",
         "../compiler/gcc.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
-        "../host/arm64-linux.json",
-        "../host/x64-linux.json",
-        "../target/arm64-linux.json",
-        "../target/x64-linux.json"
+        "../compiler/zig-linux.json",
+        "../config/binaryDir.json",
+        "../config/coverage.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/linux.json",
+        "../target/linux-zig.json"
     ],
     "configurePresets": [
         {
-            "name": "arm64-linux-gcc-release",
+            "name": "linux",
+            "displayName": "linux (release build, GCC)",
             "inherits": [
-                "binarydir",
-                "release",
-                "compiler-gcc",
-                "ninja",
-                "vcpkg",
-                "host-arm64-linux",
-                "target-arm64-linux"
+                "linux-gcc-release"
             ]
         },
         {
-            "name": "x64-linux-gcc-debug",
+            "name": "linux-gcc-debug",
             "inherits": [
-                "binarydir",
-                "debug",
+                "config-binaryDir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "compiler-gcc",
-                "ninja",
-                "vcpkg",
-                "host-x64-linux",
-                "target-x64-linux"
+                "target-linux"
             ]
         },
         {
-            "name": "x64-linux-gcc-release",
+            "name": "linux-gcc-release",
             "inherits": [
-                "binarydir",
-                "release",
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
                 "compiler-gcc",
-                "ninja",
-                "vcpkg",
-                "host-x64-linux",
-                "target-x64-linux"
+                "target-linux"
             ]
         },
         {
-            "name": "x64-linux-clang-debug",
+            "name": "linux-clang-debug",
             "inherits": [
-                "binarydir",
-                "debug",
+                "config-binaryDir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "compiler-clang",
-                "ninja",
-                "vcpkg",
-                "host-x64-linux",
-                "target-x64-linux"
+                "target-linux"
             ]
         },
         {
-            "name": "x64-linux-clang-release",
+            "name": "linux-clang-release",
             "inherits": [
-                "binarydir",
-                "release",
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
                 "compiler-clang",
-                "ninja",
-                "vcpkg",
-                "host-x64-linux",
-                "target-x64-linux"
+                "target-linux"
+            ]
+        },
+        {
+            "name": "linux-clang-coverage",
+            "inherits": [
+                "config-binaryDir",
+                "config-coverage",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-clang",
+                "target-linux"
+            ]
+        },
+        {
+            "name": "linux-zig-debug",
+            "inherits": [
+                "config-binaryDir",
+                "config-debug",
+                "config-vcpkg",
+                "compiler-zig-linux",
+                "target-linux-zig"
+            ]
+        },
+        {
+            "name": "linux-zig-release",
+            "inherits": [
+                "config-binaryDir",
+                "config-release",
+                "config-vcpkg",
+                "compiler-zig-linux",
+                "target-linux-zig"
             ]
         }
     ],
     "buildPresets": [
         {
-            "name": "arm64-linux-gcc-release",
-            "configurePreset": "arm64-linux-gcc-release"
+            "name": "linux",
+            "configurePreset": "linux"
         },
         {
-            "name": "x64-linux-gcc-debug",
-            "configurePreset": "x64-linux-gcc-debug"
+            "name": "linux-gcc-debug",
+            "configurePreset": "linux-gcc-debug"
         },
         {
-            "name": "x64-linux-gcc-release",
-            "configurePreset": "x64-linux-gcc-release"
+            "name": "linux-gcc-release",
+            "configurePreset": "linux-gcc-release"
         },
         {
-            "name": "x64-linux-clang-debug",
-            "configurePreset": "x64-linux-clang-debug"
+            "name": "linux-clang-debug",
+            "configurePreset": "linux-clang-debug"
         },
         {
-            "name": "x64-linux-clang-release",
-            "configurePreset": "x64-linux-clang-release"
+            "name": "linux-clang-release",
+            "configurePreset": "linux-clang-release"
+        },
+        {
+            "name": "linux-clang-coverage",
+            "configurePreset": "linux-clang-coverage"
+        },
+        {
+            "name": "linux-zig-debug",
+            "configurePreset": "linux-zig-debug"
+        },
+        {
+            "name": "linux-zig-release",
+            "configurePreset": "linux-zig-release"
         }
     ],
     "testPresets": [
         {
-            "name": "arm64-linux-gcc-release",
-            "configurePreset": "arm64-linux-gcc-release",
+            "name": "linux-gcc-debug",
+            "configurePreset": "linux-gcc-debug",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-linux-gcc-debug",
-            "configurePreset": "x64-linux-gcc-debug",
+            "name": "linux-gcc-release",
+            "configurePreset": "linux-gcc-release",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-linux-gcc-release",
-            "configurePreset": "x64-linux-gcc-release",
+            "name": "linux-clang-debug",
+            "configurePreset": "linux-clang-debug",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-linux-clang-debug",
-            "configurePreset": "x64-linux-clang-debug",
+            "name": "linux-clang-release",
+            "configurePreset": "linux-clang-release",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-linux-clang-release",
-            "configurePreset": "x64-linux-clang-release",
+            "name": "linux-clang-coverage",
+            "configurePreset": "linux-clang-coverage",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "linux-zig-debug",
+            "configurePreset": "linux-zig-debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "linux-zig-release",
+            "configurePreset": "linux-zig-release",
             "output": {
                 "outputOnFailure": true
             }

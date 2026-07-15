@@ -2,106 +2,61 @@
     "version": 7,
     "include": [
         "../compiler/android-ndk.json",
-        "../binarydir.json",
-        "../debug.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
-        "../host/x64-linux.json",
-        "../host/x64-windows.json",
-        "../target/arm64-android.json",
-        "../target/x64-android.json"
+        "../config/binaryDir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/android.json"
     ],
     "configurePresets": [
         {
-            "name": "x64-linux-clang-arm64-android-debug",
+            "name": "android-debug",
             "inherits": [
+                "config-binaryDir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
                 "compiler-android-ndk",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
-                "host-x64-linux",
-                "target-arm64-android"
+                "target-android"
             ]
         },
         {
-            "name": "x64-linux-clang-arm64-android-release",
+            "name": "android-release",
             "inherits": [
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
                 "compiler-android-ndk",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
-                "host-x64-linux",
-                "target-arm64-android"
-            ]
-        },
-        {
-            "name": "x64-windows-clang-arm64-android-debug",
-            "inherits": [
-                "compiler-android-ndk",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-arm64-android"
-            ]
-        },
-        {
-            "name": "x64-windows-clang-arm64-android-release",
-            "inherits": [
-                "compiler-android-ndk",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-arm64-android"
-            ]
-        },
-        {
-            "name": "x64-windows-clang-x64-android-debug",
-            "inherits": [
-                "compiler-android-ndk",
-                "binarydir",
-                "debug",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-x64-android"
-            ]
-        },
-        {
-            "name": "x64-windows-clang-x64-android-release",
-            "inherits": [
-                "compiler-android-ndk",
-                "binarydir",
-                "release",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-x64-android"
+                "target-android"
             ]
         }
     ],
     "buildPresets": [
         {
-            "name": "x64-linux-clang-arm64-android-debug",
-            "configurePreset": "x64-linux-clang-arm64-android-debug"
+            "name": "android-debug",
+            "configurePreset": "android-debug"
         },
         {
-            "name": "x64-linux-clang-arm64-android-release",
-            "configurePreset": "x64-linux-clang-arm64-android-release"
+            "name": "android-release",
+            "configurePreset": "android-release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "android-debug",
+            "configurePreset": "android-debug",
+            "output": {
+                "outputOnFailure": true
+            }
         },
         {
-            "name": "x64-windows-clang-arm64-android-debug",
-            "configurePreset": "x64-windows-clang-arm64-android-debug"
-        },
-        {
-            "name": "x64-windows-clang-arm64-android-release",
-            "configurePreset": "x64-windows-clang-arm64-android-release"
+            "name": "android-release",
+            "configurePreset": "android-release",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ]
 }

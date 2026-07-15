@@ -1,0 +1,75 @@
+name: coverage
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+
+    outputs:
+      image: ${{ steps.docker-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/docker-image
+        id: docker-image
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  coverage:
+    runs-on: ubuntu-24.04
+    needs: docker
+
+    container:
+      image: ${{ needs.docker.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/get-vcpkg
+
+      - name: cmake-configure
+        shell: bash
+        run: cmake --preset linux-clang-coverage
+
+      - name: cmake-build
+        shell: bash
+        run: cmake --build --preset linux-clang-coverage --parallel $(( $(nproc --all) + 1 ))
+
+      - name: cmake-test
+        shell: bash
+        run: ctest --preset linux-clang-coverage --parallel $(( $(nproc --all) + 1 ))
+
+      - name: llvm-coverage
+        shell: bash
+        run: cmake --build --preset linux-clang-coverage --target llvm-coverage
+
+      - name: upload-coverage-report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            build/linux-clang-coverage/coverage/html
+            build/linux-clang-coverage/coverage/coverage.info

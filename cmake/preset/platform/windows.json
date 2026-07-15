@@ -1,124 +1,121 @@
 {
     "version": 7,
     "include": [
-        "../binarydir.json",
-        "../debug.json",
-        "../compiler/mingw-gcc.json",
         "../compiler/msvc.json",
-        "../ninja.json",
-        "../release.json",
-        "../vcpkg.json",
-        "../host/x64-windows.json",
-        "../target/x64-windows.json",
-        "../target/x64-mingw.json",
-        "../compiler/visualstudio.json"
+        "../compiler/zig-windows.json",
+        "../config/binaryDir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/sharedlib.json",
+        "../config/vcpkg.json",
+        "../target/windows.json",
+        "../target/windows-zig.json"
     ],
     "configurePresets": [
         {
-            "name": "x64-windows-visualstudio",
+            "name": "windows",
+            "displayName": "windows (release build, MSVC)",
             "inherits": [
-                "binarydir",
-                "compiler-visualstudio",
-                "vcpkg",
-                "host-x64-windows"
+                "windows-msvc-release"
             ]
         },
         {
-            "name": "x64-windows-msvc-debug",
+            "name": "windows-msvc-debug",
             "inherits": [
-                "binarydir",
-                "debug",
                 "compiler-msvc",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-x64-windows"
+                "config-binaryDir",
+                "config-sharedlib",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "target-windows"
             ]
         },
         {
-            "name": "x64-windows-msvc-release",
+            "name": "windows-msvc-release",
             "inherits": [
-                "binarydir",
-                "release",
                 "compiler-msvc",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-x64-windows"
+                "config-binaryDir",
+                "config-sharedlib",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
+                "target-windows"
             ]
         },
         {
-            "name": "x64-windows-mingw-gcc-debug",
+            "name": "windows-zig-debug",
             "inherits": [
-                "binarydir",
-                "debug",
-                "compiler-mingw-gcc",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-x64-mingw"
+                "compiler-zig-windows",
+                "config-binaryDir",
+                "config-sharedlib",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "target-windows-zig"
             ]
         },
         {
-            "name": "x64-windows-mingw-gcc-release",
+            "name": "windows-zig-release",
             "inherits": [
-                "binarydir",
-                "release",
-                "compiler-mingw-gcc",
-                "ninja",
-                "vcpkg",
-                "host-x64-windows",
-                "target-x64-mingw"
+                "compiler-zig-windows",
+                "config-binaryDir",
+                "config-sharedlib",
+                "config-ninja",
+                "config-release",
+                "config-vcpkg",
+                "target-windows-zig"
             ]
         }
     ],
     "buildPresets": [
         {
-            "name": "x64-windows-visualstudio",
-            "configurePreset": "x64-windows-visualstudio"
+            "name": "windows",
+            "configurePreset": "windows"
         },
         {
-            "name": "x64-windows-msvc-debug",
-            "configurePreset": "x64-windows-msvc-debug"
+            "name": "windows-msvc-debug",
+            "configurePreset": "windows-msvc-debug"
         },
         {
-            "name": "x64-windows-msvc-release",
-            "configurePreset": "x64-windows-msvc-release"
+            "name": "windows-msvc-release",
+            "configurePreset": "windows-msvc-release"
         },
         {
-            "name": "x64-windows-mingw-gcc-debug",
-            "configurePreset": "x64-windows-mingw-gcc-debug"
+            "name": "windows-zig-debug",
+            "configurePreset": "windows-zig-debug"
         },
         {
-            "name": "x64-windows-mingw-gcc-release",
-            "configurePreset": "x64-windows-mingw-gcc-release"
+            "name": "windows-zig-release",
+            "configurePreset": "windows-zig-release"
         }
     ],
     "testPresets": [
         {
-            "name": "x64-windows-msvc-debug",
-            "configurePreset": "x64-windows-msvc-debug",
+            "name": "windows-msvc-debug",
+            "configurePreset": "windows-msvc-debug",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-windows-msvc-release",
-            "configurePreset": "x64-windows-msvc-release",
+            "name": "windows-msvc-release",
+            "configurePreset": "windows-msvc-release",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-windows-mingw-gcc-debug",
-            "configurePreset": "x64-windows-mingw-gcc-debug",
+            "name": "windows-zig-debug",
+            "configurePreset": "windows-zig-debug",
             "output": {
                 "outputOnFailure": true
             }
         },
         {
-            "name": "x64-windows-mingw-gcc-release",
-            "configurePreset": "x64-windows-mingw-gcc-release",
+            "name": "windows-zig-release",
+            "configurePreset": "windows-zig-release",
             "output": {
                 "outputOnFailure": true
             }

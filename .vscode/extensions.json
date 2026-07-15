@@ -1,6 +1,9 @@
 {
-        "recommendations": [
-                "github.vscode-github-actions",
-                "theqtcompany.qt-qml"
-        ]
+    "recommendations": [
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools",
+        "github.vscode-github-actions",
+        "theqtcompany.qt-qml",
+        "ziglang.vscode-zig"
+    ]
 }
