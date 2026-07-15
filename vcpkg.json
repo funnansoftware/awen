@@ -2,7 +2,7 @@
     "name": "awen",
     "version-string": "2026.7.15",
     "description": "A Qt Quick application framework and the apps built on it.",
-    "homepage": "https://github.com/funnansoftwarellc/awen",
+    "homepage": "https://github.com/funnansoftware/awen",
     "dependencies": [
         "raylib",
         {
