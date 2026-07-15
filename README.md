@@ -2,14 +2,14 @@
 
 ![awen banner](banner.png)
 
-[![windows](https://github.com/funnansoftwarellc/awen/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/windows.yml)
-[![macos](https://github.com/funnansoftwarellc/awen/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/macos.yml)
-[![linux](https://github.com/funnansoftwarellc/awen/actions/workflows/linux.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/linux.yml)
-[![coverage](https://github.com/funnansoftwarellc/awen/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/coverage.yml)
-[![web](https://github.com/funnansoftwarellc/awen/actions/workflows/web.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/web.yml)
-[![android](https://github.com/funnansoftwarellc/awen/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/android.yml)
-[![zig](https://github.com/funnansoftwarellc/awen/actions/workflows/zig.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/zig.yml)
-[![steamos](https://github.com/funnansoftwarellc/awen/actions/workflows/steamos.yml/badge.svg?branch=main)](https://github.com/funnansoftwarellc/awen/actions/workflows/steamos.yml)
+[![windows](https://github.com/funnansoftware/awen/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/windows.yml)
+[![macos](https://github.com/funnansoftware/awen/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/macos.yml)
+[![linux](https://github.com/funnansoftware/awen/actions/workflows/linux.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/linux.yml)
+[![coverage](https://github.com/funnansoftware/awen/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/coverage.yml)
+[![web](https://github.com/funnansoftware/awen/actions/workflows/web.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/web.yml)
+[![android](https://github.com/funnansoftware/awen/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/android.yml)
+[![zig](https://github.com/funnansoftware/awen/actions/workflows/zig.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/zig.yml)
+[![steamos](https://github.com/funnansoftware/awen/actions/workflows/steamos.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/steamos.yml)
 
 A C++23 application framework built around Qt Quick. The framework's QML
 modules live under `src/`; the apps built on it live under `app/`:
@@ -44,7 +44,7 @@ Ninja**:
 awen vendors vcpkg and emsdk as submodules, so clone recursively:
 
 ```sh
-git clone --recurse-submodules https://github.com/funnansoftwarellc/awen.git
+git clone --recurse-submodules https://github.com/funnansoftware/awen.git
 ```
 
 Every build also needs [git](https://git-scm.com/) and a few system libraries:
