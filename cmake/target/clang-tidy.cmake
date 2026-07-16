@@ -11,7 +11,7 @@ if(CLANG_TIDY)
     endif()
 
     add_custom_target(clang-tidy
-        COMMAND run-clang-tidy -p ${CMAKE_BINARY_DIR} -j ${NPROC} -source-filter=${CLANG_TIDY_SOURCE_FILTER} -exclude-header-filter=".*/build/.*"
+        COMMAND run-clang-tidy -p ${CMAKE_BINARY_DIR} -j ${NPROC} "-source-filter=${CLANG_TIDY_SOURCE_FILTER}" "-exclude-header-filter=.*/build/.*"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Running clang-tidy on all files"
         VERBATIM
@@ -24,7 +24,7 @@ if(CLANG_TIDY)
     if(CLANG_TIDY_DIFF)
         add_custom_target(clang-tidy-diff
             COMMAND git config --global --add safe.directory "${CMAKE_SOURCE_DIR}" || true
-            COMMAND git diff origin/main | clang-tidy-diff -p1 -path ${CMAKE_BINARY_DIR} -j ${NPROC} -header-filter=".*src/(?!.*test/).*"
+            COMMAND git diff origin/main | clang-tidy-diff -p1 -path ${CMAKE_BINARY_DIR} -j ${NPROC} "-header-filter=.*src/(?!.*test/).*"
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             COMMENT "Running clang-tidy on files changed from main"
             VERBATIM
