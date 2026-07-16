@@ -11,10 +11,13 @@
         },
         "qtdeclarative",
         {
-            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui).",
+            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui). concurrent (pulling thread + future) is kept explicitly: host qtdeclarative only builds its qmlls MODULE when QT_FEATURE_thread is on, but still builds the qmlls TOOL that links it unconditionally, so without thread the host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found'). The desktop presets mask this because host == target there merges gui (which pulls thread) into this same qtbase; the wasm cross-build is the first host-only qtbase, where nothing else re-adds it.",
             "name": "qtbase",
             "host": true,
-            "default-features": false
+            "default-features": false,
+            "features": [
+                "concurrent"
+            ]
         },
         {
             "$comment": "Target Qt trimmed to what Qt Quick rendering needs on each platform's default backend: OpenGL on desktop, GLES2 in the browser, xcb windowing + fontconfig font discovery on linux, freetype on wasm (no system fonts in the browser sandbox). qtdeclarative itself re-adds network and testlib.",
