@@ -70,6 +70,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxkbcommon-x11-dev libegl1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Modern Autoconf. vcpkg's gperf port (a fontconfig build tool) autoreconfs a
+# configure.ac that requires Autoconf >= 2.70; Debian 11 ships 2.69 with no
+# backport, so build the upstream release into /usr/local, which shadows the
+# apt autoconf on PATH. automake/libtool stay the apt versions — vcpkg vendors
+# its own automake (vcpkg-make port) and only autoconf is too old.
+ARG AUTOCONF_VERSION=2.72
+RUN curl -fsSLo /tmp/autoconf.tar.xz \
+    "https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.xz" \
+    && mkdir -p /tmp/autoconf \
+    && tar -xJf /tmp/autoconf.tar.xz -C /tmp/autoconf --strip-components=1 \
+    && cd /tmp/autoconf \
+    && ./configure --prefix=/usr/local \
+    && make \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/autoconf /tmp/autoconf.tar.xz
+
 # Modern CMake. The presets use schema "version": 7 and CMakeLists requires
 # CMake >= 3.31; Debian 11 ships 3.18 and Kitware's apt repo is Ubuntu-only, so
 # install the official upstream binary release directly.
