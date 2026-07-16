@@ -17,7 +17,9 @@ modules live under `src/`; the apps built on it live under `app/`:
 Qt Quick is the sole rendering backend. vcpkg builds Qt from source on the first
 configure; the Qt libraries link dynamically while everything else links
 statically — the custom triplets in [cmake/triplets](cmake/triplets) draw that
-line.
+line. Dependencies build in release only (debug app builds link the release
+libraries), except on the windows debug preset, where MSVC requires debug
+dependencies and the `x64-windows` triplet keeps both configurations.
 
 # Get Started
 
