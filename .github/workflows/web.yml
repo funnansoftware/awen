@@ -1,0 +1,100 @@
+name: web
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+
+    outputs:
+      image: ${{ steps.docker-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/docker-image
+        id: docker-image
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  web-build:
+    runs-on: ubuntu-24.04
+    needs: docker
+
+    container:
+      image: ${{ needs.docker.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/get-vcpkg
+
+      # The emsdk submodule ships only the installer scripts; the toolchain
+      # (referenced by the web preset's VCPKG_CHAINLOAD_TOOLCHAIN_FILE) is
+      # bootstrapped into the git-ignored per-host prefix .emsdk/Linux. The key
+      # tracks .emscripten-version, which is the version actually installed —
+      # Qt demands one specific emscripten release, so a bump must miss the
+      # cache rather than reuse the previous toolchain.
+      - name: restore-emscripten-cache
+        uses: actions/cache@v4
+        with:
+          path: .emsdk
+          key: emsdk-${{ runner.os }}-${{ hashFiles('.emscripten-version') }}
+
+      - name: bootstrap-emscripten
+        shell: bash
+        run: ./scripts/bootstrap-emsdk.sh
+
+      - name: cmake-configure
+        shell: bash
+        run: cmake --preset web-release
+
+      - name: cmake-build
+        shell: bash
+        run: cmake --build --preset web-release --parallel $(( $(nproc --all) + 1 ))
+
+      - name: cmake-install
+        shell: bash
+        run: cmake --build --preset web-release --target install
+
+      # The point of the wasm build is a page that actually loads, so assert the
+      # bundle Qt generated is complete rather than trusting a green link step.
+      - name: verify-bundle
+        shell: bash
+        run: |
+          out=build/web-release/installed/web
+          for f in briarthorn.html briarthorn.js briarthorn.wasm awen.html awen.js awen.wasm; do
+            if [ ! -s "$out/$f" ]; then
+              echo "::error::missing or empty $out/$f"
+              ls -la "$out" || true
+              exit 1
+            fi
+            echo "ok: $f ($(stat -c%s "$out/$f") bytes)"
+          done
+
+      - name: upload-web-build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web-release/installed/web
