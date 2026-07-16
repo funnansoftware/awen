@@ -1,7 +1,7 @@
 {
     "version": 7,
     "include": [
-        "../compiler/gcc.json",
+        "../compiler/gcc-14.json",
         "../config/binaryDir.json",
         "../config/ninja.json",
         "../config/release.json",
@@ -17,13 +17,9 @@
                 "config-release",
                 "config-ninja",
                 "config-vcpkg",
-                "compiler-gcc",
+                "compiler-gcc-14",
                 "target-linux"
-            ],
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-14",
-                "CMAKE_CXX_COMPILER": "g++-14"
-            }
+            ]
         }
     ],
     "buildPresets": [
