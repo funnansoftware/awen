@@ -11,12 +11,13 @@
         },
         "qtdeclarative",
         {
-            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui). concurrent (pulling thread + future) is kept explicitly: host qtdeclarative only builds its qmlls MODULE when QT_FEATURE_thread is on, but still builds the qmlls TOOL that links it unconditionally, so without thread the host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found'). The desktop presets mask this because host == target there merges gui (which pulls thread) into this same qtbase; the wasm cross-build is the first host-only qtbase, where nothing else re-adds it.",
+            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui). thread + concurrent are kept explicitly: host qtdeclarative only builds its qmlls MODULE when QT_FEATURE_thread is on, but still builds the qmlls TOOL that links it unconditionally, so without thread the host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found'). The port forces FEATURE_thread=OFF for any feature it does not list, so thread must be named directly; concurrent (which pulls future) matches what QmlLSPrivate actually uses. The desktop presets mask this because host == target there merges the target features (which pull thread) into this same qtbase; the wasm cross-build is the first host-only qtbase, where nothing else re-adds it.",
             "name": "qtbase",
             "host": true,
             "default-features": false,
             "features": [
-                "concurrent"
+                "concurrent",
+                "thread"
             ]
         },
         {
