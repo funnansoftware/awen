@@ -30,11 +30,21 @@ runs:
       shell: bash
       run: mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
 
+    # The key carries the workflow name because actions/cache only SAVES on a
+    # primary-key miss: with one key shared across the linux, coverage, and web
+    # workflows, whichever saved first pinned the cache, every other workflow
+    # "hit" a cache missing its own packages, and — never saving — rebuilt them
+    # from source on every run (web rebuilt Qt-for-wasm each time, ~2h). The
+    # triplet files are hashed because their content is part of every package's
+    # ABI hash: a triplet edit must rotate the key, or the rebuilt packages are
+    # again never saved. Cross-workflow restore-keys still share what they can —
+    # vcpkg's cache is content-addressed, so extra entries are ignored.
     - name: Restore vcpkg binary cache
       id: restore-cache
       uses: actions/cache@v4
       with:
         path: ${{ inputs.cache-path }}
-        key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+        key: vcpkg-${{ runner.os }}-${{ github.workflow }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json', 'cmake/triplets/**') }}
         restore-keys: |
+          vcpkg-${{ runner.os }}-${{ github.workflow }}-
           vcpkg-${{ runner.os }}-

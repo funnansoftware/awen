@@ -12,7 +12,8 @@ Qt Quick is the sole rendering backend, on windows, linux and macos.
   rest of the repo is MIT). Its layers: `src/game` (renderer-free simulation),
   `src/quick` (Qt Quick edge; defines the `briarthorn` executable).
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
-  (qt ports dynamic, everything else static).
+  (qt ports dynamic, everything else static; dependencies release-only, except
+  the dual-config `x64-windows` triplet the windows debug preset needs).
 
 ## Build & test (Windows / MSVC)
 
