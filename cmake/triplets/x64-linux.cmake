@@ -10,3 +10,9 @@ if(PORT MATCHES "^qt")
 endif()
 
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
+
+# Dependencies build in release only. Unlike MSVC, this ABI has no
+# debug/release split (no _ITERATOR_DEBUG_LEVEL, no debug CRT), so the debug
+# and coverage presets link these release libraries fine — their own code
+# still compiles -O0/-g. Halves the Qt build time and the binary cache.
+set(VCPKG_BUILD_TYPE release)

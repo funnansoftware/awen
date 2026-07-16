@@ -39,7 +39,7 @@
                 "config-ninja",
                 "config-release",
                 "config-vcpkg",
-                "target-windows"
+                "target-windows-release"
             ]
         }
     ],

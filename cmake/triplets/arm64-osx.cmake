@@ -11,3 +11,7 @@ endif()
 
 set(VCPKG_CMAKE_SYSTEM_NAME Darwin)
 set(VCPKG_OSX_ARCHITECTURES arm64)
+
+# Dependencies build in release only — same reasoning as x64-linux.cmake: this
+# ABI has no debug/release split, so debug apps link release libraries fine.
+set(VCPKG_BUILD_TYPE release)
