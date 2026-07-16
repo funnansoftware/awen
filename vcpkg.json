@@ -24,10 +24,11 @@
                 "gui",
                 "png",
                 {
-                    "name": "opengl",
-                    "platform": "!emscripten"
+                    "$comment": "Every platform, wasm included: the port maps this to Qt's umbrella FEATURE_opengl, which is what compiles QPlatformOpenGLContext. gles2 only sets FEATURE_opengles2 and INPUT_opengl='es2' (it selects the backend, it does not enable OpenGL), so dropping opengl here builds a Qt whose own wasm platform plugin fails to compile against the missing QPlatformOpenGLContext.",
+                    "name": "opengl"
                 },
                 {
+                    "$comment": "Selects the ES/WebGL backend that the browser provides, in place of desktop GL.",
                     "name": "gles2",
                     "platform": "emscripten"
                 },
