@@ -3,15 +3,13 @@
     "include": [
         "../compiler/clang.json",
         "../compiler/gcc.json",
-        "../compiler/zig-linux.json",
         "../config/binaryDir.json",
         "../config/coverage.json",
         "../config/debug.json",
         "../config/ninja.json",
         "../config/release.json",
         "../config/vcpkg.json",
-        "../target/linux.json",
-        "../target/linux-zig.json"
+        "../target/linux.json"
     ],
     "configurePresets": [
         {
@@ -76,26 +74,6 @@
                 "compiler-clang",
                 "target-linux"
             ]
-        },
-        {
-            "name": "linux-zig-debug",
-            "inherits": [
-                "config-binaryDir",
-                "config-debug",
-                "config-vcpkg",
-                "compiler-zig-linux",
-                "target-linux-zig"
-            ]
-        },
-        {
-            "name": "linux-zig-release",
-            "inherits": [
-                "config-binaryDir",
-                "config-release",
-                "config-vcpkg",
-                "compiler-zig-linux",
-                "target-linux-zig"
-            ]
         }
     ],
     "buildPresets": [
@@ -122,14 +100,6 @@
         {
             "name": "linux-clang-coverage",
             "configurePreset": "linux-clang-coverage"
-        },
-        {
-            "name": "linux-zig-debug",
-            "configurePreset": "linux-zig-debug"
-        },
-        {
-            "name": "linux-zig-release",
-            "configurePreset": "linux-zig-release"
         }
     ],
     "testPresets": [
@@ -164,20 +134,6 @@
         {
             "name": "linux-clang-coverage",
             "configurePreset": "linux-clang-coverage",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "linux-zig-debug",
-            "configurePreset": "linux-zig-debug",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "linux-zig-release",
-            "configurePreset": "linux-zig-release",
             "output": {
                 "outputOnFailure": true
             }

@@ -4,78 +4,52 @@
     "description": "A Qt Quick application framework and the apps built on it.",
     "homepage": "https://github.com/funnansoftware/awen",
     "dependencies": [
-        "raylib",
+        "gtest",
+        "qtdeclarative",
         {
-            "name": "glfw3",
-            "platform": "!emscripten & !android"
+            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui).",
+            "name": "qtbase",
+            "host": true,
+            "default-features": false
         },
         {
-            "name": "gtest",
-            "platform": "!emscripten & !android"
-        }
-    ],
-    "features": {
-        "qt": {
-            "description": "Qt Quick rendering (the CMake desktop presets enable this; the zig build installs the manifest without features and keeps the raylib renderer)",
-            "dependencies": [
-                "qtdeclarative",
+            "$comment": "Target Qt trimmed to what Qt Quick rendering needs: OpenGL on every desktop backend, xcb windowing + fontconfig font discovery on linux. qtdeclarative itself re-adds network and testlib.",
+            "name": "qtbase",
+            "default-features": false,
+            "features": [
+                "gui",
+                "opengl",
+                "png",
                 {
-                    "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui).",
-                    "name": "qtbase",
-                    "host": true,
-                    "default-features": false
+                    "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration.",
+                    "name": "dnslookup"
                 },
                 {
-                    "$comment": "Target Qt trimmed to what Qt Quick rendering needs on each platform's default backend: OpenGL on desktop, GLES2/EGL on android and wasm, xcb windowing + fontconfig font discovery on linux, freetype on wasm (no system fonts in the browser sandbox). qtdeclarative itself re-adds network and testlib.",
-                    "name": "qtbase",
-                    "default-features": false,
-                    "features": [
-                        "gui",
-                        "png",
-                        {
-                            "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration.",
-                            "name": "dnslookup"
-                        },
-                        {
-                            "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it qt_generate_deploy_qml_app_script's install step fails with 'No Qt deploy tool available for this target platform'. macdeployqt is not gated, so only windows needs it.",
-                            "name": "windeployqt",
-                            "platform": "windows"
-                        },
-                        {
-                            "name": "opengl",
-                            "platform": "!android & !emscripten"
-                        },
-                        {
-                            "name": "gles2",
-                            "platform": "android | emscripten"
-                        },
-                        {
-                            "name": "egl",
-                            "platform": "linux | android"
-                        },
-                        {
-                            "name": "freetype",
-                            "platform": "emscripten"
-                        },
-                        {
-                            "name": "fontconfig",
-                            "platform": "linux"
-                        },
-                        {
-                            "name": "xcb",
-                            "platform": "linux"
-                        },
-                        {
-                            "name": "xcb-xlib",
-                            "platform": "linux"
-                        },
-                        {
-                            "name": "xrender",
-                            "platform": "linux"
-                        }
-                    ]
+                    "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it qt_generate_deploy_qml_app_script's install step fails with 'No Qt deploy tool available for this target platform'. macdeployqt is not gated, so only windows needs it.",
+                    "name": "windeployqt",
+                    "platform": "windows"
+                },
+                {
+                    "name": "egl",
+                    "platform": "linux"
+                },
+                {
+                    "name": "fontconfig",
+                    "platform": "linux"
+                },
+                {
+                    "name": "xcb",
+                    "platform": "linux"
+                },
+                {
+                    "name": "xcb-xlib",
+                    "platform": "linux"
+                },
+                {
+                    "name": "xrender",
+                    "platform": "linux"
                 }
             ]
         }
-    }
+    ]
 }
