@@ -1,0 +1,44 @@
+{
+    "version": 7,
+    "include": [
+        "../compiler/gcc.json",
+        "../config/binaryDir.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/linux.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "steamos",
+            "displayName": "steamos (Steam Deck release build, sniper gcc-14)",
+            "inherits": [
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-gcc",
+                "target-linux"
+            ],
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-14",
+                "CMAKE_CXX_COMPILER": "g++-14"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "steamos",
+            "configurePreset": "steamos"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "steamos",
+            "configurePreset": "steamos",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}

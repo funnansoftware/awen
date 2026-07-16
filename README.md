@@ -6,6 +6,7 @@
 [![macos](https://github.com/funnansoftware/awen/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/macos.yml)
 [![linux](https://github.com/funnansoftware/awen/actions/workflows/linux.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/linux.yml)
 [![coverage](https://github.com/funnansoftware/awen/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/coverage.yml)
+[![steamos](https://github.com/funnansoftware/awen/actions/workflows/steamos.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/steamos.yml)
 
 A C++23 application framework built around Qt Quick. The framework's QML
 modules live under `src/`; the apps built on it live under `app/`:

@@ -3,6 +3,7 @@
     "include": [
         "./cmake/preset/platform/linux.json",
         "./cmake/preset/platform/macos.json",
+        "./cmake/preset/platform/steamos.json",
         "./cmake/preset/platform/web.json",
         "./cmake/preset/platform/windows.json"
     ]
