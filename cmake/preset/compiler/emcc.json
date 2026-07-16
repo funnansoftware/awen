@@ -1,0 +1,20 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "compiler-emcc",
+            "hidden": true,
+            "environment": {
+                "EMSDK": "${sourceDir}/.emsdk/${hostSystemName}"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_CXX_COMPILER": "em++",
+                "CMAKE_C_COMPILER": "emcc",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Werror -pedantic",
+                "CMAKE_C_FLAGS": "-Wall -Wextra -Werror -pedantic",
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            }
+        }
+    ]
+}

@@ -26,6 +26,39 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Quick
 )
 
+if(EMSCRIPTEN)
+    # Embed ":/qt/etc/qt.conf" so QLibraryInfo skips getRelocatablePrefix() and its
+    # debug-only Q_ASSERT_X abort on this static wasm build. See the fuller note in
+    # app/briarthorn/src/quick/CMakeLists.txt. wasm-only; alias lands it at
+    # exactly :/qt/etc/qt.conf.
+    set_source_files_properties(
+        "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
+        PROPERTIES QT_RESOURCE_ALIAS qt.conf
+    )
+    qt_add_resources(${PROJECT_NAME} awen_wasm_qt_conf
+        PREFIX "/qt/etc"
+        FILES "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
+    )
+
+    # Qt is linked into the .js/.wasm rather than deployed alongside, so ship the
+    # generated bundle; see app/briarthorn/src/quick/CMakeLists.txt.
+    install(FILES
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.html"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.js"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.wasm"
+        DESTINATION web
+    )
+
+    install(FILES
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/qtloader.js"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.worker.js"
+        DESTINATION web
+        OPTIONAL
+    )
+
+    return()
+endif()
+
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

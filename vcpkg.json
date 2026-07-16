@@ -4,25 +4,46 @@
     "description": "A Qt Quick application framework and the apps built on it.",
     "homepage": "https://github.com/funnansoftware/awen",
     "dependencies": [
-        "gtest",
+        {
+            "$comment": "The test binaries are built and run natively; there is no test runner on wasm.",
+            "name": "gtest",
+            "platform": "!emscripten"
+        },
         "qtdeclarative",
         {
-            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui).",
+            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui). thread + concurrent are kept explicitly: host qtdeclarative only builds its qmlls MODULE when QT_FEATURE_thread is on, but still builds the qmlls TOOL that links it unconditionally, so without thread the host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found'). The port forces FEATURE_thread=OFF for any feature it does not list, so thread must be named directly; concurrent (which pulls future) matches what QmlLSPrivate actually uses. The desktop presets mask this because host == target there merges the target features (which pull thread) into this same qtbase; the wasm cross-build is the first host-only qtbase, where nothing else re-adds it.",
             "name": "qtbase",
             "host": true,
-            "default-features": false
+            "default-features": false,
+            "features": [
+                "concurrent",
+                "thread"
+            ]
         },
         {
-            "$comment": "Target Qt trimmed to what Qt Quick rendering needs: OpenGL on every desktop backend, xcb windowing + fontconfig font discovery on linux. qtdeclarative itself re-adds network and testlib.",
+            "$comment": "Target Qt trimmed to what Qt Quick rendering needs on each platform's default backend: OpenGL on desktop, GLES2 in the browser, xcb windowing + fontconfig font discovery on linux, freetype on wasm (no system fonts in the browser sandbox). qtdeclarative itself re-adds network and testlib.",
             "name": "qtbase",
             "default-features": false,
             "features": [
                 "gui",
-                "opengl",
                 "png",
                 {
-                    "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration.",
-                    "name": "dnslookup"
+                    "$comment": "Every platform, wasm included: the port maps this to Qt's umbrella FEATURE_opengl, which is what compiles QPlatformOpenGLContext. gles2 only sets FEATURE_opengles2 and INPUT_opengl='es2' (it selects the backend, it does not enable OpenGL), so dropping opengl here builds a Qt whose own wasm platform plugin fails to compile against the missing QPlatformOpenGLContext.",
+                    "name": "opengl"
+                },
+                {
+                    "$comment": "Selects the ES/WebGL backend that the browser provides, in place of desktop GL.",
+                    "name": "gles2",
+                    "platform": "emscripten"
+                },
+                {
+                    "name": "freetype",
+                    "platform": "emscripten"
+                },
+                {
+                    "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration. Excluded on emscripten: the port turns it into FEATURE_libresolv=ON, and the browser sandbox has no resolver, so Qt fails configure with 'Feature libresolv: Forcing to ON breaks its condition'.",
+                    "name": "dnslookup",
+                    "platform": "!emscripten"
                 },
                 {
                     "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it qt_generate_deploy_qml_app_script's install step fails with 'No Qt deploy tool available for this target platform'. macdeployqt is not gated, so only windows needs it.",
