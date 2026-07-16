@@ -15,13 +15,12 @@ using bt::quick::WorldView;
 namespace
 {
     // Marker geometry (metres): a small triangle pointing along the heading.
-    // Mirrors the raylib Renderer so both edges draw the same picture.
     constexpr auto MarkerNose = 12.0F;
     constexpr auto MarkerTail = 9.0F;
     constexpr auto MarkerTailAngle = 140.0F; // heading offset to each tail corner (deg)
     constexpr auto Half = 0.5F;
 
-    // raylib's ORANGE (the player) and SKYBLUE (everything else).
+    // Orange marks the player; sky blue marks everything else.
     struct Rgba
     {
         unsigned char r, g, b, a;

@@ -29,9 +29,9 @@ auto bt::quick::run(Briarthorn& briarthorn, int argc, char** argv) -> int
     }
 
     // The frame loop: after each presented frame, step the simulation once and
-    // (via stepped -> WorldView::update) schedule the next frame — vsync-locked,
-    // like the raylib loop. frameSwapped is emitted on the render thread, so the
-    // queued connection runs frame() on the GUI thread.
+    // (via stepped -> WorldView::update) schedule the next frame — vsync-locked.
+    // frameSwapped is emitted on the render thread, so the queued connection runs
+    // frame() on the GUI thread.
     QObject::connect(window, &QQuickWindow::frameSwapped, &controller, &GameController::frame, Qt::QueuedConnection);
 
     // Test seam: with BRIARTHORN_SMOKE_QUIT_MS set, quit that many milliseconds

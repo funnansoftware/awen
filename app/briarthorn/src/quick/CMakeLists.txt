@@ -1,8 +1,8 @@
-# The Qt Quick graphics edge AND the app composed around it. Unlike the raylib
-# edge (a library main.cpp attaches), Qt owns the event loop and the QML module
-# machinery works on the final target, so this directory defines the briarthorn
-# executable itself: the shared app sources plus the Qt shell. Qt itself is
-# located by the top-level CMakeLists (find_package + qt_standard_project_setup).
+# The Qt Quick graphics edge AND the app composed around it. Qt owns the event
+# loop and the QML module machinery works on the final target, so this directory
+# defines the briarthorn executable itself: the app sources plus the Qt shell. Qt
+# itself is located by the top-level CMakeLists (find_package +
+# qt_standard_project_setup).
 qt_add_executable(briarthorn
     ../Briarthorn.cpp
     ../main.cpp
@@ -24,20 +24,15 @@ qt_add_qml_module(briarthorn
         WorldView.hpp
 )
 
-# Selects the Qt branch of main.cpp (the raylib branch is the default).
-target_compile_definitions(briarthorn
-    PRIVATE
-        BRIARTHORN_RENDERER_QUICK
-)
-
 target_link_libraries(briarthorn
     PRIVATE
         briarthorn-game
         Qt6::Quick
 )
 
-# Windows: embed the application icon, as the raylib composition does.
-if(WIN32 AND NOT CMAKE_CXX_COMPILER_TARGET MATCHES "windows-gnu")
+# Windows: embed the application icon into the .exe via a resource script, so
+# Explorer, the taskbar, and Alt-Tab show it.
+if(WIN32)
     enable_language(RC)
     target_sources(briarthorn PRIVATE ../briarthorn.rc)
 endif()
