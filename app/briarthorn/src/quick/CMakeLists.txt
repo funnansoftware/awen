@@ -53,6 +53,27 @@ set_target_properties(briarthorn PROPERTIES
 )
 
 if(EMSCRIPTEN)
+    # QLibraryInfo probes ":/qt/etc/qt.conf" before main(). Providing it with an
+    # explicit Prefix makes QLibraryInfoPrivate::paths() take the fromConf branch
+    # and skip getRelocatablePrefix(), whose debug-only Q_ASSERT_X ("Failed to find
+    # the Qt prefix path") aborts this static wasm build at QGuiApplication
+    # construction: wasm is a static Qt link, so the QT_STATIC branch runs instead
+    # of the (dead) Q_OS_WASM branch and prefixFromAppDirHelper() returns empty
+    # (no app directory in the browser). Release tolerates it (Q_ASSERT_X is a
+    # no-op there), debug does not. Qt's own wasmdeployqt emits an equivalent
+    # qt.conf. wasm-only: on desktop a forced Prefix=/ would override the real
+    # install prefix and break plugin/QML resolution (see cmake/qt-build-tree-conf.cmake).
+    # The explicit alias is required because the file lives outside this directory;
+    # PREFIX + alias land it at exactly :/qt/etc/qt.conf.
+    set_source_files_properties(
+        "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
+        PROPERTIES QT_RESOURCE_ALIAS qt.conf
+    )
+    qt_add_resources(briarthorn briarthorn_wasm_qt_conf
+        PREFIX "/qt/etc"
+        FILES "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
+    )
+
     # Qt links the app to .js + .wasm and generates the page that loads them, so
     # there is nothing to deploy — Qt is linked in, not shipped alongside. Ship
     # the bundle instead, so the install directory can be served as-is.
