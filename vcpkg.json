@@ -36,8 +36,9 @@
                     "platform": "emscripten"
                 },
                 {
-                    "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration.",
-                    "name": "dnslookup"
+                    "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration. Excluded on emscripten: the port turns it into FEATURE_libresolv=ON, and the browser sandbox has no resolver, so Qt fails configure with 'Feature libresolv: Forcing to ON breaks its condition'.",
+                    "name": "dnslookup",
+                    "platform": "!emscripten"
                 },
                 {
                     "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it qt_generate_deploy_qml_app_script's install step fails with 'No Qt deploy tool available for this target platform'. macdeployqt is not gated, so only windows needs it.",
