@@ -3,18 +3,16 @@
 A C++23 application framework built around Qt Quick, plus the apps on top of it.
 Layout:
 
+Qt Quick is the sole rendering backend, on windows, linux and macos.
+
 - `src/` — the framework: QML modules (`awen.entity`, target `awen-entity`) built
-  with `qt_add_qml_module`. Only builds when the `qt` vcpkg manifest feature is
-  active (the desktop presets set it).
+  with `qt_add_qml_module`.
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
   rest of the repo is MIT). Its layers: `src/game` (renderer-free simulation),
-  `src/quick` (Qt Quick edge; defines the `briarthorn` executable when qt is on),
-  `src/raylib` (raylib edge for zig/android/web builds).
+  `src/quick` (Qt Quick edge; defines the `briarthorn` executable).
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
-  (qt ports dynamic, everything else static; `-zig` triplets chainload
-  `cmake/toolchain/zig-*.cmake`); `cmake/vcpkg/ports/` — raylib overlay port.
-- `build.zig` + `zig/` — the parallel zig build (no Qt; raylib renderer).
+  (qt ports dynamic, everything else static).
 
 ## Build & test (Windows / MSVC)
 
@@ -24,7 +22,6 @@ Layout:
   builds Qt via vcpkg — slow once, then binary-cached).
 - Build: `cmake --build --preset windows-msvc-debug`
 - Test: `ctest --preset windows-msvc-debug`
-- Zig build (raylib renderer, no Qt): `zig build` / `zig build test`.
 - QML is embedded via qmlcachegen, so QML edits need a rebuild. If a QML edit
   trips MSVC C4702 in Qt headers under /WX, that warning is already disabled on
   the briarthorn target.

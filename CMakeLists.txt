@@ -22,34 +22,34 @@ if(ENABLE_COVERAGE)
 endif()
 
 include(cmake/qt-vcpkg-fixup.cmake)
-include(cmake/target/apk.cmake)
 include(cmake/target/clang-format.cmake)
 include(cmake/target/clang-tidy.cmake)
 
-# The framework is built around Qt Quick; the qt manifest feature — set by the
-# desktop CMake presets — pulls it in. Builds without the feature (the zig
-# build, android, emscripten) skip the framework and the apps fall back to
-# their non-Qt rendering edges.
-if("qt" IN_LIST VCPKG_MANIFEST_FEATURES)
-    find_package(Qt6 6.11 CONFIG REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.11 CONFIG REQUIRED COMPONENTS Quick)
 
-    qt_standard_project_setup(REQUIRES 6.11)
+qt_standard_project_setup(REQUIRES 6.11)
 
-    # Collect every qt_add_qml_module output under a single tree so that all
-    # in-project QML modules (e.g. awen.entity) are discoverable via a single
-    # import path. This is what the auto-generated .qmlls.ini files (and any
-    # downstream tooling, such as qmllint or deploy scripts) will reference.
-    set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml" CACHE PATH
-        "Base output directory for all qt_add_qml_module targets" FORCE)
+# Collect every qt_add_qml_module output under a single tree so that all
+# in-project QML modules (e.g. awen.entity) are discoverable via a single
+# import path. This is what the auto-generated .qmlls.ini files (and any
+# downstream tooling, such as qmllint or deploy scripts) will reference.
+#
+# That tree is the executables' own directory (where qt_standard_project_setup
+# puts them) because the QML engine always imports from the application
+# directory: it is what lets an app run from the build tree find the in-project
+# modules, while qt.conf points the engine at Qt's own modules. See
+# cmake/qt-build-tree-conf.cmake.
+set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}" CACHE PATH
+    "Base output directory for all qt_add_qml_module targets" FORCE)
 
-    # Auto-generate .qmlls.ini next to each QML source directory so the QML
-    # language server picks up the correct per-build import paths regardless of
-    # platform or preset. See: https://doc.qt.io/qt-6/qtqml-tooling-qmlls.html
-    set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate .qmlls.ini for qmlls" FORCE)
+# Auto-generate .qmlls.ini next to each QML source directory so the QML
+# language server picks up the correct per-build import paths regardless of
+# platform or preset. See: https://doc.qt.io/qt-6/qtqml-tooling-qmlls.html
+set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate .qmlls.ini for qmlls" FORCE)
 
-    add_subdirectory(src)
-endif()
+include(cmake/qt-build-tree-conf.cmake)
 
+add_subdirectory(src)
 add_subdirectory(app)
 
 # After the subdirectories so targets have registered themselves in the

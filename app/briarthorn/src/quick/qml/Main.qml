@@ -11,7 +11,7 @@ Window {
     height: 600
     visible: true
     title: qsTr("briarthorn")
-    color: "#505050" // raylib's DARKGRAY, the scope background both edges share
+    color: "#505050" // the scope background
 
     WorldView {
         anchors.fill: parent

@@ -1,7 +1,6 @@
 #include <Briarthorn.hpp>
 
 #include <memory>
-#include <utility>
 
 #include <game/Duration.hpp>
 #include <game/Entity.hpp>
@@ -29,11 +28,6 @@ Briarthorn::Briarthorn()
 auto Briarthorn::setStepInterval(game::Duration step) -> void
 {
     clock_.setInterval(step);
-}
-
-auto Briarthorn::setGraphics(std::unique_ptr<game::Graphics> graphics) -> void
-{
-    graphics_ = std::move(graphics);
 }
 
 auto Briarthorn::resetClock() -> void
@@ -88,44 +82,4 @@ auto Briarthorn::world() const -> const game::World&
 auto Briarthorn::commands() -> game::CommandBuffer&
 {
     return commands_;
-}
-
-auto Briarthorn::run() -> void
-{
-    // Start real-time stepping now — after any window has opened — so slow start-up
-    // work isn't folded into the first frame as a catch-up burst.
-    resetClock();
-    running_ = true;
-
-    while (running_)
-    {
-        // A closed window ends the loop; headless, nothing asks to close, so run()
-        // keeps going until stop().
-        if (graphics_ && graphics_->shouldClose())
-        {
-            running_ = false;
-            break;
-        }
-
-        // Sample device input once per frame (graphics only); step() flushes and
-        // consumes it at the next fixed tick boundary.
-        if (graphics_)
-        {
-            graphics_->pollInput(commands_, world_.getPlayer());
-        }
-
-        // The simulation advances on its own fixed clock, decoupled from graphics.
-        update();
-
-        // Render the freshly stepped world, after the fixed steps have run.
-        if (graphics_)
-        {
-            graphics_->render(world_);
-        }
-    }
-}
-
-auto Briarthorn::stop() -> void
-{
-    running_ = false;
 }

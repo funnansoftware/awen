@@ -20,9 +20,9 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-# The game core is deliberately free of raylib and every platform library, so it
+# The game core is deliberately free of Qt and every platform library, so it
 # links nothing here — that is what lets Briarthorn (and the tests) run headless.
 
-if(BUILD_TESTING AND NOT ANDROID AND NOT EMSCRIPTEN)
+if(BUILD_TESTING)
     add_subdirectory(test)
 endif()

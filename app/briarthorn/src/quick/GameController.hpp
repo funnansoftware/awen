@@ -17,8 +17,8 @@ namespace bt::quick
     /// world through it, the window's key events accumulate in it, and frame()
     /// (connected to the window's frameSwapped) turns both into one simulation step.
     ///
-    /// The Qt analog of the raylib loop body: pollInput (the held-key set applied
-    /// to the command buffer), update, then notify the view to repaint.
+    /// The loop body: apply the held-key set to the command buffer, update, then
+    /// notify the view to repaint.
     class GameController : public QObject
     {
         Q_OBJECT
@@ -39,8 +39,8 @@ namespace bt::quick
         auto releaseKeys() -> void;
 
         /// @brief One frame: apply the held keys to the command buffer as steering
-        /// intent (mirrors the raylib pollInput mapping), advance the simulation by
-        /// the fixed steps now due, and emit stepped() for the view.
+        /// intent, advance the simulation by the fixed steps now due, and emit
+        /// stepped() for the view.
         auto frame() -> void;
 
     signals:
