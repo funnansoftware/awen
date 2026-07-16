@@ -1,0 +1,40 @@
+{
+    "version": 7,
+    "include": [
+        "../compiler/gcc-14.json",
+        "../config/binaryDir.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/linux.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "steamos",
+            "displayName": "steamos (Steam Deck release build, sniper gcc-14)",
+            "inherits": [
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-gcc-14",
+                "target-linux"
+            ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "steamos",
+            "configurePreset": "steamos"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "steamos",
+            "configurePreset": "steamos",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ]
+}
