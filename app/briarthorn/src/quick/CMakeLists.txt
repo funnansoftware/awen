@@ -52,6 +52,30 @@ set_target_properties(briarthorn PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
+if(EMSCRIPTEN)
+    # Qt links the app to .js + .wasm and generates the page that loads them, so
+    # there is nothing to deploy — Qt is linked in, not shipped alongside. Ship
+    # the bundle instead, so the install directory can be served as-is.
+    install(FILES
+        "$<TARGET_FILE_DIR:briarthorn>/briarthorn.html"
+        "$<TARGET_FILE_DIR:briarthorn>/briarthorn.js"
+        "$<TARGET_FILE_DIR:briarthorn>/briarthorn.wasm"
+        DESTINATION web
+    )
+
+    # Emitted only for some configurations (the loader moved into the generated
+    # page in newer Qt; the worker only exists in threaded builds), so these are
+    # optional rather than predicted exactly.
+    install(FILES
+        "$<TARGET_FILE_DIR:briarthorn>/qtloader.js"
+        "$<TARGET_FILE_DIR:briarthorn>/briarthorn.worker.js"
+        DESTINATION web
+        OPTIONAL
+    )
+
+    return()
+endif()
+
 install(TARGETS briarthorn
     BUNDLE DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

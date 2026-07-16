@@ -26,6 +26,26 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Quick
 )
 
+if(EMSCRIPTEN)
+    # Qt is linked into the .js/.wasm rather than deployed alongside, so ship the
+    # generated bundle; see app/briarthorn/src/quick/CMakeLists.txt.
+    install(FILES
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.html"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.js"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.wasm"
+        DESTINATION web
+    )
+
+    install(FILES
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/qtloader.js"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.worker.js"
+        DESTINATION web
+        OPTIONAL
+    )
+
+    return()
+endif()
+
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
