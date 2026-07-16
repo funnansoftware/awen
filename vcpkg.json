@@ -4,7 +4,11 @@
     "description": "A Qt Quick application framework and the apps built on it.",
     "homepage": "https://github.com/funnansoftware/awen",
     "dependencies": [
-        "gtest",
+        {
+            "$comment": "The test binaries are built and run natively; there is no test runner on wasm.",
+            "name": "gtest",
+            "platform": "!emscripten"
+        },
         "qtdeclarative",
         {
             "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui).",
@@ -13,13 +17,24 @@
             "default-features": false
         },
         {
-            "$comment": "Target Qt trimmed to what Qt Quick rendering needs: OpenGL on every desktop backend, xcb windowing + fontconfig font discovery on linux. qtdeclarative itself re-adds network and testlib.",
+            "$comment": "Target Qt trimmed to what Qt Quick rendering needs on each platform's default backend: OpenGL on desktop, GLES2 in the browser, xcb windowing + fontconfig font discovery on linux, freetype on wasm (no system fonts in the browser sandbox). qtdeclarative itself re-adds network and testlib.",
             "name": "qtbase",
             "default-features": false,
             "features": [
                 "gui",
-                "opengl",
                 "png",
+                {
+                    "name": "opengl",
+                    "platform": "!emscripten"
+                },
+                {
+                    "name": "gles2",
+                    "platform": "emscripten"
+                },
+                {
+                    "name": "freetype",
+                    "platform": "emscripten"
+                },
                 {
                     "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration.",
                     "name": "dnslookup"
