@@ -36,8 +36,7 @@ auto GameController::releaseKeys() -> void
 
 auto GameController::frame() -> void
 {
-    // The same device→intent mapping as raylib's pollInput, from the held-key
-    // set Qt's key events maintain instead of a per-frame IsKeyDown poll.
+    // The device→intent mapping, from the held-key set Qt's key events maintain.
     if (const auto player = briarthorn_.world().getPlayer(); player != game::NullEntity)
     {
         const auto held = [this](Qt::Key key) { return held_.contains(key); };

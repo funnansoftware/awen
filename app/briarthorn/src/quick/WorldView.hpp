@@ -11,8 +11,8 @@ namespace bt::quick
     /// every entity a heading-aligned triangle marker, repainted on each
     /// simulation step.
     ///
-    /// The Qt Quick analog of the raylib Renderer's draw pass; the key events it
-    /// receives (it takes focus in Main.qml) feed the GameController's held-key set.
+    /// The key events it receives (it takes focus in Main.qml) feed the
+    /// GameController's held-key set.
     class WorldView : public QQuickItem
     {
         Q_OBJECT

@@ -8,8 +8,7 @@ of briarthorn.
 
 Briarthorn is built on the [awen](../..) framework and builds from the
 repository root — see the [root README](../../README.md) for every platform's
-build steps. On the desktop presets it renders with Qt Quick (the `qt` manifest
-feature); the zig build, android, and web keep its raylib renderer.
+build steps. It renders with Qt Quick.
 
 # License
 
