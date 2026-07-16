@@ -1,0 +1,16 @@
+{
+    "name": "awen-steamos",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "llvm-vs-code-extensions.vscode-clangd",
+                "ms-vscode.cmake-tools",
+                "theqtcompany.qt-qml"
+            ]
+        }
+    },
+    "postCreateCommand": "${containerWorkspaceFolder}/vcpkg/bootstrap-vcpkg.sh -disableMetrics"
+}
