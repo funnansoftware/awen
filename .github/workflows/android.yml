@@ -40,7 +40,10 @@ jobs:
       - name: pin-android-toolchain
         shell: bash
         run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$(cat .android-ndk-version)" >/dev/null
+          # No `yes |` pipe: the runner image ships with the SDK licenses
+          # accepted, and under pipefail a `yes` killed by SIGPIPE when
+          # sdkmanager exits first would fail the step spuriously.
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$(cat .android-ndk-version)" >/dev/null
           echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
 
       - name: cmake-configure
