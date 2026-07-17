@@ -81,6 +81,8 @@ namespace
         Q_OBJECT
 
     public:
+        Q_DISABLE_COPY_MOVE(GamepadSource)
+
         explicit GamepadSource(QObject* parent = nullptr) : QObject{parent}
         {
             if (!SDL_Init(SDL_INIT_GAMEPAD))
@@ -90,6 +92,7 @@ namespace
             }
             initialized_ = true;
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — Qt parents the timer to this.
             timer_ = new QTimer{this};
             connect(timer_, &QTimer::timeout, this, &GamepadSource::poll);
             timer_->start(PollIntervalMs);
@@ -127,11 +130,15 @@ namespace
         }
 
     signals:
-        void connected(int deviceId);
-        void disconnected(int deviceId);
-        void buttonPressed(int deviceId, int button);
-        void buttonReleased(int deviceId, int button);
-        void axisChanged(int deviceId, int axis, double value);
+        // Commented parameter names: moc names its generated definitions _t1/_t2,
+        // so a real name here trips readability-inconsistent-declaration-parameter-name
+        // when the .moc is included in this TU — while a bare unnamed parameter trips
+        // readability-named-parameter. A comment documents intent and satisfies both.
+        void connected(int /*deviceId*/);
+        void disconnected(int /*deviceId*/);
+        void buttonPressed(int /*deviceId*/, int /*button*/);
+        void buttonReleased(int /*deviceId*/, int /*button*/);
+        void axisChanged(int /*deviceId*/, int /*axis*/, double /*value*/);
 
     private:
         // Drain SDL's event queue: the pure decode says what each event is, this
@@ -232,12 +239,15 @@ namespace
         auto* source = engine->findChild<GamepadSource*>(QString{}, Qt::FindDirectChildrenOnly);
         if (source == nullptr)
         {
+            // Qt parents the source to the engine, which owns it thereafter.
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             source = new GamepadSource{engine};
             if (!source->initialized())
             {
                 // SDL init failed: drop the inert source instead of caching it on the
                 // engine forever, so a later attach can retry rather than wiring
                 // listeners to a source that will never emit.
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 delete source;
                 return nullptr;
             }
@@ -251,7 +261,7 @@ auto awen::attachGamepad(Gamepad* gamepad, QObject* attachee) -> void
     // Each attached instance is one listener on the shared source. Connection and
     // removal pass straight through; button and axis events are re-emitted with the
     // Gamepad type's enums so handlers receive Gamepad.Button.* / Gamepad.Axis.*.
-    GamepadSource* source = sourceFor(attachee);
+    auto* const source = sourceFor(attachee);
     if (source == nullptr)
     {
         return;

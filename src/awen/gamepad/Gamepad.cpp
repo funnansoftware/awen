@@ -14,5 +14,8 @@ Gamepad::Gamepad(QObject* parent) : QObject{parent}
 
 auto Gamepad::qmlAttachedProperties(QObject* object) -> Gamepad*
 {
+    // The QML engine takes ownership of the attached instance (parents it to
+    // @p object), so returning a raw new is the required Qt contract.
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
     return new Gamepad{object};
 }
