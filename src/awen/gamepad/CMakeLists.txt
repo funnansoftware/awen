@@ -1,0 +1,62 @@
+# awen.gamepad — gamepad input for QML as an attached property (like Keys), backed
+# by SDL3 on desktop. Holds the C++ type QML cannot reach on its own.
+#
+# Layered like the deleted briarthorn game core so coverage stays clean: the pure,
+# renderer-free translation (awen-gamepad-core, Qt-free, unit-tested) is split from
+# the SDL/QML edge (this module) — the test links only the core, so its coverage
+# report is the translation logic, not untestable SDL/QML glue.
+qt_add_qml_module(awen-gamepad
+    URI awen.gamepad
+    VERSION 1.0
+    QML_FILES
+    SOURCES
+        # The QML type registers by living under SOURCES (moc + qmltyperegistrar).
+        # The backend implementation is added per-platform below.
+        Gamepad.h
+        Gamepad.cpp
+)
+
+target_link_libraries(awen-gamepad
+    PUBLIC
+        Qt6::Core
+        Qt6::Quick
+)
+
+if(EMSCRIPTEN OR ANDROID)
+    # No SDL in the browser sandbox / no SDL activity under androiddeployqt: build an
+    # inert backend. The type and enums still register, so `import awen.gamepad`
+    # resolves; it just never emits.
+    target_sources(awen-gamepad PRIVATE GamepadStub.cpp)
+else()
+    # Desktop: SDL3 drives the real input. sdl3 is gated to these platforms in
+    # vcpkg.json (like gtest), so find_package only runs here.
+    find_package(SDL3 CONFIG REQUIRED)
+
+    # The tested, Qt-free, renderer-free core. It only reads SDL header structs and
+    # constants (no SDL calls), so it needs SDL headers, not the runtime; linking
+    # SDL3::SDL3 carries them. Its build dir is the module dir, so the test (in
+    # test/) and the SDL backend both resolve GamepadTranslate.h.
+    add_library(awen-gamepad-core STATIC
+        GamepadTranslate.h
+        GamepadTranslate.cpp
+    )
+    target_include_directories(awen-gamepad-core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(awen-gamepad-core PUBLIC SDL3::SDL3)
+
+    # Desktop selects the SDL backend by compiling GamepadSource.cpp (wasm/android
+    # compile GamepadStub.cpp instead) — the backend is chosen by which .cpp builds,
+    # so no compile define is needed.
+    target_sources(awen-gamepad PRIVATE GamepadSource.cpp)
+    target_link_libraries(awen-gamepad
+        PRIVATE
+            awen-gamepad-core
+            SDL3::SDL3
+    )
+
+    # The tests run natively (GoogleTest, ctest); there is no runner on wasm, and an
+    # android cross-build cannot execute the discovery binary — matching the sdl3 and
+    # gtest vcpkg gates above.
+    if(BUILD_TESTING)
+        add_subdirectory(test)
+    endif()
+endif()
