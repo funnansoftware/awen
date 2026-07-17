@@ -3,6 +3,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
+#include <QTimer>
 
 auto main(int argc, char** argv) -> int
 {
@@ -18,6 +19,15 @@ auto main(int argc, char** argv) -> int
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(EXIT_FAILURE); }, Qt::QueuedConnection);
     engine.loadFromModule("Briarthorn", "Main");
+
+    // Test seam: with BRIARTHORN_SMOKE_QUIT_MS set, quit that many milliseconds
+    // after start. Combined with the objectCreationFailed exit above, a clean exit
+    // asserts Main.qml — including its `import awen.gamepad` — fully loaded, with no
+    // window to close by hand. The tst_apploads ctest drives this headless.
+    if (qEnvironmentVariableIsSet("BRIARTHORN_SMOKE_QUIT_MS"))
+    {
+        QTimer::singleShot(qEnvironmentVariableIntValue("BRIARTHORN_SMOKE_QUIT_MS"), &app, [] { QCoreApplication::quit(); });
+    }
 
     return QGuiApplication::exec();
 }

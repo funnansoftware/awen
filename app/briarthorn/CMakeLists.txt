@@ -13,12 +13,16 @@ target_sources(briarthorn
 )
 
 # The QML module: Main.qml is the app shell. loadFromModule("Briarthorn", "Main")
-# in main.cpp resolves the Main type registered here.
+# in main.cpp resolves the Main type registered here. IMPORTS awen.gamepad so the
+# import scan (qmllint, deploy) knows Main.qml depends on it — the actual types come
+# from linking awen-gamepad below.
 qt_add_qml_module(briarthorn
     URI Briarthorn
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+    IMPORTS
+        awen.gamepad
 )
 
 # No QT_QML_DEBUG here: enabling the QML debug server makes the engine skip the
@@ -29,6 +33,7 @@ qt_add_qml_module(briarthorn
 
 target_link_libraries(briarthorn
     PRIVATE
+        awen-gamepad
         Qt6::Quick
 )
 
@@ -138,3 +143,18 @@ qt_generate_deploy_qml_app_script(
 )
 
 install(SCRIPT ${deploy_script})
+
+# Headless smoke test: run the real app under the minimal platform + software scene
+# graph and quit shortly after start (the seam in main.cpp). A clean exit asserts
+# Main.qml — including its `import awen.gamepad` — fully loads on this config's path
+# (loadFromModule in Release, source file-load in Debug); a load failure trips
+# objectCreationFailed and exits nonzero. This is the integration proof that the
+# awen.gamepad module is linked and resolvable from the app. Desktop only (no native
+# runner on wasm/android, which returned above). The minimal platform ships in every
+# vcpkg Qt build (macOS has no offscreen) and the software backend renders GPU-free.
+if(BUILD_TESTING)
+    add_test(NAME tst_apploads COMMAND briarthorn)
+    set_tests_properties(tst_apploads PROPERTIES ENVIRONMENT
+        "BRIARTHORN_SMOKE_QUIT_MS=3000;QT_QPA_PLATFORM=minimal;QSG_RHI_BACKEND=software"
+    )
+endif()
