@@ -17,8 +17,8 @@ qt_add_qml_module(${PROJECT_NAME}
 # No QT_QML_DEBUG here: enabling the QML debug server makes the engine skip the
 # qmlcachegen-compiled units and re-resolve imports from source, which then
 # demands the optional qtquick2plugin that the deploy step does not ship —
-# loadFromModule("AwenApp", "Main") fails at startup. briarthorn's quick edge
-# omits it for the same reason.
+# loadFromModule("AwenApp", "Main") fails at startup. briarthorn omits it for
+# the same reason.
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -29,7 +29,7 @@ target_link_libraries(${PROJECT_NAME}
 if(EMSCRIPTEN)
     # Embed ":/qt/etc/qt.conf" so QLibraryInfo skips getRelocatablePrefix() and its
     # debug-only Q_ASSERT_X abort on this static wasm build. See the fuller note in
-    # app/briarthorn/src/quick/CMakeLists.txt. wasm-only; alias lands it at
+    # app/briarthorn/CMakeLists.txt. wasm-only; alias lands it at
     # exactly :/qt/etc/qt.conf.
     set_source_files_properties(
         "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
@@ -41,7 +41,7 @@ if(EMSCRIPTEN)
     )
 
     # Qt is linked into the .js/.wasm rather than deployed alongside, so ship the
-    # generated bundle; see app/briarthorn/src/quick/CMakeLists.txt.
+    # generated bundle; see app/briarthorn/CMakeLists.txt.
     install(FILES
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.html"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.js"
@@ -61,7 +61,7 @@ endif()
 
 if(ANDROID)
     # The framework sample packages under Qt's default template identity; see
-    # app/briarthorn/src/quick/CMakeLists.txt for the apk mechanics.
+    # app/briarthorn/CMakeLists.txt for the apk mechanics.
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/android-build/awen.apk"
         DESTINATION android
     )

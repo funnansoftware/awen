@@ -2,8 +2,11 @@
 InheritParentConfig: true
 # gtest's TEST macro expands to non-const globals whose constructors run (and
 # may throw) before main, and test assertions use literal values by nature.
+# ASSERT_TRUE(opt.has_value()) guards the accesses that follow, but the checker
+# cannot see through the gtest macro's control flow.
 Checks: "-cert-err58-cpp,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-avoid-magic-numbers,
-  -readability-magic-numbers"
+  -readability-magic-numbers,
+  -bugprone-unchecked-optional-access"
