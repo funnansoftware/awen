@@ -97,6 +97,29 @@ if(EMSCRIPTEN)
     return()
 endif()
 
+if(ANDROID)
+    # qt_add_executable built briarthorn as a MODULE library
+    # (libbriarthorn_arm64-v8a.so); Qt's finalization generates the deployment
+    # settings and the apk targets (apk_all is part of ALL, so a plain build
+    # assembles the APK via androiddeployqt + gradle in the build tree). The
+    # package identity and the launcher assets under android/ ride the target
+    # properties; androiddeployqt overlays android/ onto Qt's package template.
+    set_target_properties(briarthorn PROPERTIES
+        QT_ANDROID_PACKAGE_NAME "com.funnansoftware.briarthorn"
+        QT_ANDROID_VERSION_CODE 1
+        QT_ANDROID_VERSION_NAME "1.0"
+        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android"
+    )
+
+    # Ship the assembled APK the way the wasm bundle ships, so the install
+    # directory is the artifact.
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/android-build/briarthorn.apk"
+        DESTINATION android
+    )
+
+    return()
+endif()
+
 install(TARGETS briarthorn
     BUNDLE DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

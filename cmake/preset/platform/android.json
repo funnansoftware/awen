@@ -1,0 +1,57 @@
+{
+    "version": 7,
+    "include": [
+        "../compiler/android-ndk.json",
+        "../config/binaryDir.json",
+        "../config/debug.json",
+        "../config/ninja.json",
+        "../config/release.json",
+        "../config/vcpkg.json",
+        "../target/android.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "android",
+            "displayName": "android (release build, arm64-v8a)",
+            "inherits": [
+                "android-release"
+            ]
+        },
+        {
+            "name": "android-debug",
+            "inherits": [
+                "config-binaryDir",
+                "config-debug",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-android-ndk",
+                "target-android"
+            ]
+        },
+        {
+            "name": "android-release",
+            "inherits": [
+                "config-binaryDir",
+                "config-release",
+                "config-ninja",
+                "config-vcpkg",
+                "compiler-android-ndk",
+                "target-android"
+            ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "android",
+            "configurePreset": "android"
+        },
+        {
+            "name": "android-debug",
+            "configurePreset": "android-debug"
+        },
+        {
+            "name": "android-release",
+            "configurePreset": "android-release"
+        }
+    ]
+}
