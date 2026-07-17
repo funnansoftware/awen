@@ -8,12 +8,14 @@ Qt Quick is the sole rendering backend, on windows, linux, macos, web
 (arm64-v8a, NDK pinned in `.android-ndk-version`; Qt's androiddeployqt
 assembles the APK).
 
-- `src/` — the framework: QML modules (`awen.entity`, target `awen-entity`) built
-  with `qt_add_qml_module`.
+- `src/` — the framework: QML modules built with `qt_add_qml_module` — `awen.entity`
+  (target `awen-entity`) and `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
+  gamepad attached-property type, desktop-only SDL with an inert stub on wasm/android;
+  its Qt-free `awen-gamepad-core` is the unit-tested, coverage-observed part).
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
-  rest of the repo is MIT). Its layers: `src/game` (renderer-free simulation),
-  `src/quick` (Qt Quick edge; defines the `briarthorn` executable).
+  rest of the repo is MIT). Flat: `main.cpp` is a thin Qt bootstrap that loads
+  the `Briarthorn` QML module (`qml/Main.qml`); the game is implemented in QML.
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
   (qt ports dynamic, everything else static; dependencies release-only, except
   the dual-config `x64-windows` triplet the windows debug preset needs).
