@@ -5,7 +5,21 @@
 # renderer-free translation (awen-gamepad-core, Qt-free, unit-tested) is split from
 # the SDL/QML edge (this module) — the test links only the core, so its coverage
 # report is the translation logic, not untestable SDL/QML glue.
+#
+# Built SHARED (except on wasm): an app that imports this module resolves it in a
+# Release build through loadFromModule against the on-disk qmldir, which loads the
+# module's plugin. A static module has no loadable plugin there and its in-process
+# registration is dropped by the linker, so `import awen.gamepad` fails at startup
+# (Debug loads Main.qml from source and never hits this path). A shared module ships
+# the plugin the engine loads — matching the desktop default. On emscripten the whole
+# app is one static binary and Qt imports the plugin itself, so static is correct.
+set(_awen_gamepad_linkage "")
+if(NOT EMSCRIPTEN)
+    set(_awen_gamepad_linkage "SHARED")
+endif()
+
 qt_add_qml_module(awen-gamepad
+    ${_awen_gamepad_linkage}
     URI awen.gamepad
     VERSION 1.0
     QML_FILES
