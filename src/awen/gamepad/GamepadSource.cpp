@@ -16,7 +16,7 @@ using awen::Gamepad;
 using awen::GamepadEventKind;
 
 // Enum parity with SDL. Gamepad.h defines Button/Axis with explicit literals so it
-// needs no SDL include; assert here — the one desktop TU that has the SDL headers —
+// needs no SDL include; assert here — the one backend TU that has the SDL headers —
 // that they still match SDL's constants, so a version bump that renumbers them
 // fails the build instead of silently mistranslating input.
 static_assert(static_cast<int>(Gamepad::Button::Unknown) == SDL_GAMEPAD_BUTTON_INVALID);
@@ -60,8 +60,15 @@ namespace
     // The poll cadence while a controller is connected and the app is active. SDL
     // needs its queue drained regularly to surface events; an interval of 0 would
     // spin a whole CPU core, so we pump a little faster than the display refreshes
-    // (~125 Hz) — well under one frame of input lag.
+    // (~125 Hz) — well under one frame of input lag. On wasm the browser only
+    // refreshes gamepad state at animation-frame rate, so pumping faster than one
+    // frame (~60 Hz) would just re-read the same snapshot while waking the main
+    // thread twice as often.
+#ifdef Q_OS_WASM
+    constexpr auto PollIntervalMs = 16;
+#else
     constexpr auto PollIntervalMs = 8;
+#endif
 
     // The slow heartbeat used when there is nothing to poll for at full speed — no
     // controller connected, or the window is not active. Still frequent enough to

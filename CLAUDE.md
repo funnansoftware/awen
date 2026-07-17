@@ -10,8 +10,9 @@ assembles the APK).
 
 - `src/` — the framework: QML modules built with `qt_add_qml_module` — `awen.entity`
   (target `awen-entity`) and `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
-  gamepad attached-property type, desktop-only SDL with an inert stub on wasm/android;
-  its Qt-free `awen-gamepad-core` is the unit-tested, coverage-observed part).
+  gamepad attached-property type — one SDL backend on desktop and wasm (SDL wraps
+  the browser Gamepad API there), an inert stub on android; its Qt-free
+  `awen-gamepad-core` is the unit-tested, coverage-observed part).
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
   rest of the repo is MIT). Flat: `main.cpp` is a thin Qt bootstrap that loads

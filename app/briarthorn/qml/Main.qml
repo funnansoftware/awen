@@ -21,6 +21,17 @@ Window {
     title: qsTr("briarthorn")
     color: "#505050" // the scope background
 
+    // On wasm nothing activates the window at show — Qt's wasm platform only
+    // activates on a click — so an embedded page would start keyboard-dead.
+    // Requesting activation drives Qt's own focus chain through to its DOM
+    // focus target via supported API (the web shell's focus handling is the
+    // belt to this suspender: it also recovers focus the browser hands back to
+    // the page later). Elsewhere the windowing system activates on show.
+    Component.onCompleted: {
+        if (Qt.platform.os === "wasm")
+            root.requestActivate();
+    }
+
     Item {
         id: scene
         anchors.fill: parent
@@ -64,8 +75,9 @@ Window {
         }
 
         // Gamepad input via awen.gamepad. Unlike Keys these fire regardless of
-        // focus. On wasm/android the module is an inert stub, so these simply never
-        // fire and keyboard control stays.
+        // focus. Backed by SDL3 on desktop and wasm (in the browser SDL wraps
+        // the Gamepad API); on android the module is an inert stub, so there
+        // these simply never fire and keyboard control stays.
         Gamepad.onConnected: (deviceId) => scene.padConnected = true
         Gamepad.onDisconnected: (deviceId) => scene.padConnected = false
         Gamepad.onAxisChanged: (deviceId, axis, value) => {

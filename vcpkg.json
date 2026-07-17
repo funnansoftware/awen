@@ -10,10 +10,10 @@
             "platform": "!emscripten & !android"
         },
         {
-            "$comment": "SDL3 backs the awen.gamepad module (SDL_INIT_GAMEPAD; see src/awen/gamepad). Desktop only: the browser sandbox has no gamepad backend to build here, and android's controller input needs SDL's own activity, which androiddeployqt does not provide — those platforms compile an inert stub instead, so the module still imports. default-features off: the Linux gamepad backend is evdev (core to SDL, needs no features), and the port's defaults (ibus/wayland/x11) pull SDL's IME, leaving SDL_ime.c referencing SDL_IBus_* symbols that only exist under libdbus -> undefined references at link, plus x11/wayland/dbus build deps SDL does not need for gamepad.",
+            "$comment": "SDL3 backs the awen.gamepad module (SDL_INIT_GAMEPAD; see src/awen/gamepad) on desktop AND wasm — SDL's emscripten joystick backend wraps the browser Gamepad API, so the same SDL event pump runs in the browser. Excluded only on android: controller input there needs SDL's own activity, which androiddeployqt does not provide — android compiles an inert stub, so the module still imports. default-features off: the Linux gamepad backend is evdev (core to SDL, needs no features), and the port's defaults (ibus/wayland/x11) pull SDL's IME, leaving SDL_ime.c referencing SDL_IBus_* symbols that only exist under libdbus -> undefined references at link, plus x11/wayland/dbus build deps SDL does not need for gamepad. On emscripten the defaults resolve empty anyway (all are linux-gated) and the emscripten-pthreads feature must stay off — the Qt wasm build is single-threaded.",
             "name": "sdl3",
             "default-features": false,
-            "platform": "!emscripten & !android"
+            "platform": "!android"
         },
         "qtdeclarative",
         {

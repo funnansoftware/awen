@@ -24,9 +24,10 @@ namespace awen
     /// QML — it exists for these attached signals and for its Button/Axis enums
     /// (e.g. Gamepad.Axis.LeftX). Following the Keys pattern it attaches an instance
     /// of itself to each item; those instances share one engine-owned SDL source
-    /// behind the scenes (desktop only; wasm/android build an inert source, so the
-    /// type and enums exist but no events fire). Axis values are normalised: sticks
-    /// [-1, 1] (Y negative upward), triggers [0, 1].
+    /// behind the scenes (on wasm SDL wraps the browser's Gamepad API; android
+    /// builds an inert source, so the type and enums exist but no events fire).
+    /// Axis values are normalised: sticks [-1, 1] (Y negative upward), triggers
+    /// [0, 1].
     ///
     /// The Button/Axis enumerators carry SDL's SDL_GamepadButton / SDL_GamepadAxis
     /// values as explicit literals so this header needs no SDL include; a build-time

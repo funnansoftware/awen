@@ -31,3 +31,25 @@ set(VCPKG_CMAKE_SYSTEM_NAME Emscripten)
 set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake")
 
 set(VCPKG_BUILD_TYPE release)
+
+if(PORT STREQUAL "sdl3")
+    # awen uses SDL in the browser only for gamepad input (src/awen/gamepad —
+    # SDL_INIT_GAMEPAD pulls just the joystick and events subsystems). SDL's
+    # default build still compiles every other subsystem, and because the init
+    # dispatch references each one, wasm-ld retains code the game can never run
+    # (Qt owns the canvas and audio). Turn those subsystems off so they never
+    # enter the shipped .wasm; joystick/events stay on by default. Gamepad
+    # rumble is unaffected: on the web it rides the joystick backend
+    # (vibrationActuator), not SDL_HAPTIC.
+    list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS
+        -DSDL_AUDIO=OFF
+        -DSDL_VIDEO=OFF
+        -DSDL_RENDER=OFF
+        -DSDL_GPU=OFF
+        -DSDL_CAMERA=OFF
+        -DSDL_HAPTIC=OFF
+        -DSDL_SENSOR=OFF
+        -DSDL_POWER=OFF
+        -DSDL_DIALOG=OFF
+    )
+endif()

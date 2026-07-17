@@ -125,8 +125,10 @@ page iframed into it).
     </div>
     <div class="controls">
       <!-- requestFullscreen rejects when the browser denies it (e.g. not a
-           user gesture); swallow that instead of surfacing a page error. -->
-      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {})">
+           user gesture); swallow that instead of surfacing a page error. Either
+           way hand focus (and with it the keyboard) back to the game — the
+           granted case also refocuses via fullscreenchange, harmlessly twice. -->
+      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {}).finally(() => focusGame())">
     </div>
 
     <script type="text/javascript">
@@ -147,7 +149,87 @@ page iframed into it).
         appLoaded = true;
         loaderElement.style.display = 'none';
         screenElement.style.display = 'block';
+        focusGameWhenReady();
       }
+
+      // Route keyboard input to the game. Qt for WebAssembly delivers key events
+      // through an invisible focus-helper element inside each window's DOM (its
+      // keydown/keyup listeners sit on the window element above it), so the game
+      // only hears the keyboard while that helper has DOM focus. Qt focuses it
+      // when the app window is clicked, but an embedded page starts with focus on
+      // the body, and clicking page furniture (like the Fullscreen button) pulls
+      // focus back out — so the shell pushes focus into the game at load and
+      // whenever it drifts. The selectors reach through Qt's (open) shadow DOM
+      // and are an internal detail of Qt 6's wasm platform (they also assume the
+      // app's single window — with more windows, the active window's helper
+      // would have to be picked instead of the first); if they miss, this
+      // quietly does nothing and a click on the game still focuses it via Qt.
+      //
+      // Two guards mirror Qt's own focus behavior:
+      // - focus already inside Qt's DOM is left alone (e.g. its hidden
+      //   text-input element while a text field is focused — stealing focus
+      //   onto the helper there would break text entry);
+      // - a helper marked aria-hidden means browser accessibility is active and
+      //   Qt routes focus through its accessibility tree instead (its own
+      //   focus() refuses too) — forcing the helper would break screen readers.
+      // preventScroll keeps the page (or an embedding iframe) from scroll-
+      // jumping to the view on every restored focus.
+      //
+      // Returns whether the game holds focus afterwards — focus(), not element
+      // presence: the helper exists before its window is shown, and focusing an
+      // element under a display:none ancestor is a silent no-op.
+      function focusGame() {
+        const shadowRoot = screenElement.querySelector('#qt-shadow-container')?.shadowRoot;
+        if (!shadowRoot)
+          return false;
+        if (shadowRoot.activeElement)
+          return true; // the game already holds focus internally
+        // Prefer the ACTIVE window's helper (Qt mirrors activation into an
+        // "inactive" class on each decorated window; before any activation no
+        // window carries it, and the plain selector is the fallback either
+        // way) — with one window both selectors agree.
+        const helper = shadowRoot.querySelector('.qt-decorated-window:not(.inactive) .qt-window-focus-helper')
+          ?? shadowRoot.querySelector('.qt-window-focus-helper');
+        if (!helper || helper.getAttribute('aria-hidden') === 'true')
+          return false;
+        helper.focus({ preventScroll: true });
+        return shadowRoot.activeElement === helper;
+      }
+
+      // The app builds its window DOM after the runtime is up (onLoaded fires
+      // before main() runs), so at showApp() time the focus helper does not
+      // exist yet — retry across frames until focus actually lands, bounded by
+      // wall clock so a failed load (or a Qt upgrade renaming the internals
+      // focusGame relies on) does not poll forever. The give-up is loud: a
+      // silent miss would ship a keyboard-dead page, because Qt only restores
+      // focus itself when its focus object changes — not when a click lands on
+      // the already-focused scene.
+      function focusGameWhenReady(deadline = performance.now() + 15000) {
+        if (focusGame())
+          return;
+        if (performance.now() < deadline)
+          requestAnimationFrame(() => focusGameWhenReady(deadline));
+        else
+          console.warn('briarthorn: could not hand keyboard focus to the game; click the game view to focus it');
+      }
+
+      // Leaving or entering fullscreen moves focus around the page; either way
+      // the game keeps the keyboard.
+      document.addEventListener('fullscreenchange', () => focusGame());
+
+      // This page is a game shell: nothing on it needs the keyboard except the
+      // game, so after any click, focus goes back to the game rather than
+      // parking on the body and going keyboard-dead. This covers page furniture
+      // (empty background; the button, whose own handlers still run first) and,
+      // observed with Qt 6.11, clicks on the game itself: the browser blurs
+      // Qt's focus helper on pointerdown and the wasm platform only restores it
+      // when the app's focus object changes — not when the click lands on the
+      // already-focused scene. Capture phase, because Qt's window element stops
+      // the propagation of pointer events inside the view, so a bubble listener
+      // here would never see them; the deferred focusGame then runs after Qt's
+      // own focus routing, and its guards keep it hands-off when Qt routed
+      // focus somewhere deliberate.
+      document.addEventListener('pointerup', () => setTimeout(() => focusGame(), 0), true);
 
       function showLoader(status) {
         screenElement.style.display = 'none';
