@@ -59,6 +59,16 @@ if(EMSCRIPTEN)
     return()
 endif()
 
+if(ANDROID)
+    # The framework sample packages under Qt's default template identity; see
+    # app/briarthorn/src/quick/CMakeLists.txt for the apk mechanics.
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/android-build/awen.apk"
+        DESTINATION android
+    )
+
+    return()
+endif()
+
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

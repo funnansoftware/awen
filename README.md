@@ -7,6 +7,8 @@
 [![linux](https://github.com/funnansoftware/awen/actions/workflows/linux.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/linux.yml)
 [![coverage](https://github.com/funnansoftware/awen/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/coverage.yml)
 [![steamos](https://github.com/funnansoftware/awen/actions/workflows/steamos.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/steamos.yml)
+[![web](https://github.com/funnansoftware/awen/actions/workflows/web.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/web.yml)
+[![android](https://github.com/funnansoftware/awen/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/android.yml)
 
 A C++23 application framework built around Qt Quick. The framework's QML
 modules live under `src/`; the apps built on it live under `app/`:
@@ -29,6 +31,8 @@ dependencies and the `x64-windows` triplet keeps both configurations.
   - [windows](#windows)
   - [linux](#linux)
   - [mac](#macos)
+  - [web](#web)
+  - [android](#android)
 - [License](#license)
 
 # Prerequisites
@@ -84,6 +88,35 @@ cmake --preset macos                            # configure (release)
 cmake --build --preset macos                    # build
 cmake --build --preset macos --target install   # install
 ./build/macos/installed/bin/briarthorn          # run
+```
+
+## Web
+
+Cross-compiles from any desktop host. Bootstrap the pinned emscripten toolchain
+once (`scripts/bootstrap-emsdk.sh`, or `scripts\bootstrap-emsdk.bat` on
+Windows), then serve the output over http:
+
+```sh
+cmake --preset web                            # configure (release)
+cmake --build --preset web                    # build
+cmake --build --preset web --target install   # install
+python3 -m http.server -d build/web/installed/web
+# open http://localhost:8000/briarthorn.html
+```
+
+## Android
+
+Cross-compiles from any desktop host. Needs an Android SDK (`ANDROID_HOME` set)
+with platform + build-tools installed, the NDK pinned in
+[.android-ndk-version](.android-ndk-version) (`sdkmanager --install
+"ndk;$(cat .android-ndk-version)"`), and a JDK (21 recommended) on `JAVA_HOME`.
+The APK is assembled by Qt's androiddeployqt as part of the build:
+
+```sh
+cmake --preset android                            # configure (release)
+cmake --build --preset android                    # build (also packages APKs)
+cmake --build --preset android --target install   # install
+# APKs: build/android/installed/android/{briarthorn,awen}.apk
 ```
 
 # License
