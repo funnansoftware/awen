@@ -43,6 +43,9 @@ assembles the APK).
   typed.
 - Trailing return types everywhere: `auto f(...) -> T`. Allman braces, 4-space
   indent (clang-format; `clang-format` / `clang-format-check` build targets).
+- **Data members initialize with braces**, not `=`: `bool ready_{false};`,
+  `QTimer* timer_{nullptr};`, `int code{-1};` — for default member initializers
+  in classes and structs alike (locals stay Almost Always Auto, above).
 - `.cpp` files pull names in with `using` declarations at file scope and define
   members as `auto X::method(...)` — they do **not** reopen namespaces.
   File-local helpers and constants live in an anonymous `namespace {}`.

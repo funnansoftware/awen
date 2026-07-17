@@ -27,8 +27,8 @@ namespace awen
     {
         GamepadEventKind kind; ///< The transition this event represents.
         int deviceId;          ///< SDL joystick instance id; stable while connected.
-        int code = -1;         ///< Button (SDL_GamepadButton) or axis (SDL_GamepadAxis) code; -1 for (dis)connect.
-        double value = 0.0;    ///< Normalised axis value in [-1, 1]; 0 otherwise.
+        int code{-1};          ///< Button (SDL_GamepadButton) or axis (SDL_GamepadAxis) code; -1 for (dis)connect.
+        double value{0.0};     ///< Normalised axis value in [-1, 1]; 0 otherwise.
     };
 
     /// @brief Normalise a raw SDL axis reading to [-1, 1].

@@ -21,17 +21,6 @@ Window {
     title: qsTr("briarthorn")
     color: "#505050" // the scope background
 
-    // On wasm nothing activates the window at show — Qt's wasm platform only
-    // activates on a click — so an embedded page would start keyboard-dead.
-    // Requesting activation drives Qt's own focus chain through to its DOM
-    // focus target via supported API (the web shell's focus handling is the
-    // belt to this suspender: it also recovers focus the browser hands back to
-    // the page later). Elsewhere the windowing system activates on show.
-    Component.onCompleted: {
-        if (Qt.platform.os === "wasm")
-            root.requestActivate();
-    }
-
     Item {
         id: scene
         anchors.fill: parent
@@ -61,13 +50,13 @@ Window {
             return Math.abs(v) < scene.deadzone ? 0 : v;
         }
 
-        Keys.onPressed: (event) => {
+        Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
             scene.held[event.key] = true;
             event.accepted = true;
         }
-        Keys.onReleased: (event) => {
+        Keys.onReleased: event => {
             if (event.isAutoRepeat)
                 return;
             scene.held[event.key] = false;
@@ -78,8 +67,15 @@ Window {
         // focus. Backed by SDL3 on desktop and wasm (in the browser SDL wraps
         // the Gamepad API); on android the module is an inert stub, so there
         // these simply never fire and keyboard control stays.
-        Gamepad.onConnected: (deviceId) => scene.padConnected = true
-        Gamepad.onDisconnected: (deviceId) => scene.padConnected = false
+        //
+        // Poll cadence, tuned per platform through the attached property (the
+        // module's default is 8ms, ~125 Hz): the browser only refreshes gamepad
+        // state once per animation frame, so on wasm one frame (16ms) is as
+        // fresh as the data gets — polling faster there only re-reads the same
+        // snapshot.
+        Gamepad.pollInterval: Qt.platform.os === "wasm" ? 16 : 8
+        Gamepad.onConnected: deviceId => scene.padConnected = true
+        Gamepad.onDisconnected: deviceId => scene.padConnected = false
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
             if (axis === Gamepad.Axis.LeftX)
                 scene.padX = scene.deaden(value);
@@ -125,13 +121,27 @@ Window {
 
                 SequentialAnimation on opacity {
                     loops: Animation.Infinite
-                    NumberAnimation { from: 0.4; to: 0.0; duration: 1500; easing.type: Easing.OutQuad }
-                    PauseAnimation { duration: 250 }
+                    NumberAnimation {
+                        from: 0.4
+                        to: 0.0
+                        duration: 1500
+                        easing.type: Easing.OutQuad
+                    }
+                    PauseAnimation {
+                        duration: 250
+                    }
                 }
                 SequentialAnimation on scale {
                     loops: Animation.Infinite
-                    NumberAnimation { from: 0.5; to: 1.8; duration: 1500; easing.type: Easing.OutQuad }
-                    PauseAnimation { duration: 250 }
+                    NumberAnimation {
+                        from: 0.5
+                        to: 1.8
+                        duration: 1500
+                        easing.type: Easing.OutQuad
+                    }
+                    PauseAnimation {
+                        duration: 250
+                    }
                 }
             }
 
