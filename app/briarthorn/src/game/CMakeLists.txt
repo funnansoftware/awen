@@ -23,7 +23,8 @@ target_include_directories(${PROJECT_NAME}
 # The game core is deliberately free of Qt and every platform library, so it
 # links nothing here — that is what lets Briarthorn (and the tests) run headless.
 
-# The tests run natively (GoogleTest, ctest); there is no runner on wasm.
-if(BUILD_TESTING AND NOT EMSCRIPTEN)
+# The tests run natively (GoogleTest, ctest); there is no runner on wasm, and
+# an android cross-build cannot execute the discovery binary.
+if(BUILD_TESTING AND NOT EMSCRIPTEN AND NOT ANDROID)
     add_subdirectory(test)
 endif()

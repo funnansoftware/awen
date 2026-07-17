@@ -3,7 +3,10 @@
 A C++23 application framework built around Qt Quick, plus the apps on top of it.
 Layout:
 
-Qt Quick is the sole rendering backend, on windows, linux and macos.
+Qt Quick is the sole rendering backend, on windows, linux, macos, web
+(emscripten/wasm, toolchain pinned in `.emscripten-version`) and android
+(arm64-v8a, NDK pinned in `.android-ndk-version`; Qt's androiddeployqt
+assembles the APK).
 
 - `src/` — the framework: QML modules (`awen.entity`, target `awen-entity`) built
   with `qt_add_qml_module`.

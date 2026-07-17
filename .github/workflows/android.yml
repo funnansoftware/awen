@@ -1,0 +1,86 @@
+name: android
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Runs on the bare runner rather than the devcontainer image: the target
+  # compiler is the NDK's clang and the host-tool Qt needs no xcb/image deps,
+  # while re-adding SDK + NDK + JDK layers to the shared image would bloat
+  # every other job. The runner preinstalls the SDK; only the exact NDK gets
+  # added.
+  android-build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/get-vcpkg
+
+      # The only Qt build dependency the runner image lacks (the vcpkg meta
+      # build needs the autoconf family; the rest is preinstalled).
+      - name: install-build-deps
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf-archive
+
+      # Install the NDK Qt 6.11.1 documents (r27c). Qt's own version check is
+      # advisory-only — it silently picks the HIGHEST installed NDK when not
+      # pinned — so the preset hardcodes ANDROID_NDK_HOME to this version and
+      # .android-ndk-version keeps CI and the presets moving together. Qt for
+      # Android documents JDK 21; the runner default is 17.
+      - name: pin-android-toolchain
+        shell: bash
+        run: |
+          # No `yes |` pipe: the runner image ships with the SDK licenses
+          # accepted, and under pipefail a `yes` killed by SIGPIPE when
+          # sdkmanager exits first would fail the step spuriously.
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$(cat .android-ndk-version)" >/dev/null
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+
+      - name: cmake-configure
+        shell: bash
+        run: cmake --preset android-release
+
+      # apk_all is part of ALL: this also runs androiddeployqt + gradle (the
+      # first run downloads the gradle distribution Qt's template pins).
+      - name: cmake-build
+        shell: bash
+        run: cmake --build --preset android-release --parallel $(( $(nproc --all) + 1 ))
+
+      - name: cmake-install
+        shell: bash
+        run: cmake --build --preset android-release --target install
+
+      # The point of the android build is an APK that actually loads, so
+      # assert the packages are complete rather than trusting a green build.
+      - name: verify-apk
+        shell: bash
+        run: |
+          out=build/android-release/installed/android
+          for apk in briarthorn awen; do
+            unzip -l "$out/$apk.apk" > listing.txt
+            for f in "lib/arm64-v8a/lib${apk}_arm64-v8a.so" \
+                     "lib/arm64-v8a/libQt6Core_arm64-v8a.so" \
+                     "lib/arm64-v8a/libQt6Qml_arm64-v8a.so" \
+                     "lib/arm64-v8a/libplugins_platforms_qtforandroid_arm64-v8a.so" \
+                     "lib/arm64-v8a/libc++_shared.so" \
+                     "classes.dex"; do
+              grep -q "$f" listing.txt || { echo "::error::$apk.apk missing $f"; cat listing.txt; exit 1; }
+            done
+            echo "ok: $apk.apk"
+          done
+
+      - name: upload-apks
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: build/android-release/installed/android

@@ -1,0 +1,19 @@
+{
+    "version": 7,
+    "configurePresets": [
+        {
+            "name": "compiler-android-ndk",
+            "hidden": true,
+            "environment": {
+                "ANDROID_NDK_HOME": "$penv{ANDROID_HOME}/ndk/27.2.12479018"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Werror -pedantic",
+                "CMAKE_C_FLAGS": "-Wall -Wextra -Werror -pedantic",
+                "CMAKE_POLICY_VERSION_MINIMUM": "3.10",
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake"
+            }
+        }
+    ]
+}

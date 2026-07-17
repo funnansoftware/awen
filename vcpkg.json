@@ -5,9 +5,9 @@
     "homepage": "https://github.com/funnansoftware/awen",
     "dependencies": [
         {
-            "$comment": "The test binaries are built and run natively; there is no test runner on wasm.",
+            "$comment": "The test binaries are built and run natively; there is no runner on wasm, and an android cross-build cannot execute the binary gtest_discover_tests runs at build time.",
             "name": "gtest",
-            "platform": "!emscripten"
+            "platform": "!emscripten & !android"
         },
         "qtdeclarative",
         {
@@ -32,13 +32,14 @@
                     "name": "opengl"
                 },
                 {
-                    "$comment": "Selects the ES/WebGL backend that the browser provides, in place of desktop GL.",
+                    "$comment": "Selects the GLES backend in place of desktop GL: WebGL in the browser, EGL/GLES on android. On android this documents intent rather than changes the graph — the qtbase port's gui feature already pulls egl/freetype/gles2/opengl there; on emscripten it is load-bearing.",
                     "name": "gles2",
-                    "platform": "emscripten"
+                    "platform": "emscripten | android"
                 },
                 {
+                    "$comment": "No fontconfig outside desktop linux: the browser sandbox has no system fonts at all, and the android QPA feeds /system/fonts through QFreeTypeFontDatabase — all android text goes through the FreeType engine.",
                     "name": "freetype",
-                    "platform": "emscripten"
+                    "platform": "emscripten | android"
                 },
                 {
                     "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration. Excluded on emscripten: the port turns it into FEATURE_libresolv=ON, and the browser sandbox has no resolver, so Qt fails configure with 'Feature libresolv: Forcing to ON breaks its condition'.",
@@ -52,7 +53,7 @@
                 },
                 {
                     "name": "egl",
-                    "platform": "linux"
+                    "platform": "linux | android"
                 },
                 {
                     "name": "fontconfig",
