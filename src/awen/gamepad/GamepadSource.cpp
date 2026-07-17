@@ -9,6 +9,7 @@
 #include <QQmlEngine>
 #include <QString>
 #include <QTimer>
+#include <chrono>
 
 #include <SDL3/SDL.h>
 
@@ -57,25 +58,6 @@ static_assert(static_cast<int>(Gamepad::Axis::RightTrigger) == SDL_GAMEPAD_AXIS_
 
 namespace
 {
-    // The poll cadence while a controller is connected and the app is active. SDL
-    // needs its queue drained regularly to surface events; an interval of 0 would
-    // spin a whole CPU core, so we pump a little faster than the display refreshes
-    // (~125 Hz) — well under one frame of input lag. On wasm the browser only
-    // refreshes gamepad state at animation-frame rate, so pumping faster than one
-    // frame (~60 Hz) would just re-read the same snapshot while waking the main
-    // thread twice as often.
-#ifdef Q_OS_WASM
-    constexpr auto PollIntervalMs = 16;
-#else
-    constexpr auto PollIntervalMs = 8;
-#endif
-
-    // The slow heartbeat used when there is nothing to poll for at full speed — no
-    // controller connected, or the window is not active. Still frequent enough to
-    // surface a hotplug within a fraction of a second, but it stops an idle or
-    // backgrounded app waking the main thread ~125x/s.
-    constexpr auto IdlePollIntervalMs = 250;
-
     /// @brief The single owner of SDL's gamepad subsystem for one QML engine.
     ///
     /// SDL_PollEvent drains one process-global queue, so exactly one of these pumps
@@ -102,7 +84,7 @@ namespace
             // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — Qt parents the timer to this.
             timer_ = new QTimer{this};
             connect(timer_, &QTimer::timeout, this, &GamepadSource::poll);
-            timer_->start(PollIntervalMs);
+            timer_->start(pollInterval_);
             // Re-evaluate the cadence whenever the app gains/loses active state, so a
             // backgrounded or unfocused window drops to the heartbeat promptly rather
             // than only on the next poll.
@@ -134,6 +116,22 @@ namespace
         [[nodiscard]] auto initialized() const -> bool
         {
             return initialized_;
+        }
+
+        /// @brief Retune the connected-and-active poll cadence. Fed by the Gamepad
+        /// attached type's pollInterval property (already clamped there); applies
+        /// immediately.
+        auto setPollInterval(std::chrono::milliseconds interval) -> void
+        {
+            pollInterval_ = interval;
+            updatePollRate();
+        }
+
+        /// @brief Retune the idle heartbeat cadence (Gamepad's idlePollInterval).
+        auto setIdlePollInterval(std::chrono::milliseconds interval) -> void
+        {
+            idlePollInterval_ = interval;
+            updatePollRate();
         }
 
     signals:
@@ -224,11 +222,16 @@ namespace
         auto updatePollRate() -> void
         {
             const auto active = QGuiApplication::applicationState() == Qt::ApplicationActive;
-            timer_->setInterval(!gamepads_.empty() && active ? PollIntervalMs : IdlePollIntervalMs);
+            timer_->setInterval(!gamepads_.empty() && active ? pollInterval_ : idlePollInterval_);
         }
 
-        QTimer* timer_ = nullptr;
-        bool initialized_ = false;
+        QTimer* timer_{nullptr};
+        bool initialized_{false};
+        // The cadences, defaulted from the Gamepad type's constants (rationale and
+        // tuning guidance documented there, next to the QML properties that retune
+        // these through the setters above).
+        std::chrono::milliseconds pollInterval_{Gamepad::DefaultPollInterval};
+        std::chrono::milliseconds idlePollInterval_{Gamepad::DefaultIdlePollInterval};
         std::unordered_map<SDL_JoystickID, SDL_Gamepad*> gamepads_;
     };
 
@@ -282,6 +285,16 @@ auto awen::attachGamepad(Gamepad* gamepad, QObject* attachee) -> void
                      [gamepad](int deviceId, int button) { emit gamepad->buttonReleased(deviceId, static_cast<Gamepad::Button>(button)); });
     QObject::connect(source, &GamepadSource::axisChanged, gamepad, [gamepad](int deviceId, int axis, double value)
                      { emit gamepad->axisChanged(deviceId, static_cast<Gamepad::Axis>(axis), value); });
+
+    // The cadence properties write through to the shared source: setting them on
+    // any attached instance retunes the engine-wide polling (last write wins, as
+    // documented on the properties). Wired at attach — before QML can assign the
+    // properties — so no initial push is needed: an untouched instance leaves the
+    // source at the same defaults.
+    QObject::connect(gamepad, &Gamepad::pollIntervalChanged, source,
+                     [source, gamepad] { source->setPollInterval(std::chrono::milliseconds{gamepad->pollInterval()}); });
+    QObject::connect(gamepad, &Gamepad::idlePollIntervalChanged, source,
+                     [source, gamepad] { source->setIdlePollInterval(std::chrono::milliseconds{gamepad->idlePollInterval()}); });
 }
 
 #include "GamepadSource.moc"
