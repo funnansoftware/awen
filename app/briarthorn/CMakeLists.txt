@@ -101,6 +101,12 @@ if(EMSCRIPTEN)
         OPTIONAL
     )
 
+    # The briarthorn.game entry page: a styled shell that embeds the app in a
+    # bounded view (qtLoad + containerElements). Ships as index.html so serving
+    # the web/ directory root shows it; Qt's generated briarthorn.html stays as
+    # a plain debug fallback.
+    install(FILES web/index.html DESTINATION web)
+
     return()
 endif()
 
