@@ -11,6 +11,13 @@ Window {
     width: 800
     height: 600
     visible: true
+    // On wasm the window maximizes into the container div the web shell hands
+    // to qtLoad (web/index.html's game view), filling it exactly; elsewhere it
+    // stays a normal 800×600 desktop window. Frameless on wasm: Qt paints its
+    // own title bar inside the container otherwise, which reads as a window
+    // within the page rather than an embedded view.
+    visibility: Qt.platform.os === "wasm" ? Window.Maximized : Window.Windowed
+    flags: Qt.platform.os === "wasm" ? Qt.FramelessWindowHint : Qt.Window
     title: qsTr("briarthorn")
     color: "#505050" // the scope background
 

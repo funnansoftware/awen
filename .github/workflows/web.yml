@@ -84,7 +84,7 @@ jobs:
         shell: bash
         run: |
           out=build/web-release/installed/web
-          for f in briarthorn.html briarthorn.js briarthorn.wasm awen.html awen.js awen.wasm; do
+          for f in index.html briarthorn.html briarthorn.js briarthorn.wasm awen.html awen.js awen.wasm; do
             if [ ! -s "$out/$f" ]; then
               echo "::error::missing or empty $out/$f"
               ls -la "$out" || true
