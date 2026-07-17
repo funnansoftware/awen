@@ -157,4 +157,13 @@ if(BUILD_TESTING)
     set_tests_properties(tst_apploads PROPERTIES ENVIRONMENT
         "BRIARTHORN_SMOKE_QUIT_MS=3000;QT_QPA_PLATFORM=minimal;QSG_RHI_BACKEND=software"
     )
+    # A build-tree run has no deploy/qt.conf to point the engine at the in-project
+    # modules (Briarthorn, awen.gamepad) collected under QT_QML_OUTPUT_DIRECTORY —
+    # cmake/qt-build-tree-conf.cmake writes that qt.conf on Windows only. Add the
+    # directory to the import path so Release's loadFromModule resolves them (else it
+    # fails with "No module named Briarthorn found"); Qt's own modules resolve via the
+    # relocatable prefix. path_list_append picks the platform's list separator.
+    set_property(TEST tst_apploads APPEND PROPERTY ENVIRONMENT_MODIFICATION
+        "QML_IMPORT_PATH=path_list_append:${QT_QML_OUTPUT_DIRECTORY}"
+    )
 endif()
