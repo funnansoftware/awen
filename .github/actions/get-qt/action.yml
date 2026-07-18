@@ -44,12 +44,12 @@ runs:
 
     # --base pins the official download server: aqt's randomly-picked mirrors
     # intermittently miss Updates.xml/checksums, which failed whole CI runs.
-    # aqtversion: the action's default (3.1.*) predates the per-toolchain
-    # windows repository layout Qt >= 6.8 uses, failing with "Failed to locate
-    # XML data" on windows only.
+    # aqtsource: Qt 6.11 changed the windows repository layout and no aqtinstall
+    # release (<= 3.3.0) knows it; the fix (aqtinstall PR #1000) is only on
+    # master, pinned here by SHA. Drop aqtsource once a release past 3.3.0 ships.
     - uses: jurplel/install-qt-action@v4
       with:
-        aqtversion: ==3.3.*
+        aqtsource: git+https://github.com/miurahr/aqtinstall@bb57972a7a806eccb5cacc01b094982d1c1f725e
         version: ${{ steps.qt-version.outputs.version }}
         host: ${{ inputs.host }}
         target: ${{ inputs.target }}

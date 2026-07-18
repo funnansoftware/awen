@@ -1,0 +1,87 @@
+2026-07-18 13:42:18,412 - aqt.main - INFO - installer 221152 aqtinstall(aqt) v3.3.0 on Python 3.14.3 [CPython MSC v.1944 64 bit (AMD64)]
+2026-07-18 13:42:33,087 - aqt.helper - DEBUG - helper 93004 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:33,714 - aqt.helper - DEBUG - helper 93004 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:34,289 - aqt.helper - DEBUG - helper 93004 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:34,872 - aqt.helper - DEBUG - helper 93004 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:35,478 - aqt.helper - DEBUG - helper 93004 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:36,054 - aqt.main - ERROR - installer 93004 Failed to download checksum for the file 'Updates.xml' from mirrors '['https://download.qt.io']
+==============================Suggested follow-up:==============================
+* Check your internet connection
+* Consider modifying `requests.max_retries_to_retrieve_hash` in settings.ini
+* Consider modifying `mirrors.trusted_mirrors` in settings.ini (see https://aqtinstall.readthedocs.io/en/stable/configuration.html#configuration)
+* Please use 'aqt list-qt windows desktop' to show versions of Qt available.
+2026-07-18 13:42:43,243 - aqt.helper - DEBUG - helper 220536 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:43,849 - aqt.helper - DEBUG - helper 220536 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:44,426 - aqt.helper - DEBUG - helper 220536 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:45,001 - aqt.helper - DEBUG - helper 220536 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:45,591 - aqt.helper - DEBUG - helper 220536 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:42:46,195 - aqt.main - ERROR - installer 220536 Failed to download checksum for the file 'Updates.xml' from mirrors '['https://download.qt.io']
+==============================Suggested follow-up:==============================
+* Check your internet connection
+* Consider modifying `requests.max_retries_to_retrieve_hash` in settings.ini
+* Consider modifying `mirrors.trusted_mirrors` in settings.ini (see https://aqtinstall.readthedocs.io/en/stable/configuration.html#configuration)
+* Please use 'aqt list-qt windows desktop' to show versions of Qt available.
+2026-07-18 13:43:03,945 - aqt.helper - DEBUG - helper 222512 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_683/qt6_683/Updates.xml.sha256
+2026-07-18 13:43:05,612 - aqt.helper - DEBUG - helper 216896 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_690/qt6_690/Updates.xml.sha256
+2026-07-18 13:43:07,248 - aqt.helper - DEBUG - helper 213556 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6100/qt6_6100/Updates.xml.sha256
+2026-07-18 13:43:08,897 - aqt.helper - DEBUG - helper 224900 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:43:09,500 - aqt.helper - DEBUG - helper 224900 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:43:10,075 - aqt.helper - DEBUG - helper 224900 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:43:10,709 - aqt.helper - DEBUG - helper 224900 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:43:11,311 - aqt.helper - DEBUG - helper 224900 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110/Updates.xml.sha256
+2026-07-18 13:43:11,916 - aqt.main - ERROR - installer 224900 Failed to download checksum for the file 'Updates.xml' from mirrors '['https://download.qt.io']
+==============================Suggested follow-up:==============================
+* Check your internet connection
+* Consider modifying `requests.max_retries_to_retrieve_hash` in settings.ini
+* Consider modifying `mirrors.trusted_mirrors` in settings.ini (see https://aqtinstall.readthedocs.io/en/stable/configuration.html#configuration)
+* Please use 'aqt list-qt windows desktop' to show versions of Qt available.
+2026-07-18 13:44:17,188 - aqt.main - INFO - installer 248792 aqtinstall(aqt) v3.3.1.dev153 on Python 3.14.3 [CPython MSC v.1944 64 bit (AMD64)]
+2026-07-18 13:44:17,508 - aqt.helper - DEBUG - helper 256632 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_mingw/Updates.xml.sha256
+2026-07-18 13:44:18,744 - aqt.helper - DEBUG - helper 256632 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_msvc2022_64/Updates.xml.sha256
+2026-07-18 13:44:19,934 - aqt.helper - DEBUG - helper 256632 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_msvc2022_arm64_cross_compiled/Updates.xml.sha256
+2026-07-18 13:44:21,124 - aqt.helper - DEBUG - helper 256632 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_llvm_mingw/Updates.xml.sha256
+2026-07-18 13:44:34,663 - aqt.main - INFO - installer 158028 aqtinstall(aqt) v3.3.1.dev153 on Python 3.14.3 [CPython MSC v.1944 64 bit (AMD64)]
+2026-07-18 13:44:34,663 - aqt.helper - DEBUG - helper 158028 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_msvc2022_64/Updates.xml.sha256
+2026-07-18 13:44:35,929 - aqt.helper - DEBUG - helper 158028 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/extensions/qtwebengine/6110/msvc2022_64/Updates.xml.sha256
+2026-07-18 13:44:37,137 - aqt.archives - INFO - archives 158028 Found extension qtwebengine
+2026-07-18 13:44:37,137 - aqt.helper - DEBUG - helper 158028 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/extensions/qtpdf/6110/msvc2022_64/Updates.xml.sha256
+2026-07-18 13:44:38,393 - aqt.archives - INFO - archives 158028 Found extension qtpdf
+2026-07-18 13:44:38,926 - aqt.helper - DEBUG - helper 242000 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_msvc2022_64/qt.qt6.6110.win64_msvc2022_64/6.11.0-0-202603180535qtbase-Windows-Windows_11_24H2-MSVC2022-Windows-Windows_11_24H2-X86_64.7z.sha256
+2026-07-18 13:44:39,514 - aqt.helper - INFO - helper 242000 Downloading qtbase...
+2026-07-18 13:44:39,514 - aqt.installer - DEBUG - installer 242000 Download URL: https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_msvc2022_64/qt.qt6.6110.win64_msvc2022_64/6.11.0-0-202603180535qtbase-Windows-Windows_11_24H2-MSVC2022-Windows-Windows_11_24H2-X86_64.7z
+2026-07-18 13:44:40,092 - aqt.helper - DEBUG - helper 242000 Asked to redirect(302) to: https://qt.mirror.constant.com/online/qtsdkrepository/windows_x86/desktop/qt6_6110/qt6_6110_msvc2022_64/qt.qt6.6110.win64_msvc2022_64/6.11.0-0-202603180535qtbase-Windows-Windows_11_24H2-MSVC2022-Windows-Windows_11_24H2-X86_64.7z
+2026-07-18 13:44:40,093 - aqt.helper - INFO - helper 242000 Redirected: qt.mirror.constant.com
+2026-07-18 13:44:46,773 - aqt.installer - INFO - installer 242000 Finished installation of qtbase-Windows-Windows_11_24H2-MSVC2022-Windows-Windows_11_24H2-X86_64.7z in 7.84889960
+2026-07-18 13:44:46,914 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\bin\qmake.exe
+2026-07-18 13:44:46,917 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Concurrent.prl
+2026-07-18 13:44:46,922 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Concurrentd.prl
+2026-07-18 13:44:46,927 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Core.prl
+2026-07-18 13:44:46,931 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Cored.prl
+2026-07-18 13:44:46,935 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6DBus.prl
+2026-07-18 13:44:46,939 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6DBusd.prl
+2026-07-18 13:44:46,943 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6DeviceDiscoverySupport.prl
+2026-07-18 13:44:46,947 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6DeviceDiscoverySupportd.prl
+2026-07-18 13:44:46,951 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6EntryPoint.prl
+2026-07-18 13:44:46,955 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6EntryPointd.prl
+2026-07-18 13:44:46,959 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6FbSupport.prl
+2026-07-18 13:44:46,963 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6FbSupportd.prl
+2026-07-18 13:44:46,968 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Gui.prl
+2026-07-18 13:44:46,972 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Guid.prl
+2026-07-18 13:44:46,976 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Network.prl
+2026-07-18 13:44:46,980 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Networkd.prl
+2026-07-18 13:44:46,984 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6OpenGL.prl
+2026-07-18 13:44:46,988 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6OpenGLd.prl
+2026-07-18 13:44:46,992 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6OpenGLWidgets.prl
+2026-07-18 13:44:46,996 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6OpenGLWidgetsd.prl
+2026-07-18 13:44:47,000 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6PrintSupport.prl
+2026-07-18 13:44:47,004 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6PrintSupportd.prl
+2026-07-18 13:44:47,008 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Sql.prl
+2026-07-18 13:44:47,011 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Sqld.prl
+2026-07-18 13:44:47,015 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Test.prl
+2026-07-18 13:44:47,019 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Testd.prl
+2026-07-18 13:44:47,022 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Widgets.prl
+2026-07-18 13:44:47,026 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Widgetsd.prl
+2026-07-18 13:44:47,030 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Xml.prl
+2026-07-18 13:44:47,034 - aqt.updater - INFO - updater 158028 Patching C:\Users\funnan\AppData\Local\Temp\claude\D--dev-awen\c33f2a36-aa82-4e9e-94fc-76e60592c25b\scratchpad\qt-test\6.11.0\msvc2022_64\lib\Qt6Xmld.prl
+2026-07-18 13:44:47,039 - aqt.main - INFO - installer 158028 Finished installation
+2026-07-18 13:44:47,039 - aqt.main - INFO - installer 158028 Time elapsed: 12.37608530 second
