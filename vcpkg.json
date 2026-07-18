@@ -26,6 +26,17 @@
             "dependencies": [
                 "qtdeclarative",
                 {
+                    "$comment": "QtWebSockets backs the Twitch chat transport (IRC-over-WebSocket / EventSub), including on wasm where Qt maps QWebSocket onto the browser WebSocket API. On the prebuilt-Qt path the get-qt action installs the same module.",
+                    "name": "qtwebsockets",
+                    "default-features": false
+                },
+                {
+                    "$comment": "QtNetworkAuth drives the YouTube and Twitch OAuth2 sign-in flows. Excluded on emscripten: its loopback-redirect handler can't run in the browser sandbox, and neither the vcpkg port nor the wasm Qt kit provides it there.",
+                    "name": "qtnetworkauth",
+                    "default-features": false,
+                    "platform": "!emscripten"
+                },
+                {
                     "$comment": "Host-tool Qt (qmlcachegen, moc, ...) with default features stripped. thread + concurrent must stay: without them host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found').",
                     "name": "qtbase",
                     "host": true,
@@ -59,6 +70,11 @@
                         {
                             "$comment": "Without dnslookup the QtNetwork dylib fails to link on macOS/Linux (undefined _res_9_ninit). Excluded on emscripten, where it breaks Qt's configure (no resolver in the browser sandbox).",
                             "name": "dnslookup",
+                            "platform": "!emscripten"
+                        },
+                        {
+                            "$comment": "TLS backend for HTTPS/WSS (YouTube Data API, Twitch chat, OAuth token exchange). Excluded on emscripten, where the browser terminates TLS. The prebuilt-Qt kits ship their own TLS, so this only affects the vcpkg-built path.",
+                            "name": "openssl",
                             "platform": "!emscripten"
                         },
                         {

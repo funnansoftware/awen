@@ -18,6 +18,13 @@ inputs:
     description: Extra aqtinstall arguments (e.g. --autodesktop for cross kits).
     required: false
     default: ""
+  modules:
+    # Add-on Qt modules the base kit omits. QtNetworkAuth + QtWebSockets back the
+    # chat transport/OAuth; wasm overrides this to drop qtnetworkauth (no browser
+    # loopback, and the wasm kit doesn't offer it).
+    description: Space-separated Qt add-on modules to install alongside the base kit.
+    required: false
+    default: qtnetworkauth qtwebsockets
   install-deps:
     description: Let install-qt-action apt-install Qt's linux dependencies. Turn off in containers, where sudo is absent and the image already ships them.
     required: false
@@ -54,6 +61,7 @@ runs:
         host: ${{ inputs.host }}
         target: ${{ inputs.target }}
         arch: ${{ inputs.arch }}
+        modules: ${{ inputs.modules }}
         extra: ${{ steps.qt-version.outputs.extra }}
         cache: true
         install-deps: ${{ inputs.install-deps }}
