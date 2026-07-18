@@ -7,14 +7,16 @@ target_sources(briarthorn
         main.cpp
 )
 
-# IMPORTS tells the import scan (qmllint, deploy) that Main.qml depends on
-# awen.gamepad; the types themselves come from linking awen-gamepad below.
+# IMPORTS tells the import scan (qmllint, deploy) that the QML files depend on
+# awen.entity and awen.gamepad; the types come from the linked modules below.
 qt_add_qml_module(briarthorn
     URI Briarthorn
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/systems/SystemMovement.qml
     IMPORTS
+        awen.entity
         awen.gamepad
 )
 
@@ -23,6 +25,7 @@ qt_add_qml_module(briarthorn
 
 target_link_libraries(briarthorn
     PRIVATE
+        awen-entity
         awen-gamepad
         Qt6::Quick
 )

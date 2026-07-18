@@ -9,7 +9,8 @@ Qt Quick is the sole rendering backend, on windows, linux, macos, web
 assembles the APK).
 
 - `src/` — the framework: QML modules built with `qt_add_qml_module` — `awen.entity`
-  (target `awen-entity`) and `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
+  (target `awen-entity`: the `entity` value type plus the `System`/`Systems`
+  QML pair games derive per-frame logic from) and `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
   gamepad attached-property type — one SDL backend on desktop and wasm (SDL wraps
   the browser Gamepad API there), an inert stub on android; its Qt-free
   `awen-gamepad-core` is the unit-tested, coverage-observed part).
@@ -52,6 +53,10 @@ assembles the APK).
 - **No non-const globals** — mutable state belongs to an object instance.
 - Accessor/mutator pairs are `getX()` / `setX()`; a lone getter keeps its bare
   name (`alpha()`, `entities()`).
+- **QML names go base-type-first.** A derived QML type's object and file name
+  lead with the type it derives from, then the specialization: `SystemMovement`
+  (a `System`), not `MovementSystem`. Briarthorn's systems live in
+  `app/briarthorn/qml/systems/`.
 - **Doc comments are Doxygen.** `///` with `@brief`, `@param`, `@return`;
   `@p name` for parameters; trailing `///<` for data members.
 - **Commit messages are one line.** A single short imperative summary — no body,
