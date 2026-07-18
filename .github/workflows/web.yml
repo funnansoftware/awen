@@ -59,6 +59,9 @@ jobs:
           host: all_os
           target: wasm
           arch: wasm_singlethread
+          # QtWebSockets only: the wasm kit doesn't offer QtNetworkAuth, whose
+          # loopback OAuth can't run in the browser anyway.
+          modules: qtwebsockets
           extra: --autodesktop
           install-deps: false
           setup-python: false
