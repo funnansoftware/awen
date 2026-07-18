@@ -16,6 +16,15 @@ project(awen)
 # sysroots. The toolchain runs during project(), so append after it.
 if(AWEN_QT_PREBUILT_DIR)
     list(APPEND CMAKE_FIND_ROOT_PATH "${AWEN_QT_PREBUILT_DIR}")
+
+    # Wasm target finalization calls _qt_test_emscripten_version, defined by
+    # the kit's qt.toolchain.cmake — which this build replaces with the
+    # emscripten toolchain via vcpkg. Pull in just those definitions; the check
+    # then passes because .emscripten-version matches the kit's recommended
+    # emcc release.
+    if(EMSCRIPTEN)
+        include("${AWEN_QT_PREBUILT_DIR}/lib/cmake/Qt6/QtPublicWasmToolchainHelpers.cmake")
+    endif()
 endif()
 
 include(CTest)

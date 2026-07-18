@@ -44,8 +44,12 @@ runs:
 
     # --base pins the official download server: aqt's randomly-picked mirrors
     # intermittently miss Updates.xml/checksums, which failed whole CI runs.
+    # aqtversion: the action's default (3.1.*) predates the per-toolchain
+    # windows repository layout Qt >= 6.8 uses, failing with "Failed to locate
+    # XML data" on windows only.
     - uses: jurplel/install-qt-action@v4
       with:
+        aqtversion: ==3.3.*
         version: ${{ steps.qt-version.outputs.version }}
         host: ${{ inputs.host }}
         target: ${{ inputs.target }}
