@@ -32,10 +32,15 @@ runs:
   steps:
     # .qt-version is the single pin all workflows share — a Qt bump is one-line
     # and rotates install-qt-action's cache key via its version input.
+    # The merged extra string is trimmed here: install-qt-action splits it on
+    # spaces without filtering, and a leading space becomes an empty aqt arg.
     - name: read-qt-version
       id: qt-version
       shell: bash
-      run: echo "version=$(tr -d ' \t\r\n' < .qt-version)" >> "$GITHUB_OUTPUT"
+      run: |
+        echo "version=$(tr -d ' \t\r\n' < .qt-version)" >> "$GITHUB_OUTPUT"
+        extra="${{ inputs.extra }} --base https://download.qt.io"
+        echo "extra=$(echo $extra)" >> "$GITHUB_OUTPUT"
 
     # --base pins the official download server: aqt's randomly-picked mirrors
     # intermittently miss Updates.xml/checksums, which failed whole CI runs.
@@ -45,7 +50,7 @@ runs:
         host: ${{ inputs.host }}
         target: ${{ inputs.target }}
         arch: ${{ inputs.arch }}
-        extra: ${{ inputs.extra }} --base https://download.qt.io
+        extra: ${{ steps.qt-version.outputs.extra }}
         cache: true
         install-deps: ${{ inputs.install-deps }}
         setup-python: ${{ inputs.setup-python }}
