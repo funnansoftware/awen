@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
+# Before project(): decides between a prebuilt Qt kit and vcpkg-built Qt, which
+# must be settled before the vcpkg toolchain runs the manifest install.
+include(cmake/qt-source.cmake)
+
 project(awen)
 
 include(CTest)

@@ -65,3 +65,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev \
     libxkbcommon-x11-dev libegl1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Prebuilt-Qt support: pip runs aqtinstall in CI (the image's python is
+# "externally managed", hence the override), and the official Qt binaries link
+# runtime libraries the source build got from vcpkg instead.
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip \
+    libfontconfig1 \
+    libfreetype6 \
+    libglib2.0-0t64 \
+    libdbus-1-3 \
+    libgl1 \
+    libegl1 \
+    libopengl0 \
+    && rm -rf /var/lib/apt/lists/*

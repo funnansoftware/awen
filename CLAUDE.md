@@ -25,8 +25,12 @@ assembles the APK).
 
 - **Source VS18 vcvars64 first** or builds fail on missing MSVC/`type_traits`:
   `call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"`
-- Configure: `cmake --preset windows-msvc-debug` (or `-release`; first configure
-  builds Qt via vcpkg — slow once, then binary-cached).
+- Configure: `cmake --preset windows-msvc-debug` (or `-release`). Qt is
+  auto-discovered from a prebuilt kit (`C:\Qt`, `~/Qt`, or env `QT_ROOT_DIR`;
+  see `cmake/qt-source.cmake`) — without one, vcpkg builds Qt from source (slow
+  once, then binary-cached). `-DAWEN_QT=vcpkg|prebuilt|auto` pins the choice;
+  steamos always uses vcpkg Qt (glibc floor). SDL3/gtest come from vcpkg either
+  way.
 - Build: `cmake --build --preset windows-msvc-debug`
 - Test: `ctest --preset windows-msvc-debug`
 - QML is embedded via qmlcachegen, so QML edits need a rebuild. If a QML edit

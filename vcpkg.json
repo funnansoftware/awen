@@ -14,70 +14,81 @@
             "name": "sdl3",
             "default-features": false,
             "platform": "!android"
-        },
-        "qtdeclarative",
-        {
-            "$comment": "Host-tool Qt (qmlcachegen, moc, ...) with default features stripped. thread + concurrent must stay: without them host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found').",
-            "name": "qtbase",
-            "host": true,
-            "default-features": false,
-            "features": [
-                "concurrent",
-                "thread"
-            ]
-        },
-        {
-            "$comment": "Target Qt trimmed to what Qt Quick rendering needs on each platform's default backend: OpenGL on desktop, GLES2 in the browser, xcb windowing + fontconfig font discovery on linux, freetype on wasm (no system fonts in the browser sandbox). qtdeclarative itself re-adds network and testlib.",
-            "name": "qtbase",
-            "default-features": false,
-            "features": [
-                "gui",
-                "png",
+        }
+    ],
+    "default-features": [
+        "qt"
+    ],
+    "features": {
+        "qt": {
+            "$comment": "Qt built from source by vcpkg. On by default so a bare configure still works anywhere; cmake/qt-source.cmake turns it off (VCPKG_MANIFEST_NO_DEFAULT_FEATURES) when a prebuilt Qt kit is used instead.",
+            "description": "Build Qt itself via vcpkg",
+            "dependencies": [
+                "qtdeclarative",
                 {
-                    "$comment": "Every platform, wasm included: this maps to Qt's umbrella FEATURE_opengl. gles2 alone only selects the backend, and without opengl the wasm platform plugin fails to compile.",
-                    "name": "opengl"
+                    "$comment": "Host-tool Qt (qmlcachegen, moc, ...) with default features stripped. thread + concurrent must stay: without them host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found').",
+                    "name": "qtbase",
+                    "host": true,
+                    "default-features": false,
+                    "features": [
+                        "concurrent",
+                        "thread"
+                    ]
                 },
                 {
-                    "$comment": "Selects the GLES backend in place of desktop GL (WebGL in the browser, EGL/GLES on android); load-bearing on emscripten.",
-                    "name": "gles2",
-                    "platform": "emscripten | android"
-                },
-                {
-                    "$comment": "No system fonts in the browser sandbox, and android feeds /system/fonts through the FreeType engine.",
-                    "name": "freetype",
-                    "platform": "emscripten | android"
-                },
-                {
-                    "$comment": "Without dnslookup the QtNetwork dylib fails to link on macOS/Linux (undefined _res_9_ninit). Excluded on emscripten, where it breaks Qt's configure (no resolver in the browser sandbox).",
-                    "name": "dnslookup",
-                    "platform": "!emscripten"
-                },
-                {
-                    "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it the deploy install step fails with 'No Qt deploy tool available'.",
-                    "name": "windeployqt",
-                    "platform": "windows"
-                },
-                {
-                    "name": "egl",
-                    "platform": "linux | android"
-                },
-                {
-                    "name": "fontconfig",
-                    "platform": "linux"
-                },
-                {
-                    "name": "xcb",
-                    "platform": "linux"
-                },
-                {
-                    "name": "xcb-xlib",
-                    "platform": "linux"
-                },
-                {
-                    "name": "xrender",
-                    "platform": "linux"
+                    "$comment": "Target Qt trimmed to what Qt Quick rendering needs on each platform's default backend: OpenGL on desktop, GLES2 in the browser, xcb windowing + fontconfig font discovery on linux, freetype on wasm (no system fonts in the browser sandbox). qtdeclarative itself re-adds network and testlib.",
+                    "name": "qtbase",
+                    "default-features": false,
+                    "features": [
+                        "gui",
+                        "png",
+                        {
+                            "$comment": "Every platform, wasm included: this maps to Qt's umbrella FEATURE_opengl. gles2 alone only selects the backend, and without opengl the wasm platform plugin fails to compile.",
+                            "name": "opengl"
+                        },
+                        {
+                            "$comment": "Selects the GLES backend in place of desktop GL (WebGL in the browser, EGL/GLES on android); load-bearing on emscripten.",
+                            "name": "gles2",
+                            "platform": "emscripten | android"
+                        },
+                        {
+                            "$comment": "No system fonts in the browser sandbox, and android feeds /system/fonts through the FreeType engine.",
+                            "name": "freetype",
+                            "platform": "emscripten | android"
+                        },
+                        {
+                            "$comment": "Without dnslookup the QtNetwork dylib fails to link on macOS/Linux (undefined _res_9_ninit). Excluded on emscripten, where it breaks Qt's configure (no resolver in the browser sandbox).",
+                            "name": "dnslookup",
+                            "platform": "!emscripten"
+                        },
+                        {
+                            "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it the deploy install step fails with 'No Qt deploy tool available'.",
+                            "name": "windeployqt",
+                            "platform": "windows"
+                        },
+                        {
+                            "name": "egl",
+                            "platform": "linux | android"
+                        },
+                        {
+                            "name": "fontconfig",
+                            "platform": "linux"
+                        },
+                        {
+                            "name": "xcb",
+                            "platform": "linux"
+                        },
+                        {
+                            "name": "xcb-xlib",
+                            "platform": "linux"
+                        },
+                        {
+                            "name": "xrender",
+                            "platform": "linux"
+                        }
+                    ]
                 }
             ]
         }
-    ]
+    }
 }

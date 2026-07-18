@@ -26,11 +26,15 @@ jobs:
 
       - uses: ./.github/actions/get-vcpkg
 
-      # The only Qt build dependency the runner image lacks (the vcpkg meta
-      # build needs the autoconf family; the rest is preinstalled).
-      - name: install-build-deps
-        shell: bash
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf-archive
+      # Prebuilt Qt for Android plus (--autodesktop) the host desktop Qt its
+      # tools (moc, qmlcachegen, androiddeployqt) run from. Qt was the only
+      # vcpkg dependency on android, so the manifest install becomes a no-op —
+      # and the autoconf family Qt's source build needed goes with it.
+      - uses: ./.github/actions/get-qt
+        with:
+          target: android
+          arch: android_arm64_v8a
+          extra: --autodesktop
 
       # Install the NDK Qt 6.11.1 documents (r27c). Qt's own version check is
       # advisory-only — it silently picks the HIGHEST installed NDK when not

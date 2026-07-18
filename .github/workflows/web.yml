@@ -50,6 +50,19 @@ jobs:
 
       - uses: ./.github/actions/get-vcpkg
 
+      # Prebuilt Qt for WebAssembly plus (--autodesktop) the host desktop Qt
+      # its tools run from; vcpkg keeps providing SDL3. The kit is built with
+      # the same emscripten release .emscripten-version pins (Qt documents
+      # exactly one per release), so it links against the emsdk below.
+      - uses: ./.github/actions/get-qt
+        with:
+          host: all_os
+          target: wasm
+          arch: wasm_singlethread
+          extra: --autodesktop
+          install-deps: false
+          setup-python: false
+
       # The emsdk submodule ships only the installer scripts; the toolchain
       # (referenced by the web preset's VCPKG_CHAINLOAD_TOOLCHAIN_FILE) is
       # bootstrapped into the git-ignored per-host prefix .emsdk/Linux. The key

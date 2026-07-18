@@ -17,12 +17,17 @@ modules live under `src/`; the apps built on it live under `app/`:
 
 [![briarthorn](app/briarthorn/assets/briarthorn.png)](app/briarthorn)
 
-Qt Quick is the sole rendering backend. vcpkg builds Qt from source on the first
-configure; the Qt libraries link dynamically while everything else links
-statically — the custom triplets in [cmake/triplets](cmake/triplets) draw that
-line. Dependencies build in release only (debug app builds link the release
-libraries), except on the windows debug preset, where MSVC requires debug
-dependencies and the `x64-windows` triplet keeps both configurations.
+Qt Quick is the sole rendering backend. Qt itself comes prebuilt when a kit is
+found (an official [Qt installer](https://www.qt.io/download-qt-installer-oss)
+or [aqtinstall](https://github.com/miurahr/aqtinstall) install — `C:\Qt`,
+`~/Qt`, or the `QT_ROOT_DIR` environment variable), and is otherwise built from
+source by vcpkg on the first configure; `-DAWEN_QT=vcpkg|prebuilt` pins the
+choice. Either way vcpkg provides the remaining dependencies: the Qt libraries
+link dynamically while everything else links statically — the custom triplets
+in [cmake/triplets](cmake/triplets) draw that line. Dependencies build in
+release only (debug app builds link the release libraries), except on the
+windows debug preset, where MSVC requires debug dependencies and the
+`x64-windows` triplet keeps both configurations.
 
 # Get Started
 
@@ -55,8 +60,10 @@ llvm@21`, macOS).
 | macOS   | Xcode Command Line Tools: `xcode-select --install`, and `brew install pkg-config`        |
 | Windows | nothing extra — the Windows SDK from Visual Studio covers it                             |
 
-The presets build Qt from source via vcpkg on the first configure — expect that
-one-time step to take a while. It is binary-cached afterwards.
+Without a prebuilt Qt kit (&ge; 6.11, matching the target: `msvc2022_64`,
+`gcc_64`, `macos`, `wasm_singlethread`, or `android_arm64_v8a`), the presets
+build Qt from source via vcpkg on the first configure — expect that one-time
+step to take a while. It is binary-cached afterwards.
 
 # Platforms
 

@@ -23,6 +23,10 @@ jobs:
       
       - uses: ./.github/actions/get-vcpkg
 
+      # Prebuilt Qt (cached) instead of a vcpkg source build; vcpkg keeps
+      # providing the non-Qt dependencies (SDL3, gtest).
+      - uses: ./.github/actions/get-qt
+
       - name: setup-msvc
         uses: ilammy/msvc-dev-cmd@v1
         with:

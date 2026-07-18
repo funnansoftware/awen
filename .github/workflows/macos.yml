@@ -29,14 +29,15 @@ jobs:
 
       - uses: ./.github/actions/get-vcpkg
 
+      # Prebuilt Qt (cached) instead of a vcpkg source build; vcpkg keeps
+      # providing the non-Qt dependencies (SDL3, gtest), neither of which needs
+      # the autotools the Qt source build used to pull in via brew.
+      - uses: ./.github/actions/get-qt
+
       - name: install-tools
         run: |
           brew install llvm@21
           echo "/opt/homebrew/opt/llvm@21/bin" >> $GITHUB_PATH
-
-      - name: install-qt-deps
-        run: |
-          brew install autoconf autoconf-archive automake libtool
 
       - name: cmake-configure
         run: cmake --preset ${{ matrix.preset }}

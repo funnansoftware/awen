@@ -1,0 +1,55 @@
+name: Get Qt
+description: Install the pinned prebuilt Qt kit (cached) and require it at configure time.
+
+inputs:
+  host:
+    description: install-qt-action host platform; empty lets the action detect the runner OS.
+    required: false
+    default: ""
+  target:
+    description: install-qt-action target platform.
+    required: false
+    default: desktop
+  arch:
+    description: install-qt-action architecture; empty picks the action's default for the host.
+    required: false
+    default: ""
+  extra:
+    description: Extra aqtinstall arguments (e.g. --autodesktop for cross kits).
+    required: false
+    default: ""
+  install-deps:
+    description: Let install-qt-action apt-install Qt's linux dependencies. Turn off in containers, where sudo is absent and the image already ships them.
+    required: false
+    default: "true"
+  setup-python:
+    description: Let install-qt-action provision Python. Turn off in containers to use the image's python3 + pip.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    # .qt-version is the single pin all workflows share — a Qt bump is one-line
+    # and rotates install-qt-action's cache key via its version input.
+    - name: read-qt-version
+      id: qt-version
+      shell: bash
+      run: echo "version=$(tr -d ' \t\r\n' < .qt-version)" >> "$GITHUB_OUTPUT"
+
+    - uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ steps.qt-version.outputs.version }}
+        host: ${{ inputs.host }}
+        target: ${{ inputs.target }}
+        arch: ${{ inputs.arch }}
+        extra: ${{ inputs.extra }}
+        cache: true
+        install-deps: ${{ inputs.install-deps }}
+        setup-python: ${{ inputs.setup-python }}
+
+    # Pin the Qt source so a discovery regression fails the configure loudly
+    # instead of silently falling back to a ~50 min vcpkg Qt build.
+    - name: require-prebuilt-qt
+      shell: bash
+      run: echo "AWEN_QT=prebuilt" >> "$GITHUB_ENV"
