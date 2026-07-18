@@ -10,16 +10,13 @@ using std::chrono::milliseconds;
 
 Gamepad::Gamepad(QObject* parent) : QObject{parent}
 {
-    // The backend — SDL on desktop and wasm, inert on android — connects this
-    // instance to the shared, engine-owned source; button and axis events arrive
-    // re-emitted as this type's Button/Axis enums.
+    // The platform backend connects this instance to the shared engine-owned source.
     awen::attachGamepad(this, parent);
 }
 
 auto Gamepad::qmlAttachedProperties(QObject* object) -> Gamepad*
 {
-    // The QML engine takes ownership of the attached instance (parents it to
-    // @p object), so returning a raw new is the required Qt contract.
+    // The QML engine takes ownership of the attached instance.
     // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
     return new Gamepad{object};
 }
@@ -31,8 +28,7 @@ auto Gamepad::pollInterval() const -> int
 
 auto Gamepad::setPollInterval(int intervalMs) -> void
 {
-    // Clamp before comparing so the stored value (and what the property reads
-    // back) is the applied one.
+    // Clamp before comparing so the property reads back the applied value.
     const auto interval = milliseconds{std::max(1, intervalMs)};
     if (interval == pollInterval_)
     {

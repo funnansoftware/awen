@@ -14,11 +14,8 @@ qt_add_qml_module(${PROJECT_NAME}
         awen.entity
 )
 
-# No QT_QML_DEBUG here: enabling the QML debug server makes the engine skip the
-# qmlcachegen-compiled units and re-resolve imports from source, which then
-# demands the optional qtquick2plugin that the deploy step does not ship —
-# loadFromModule("AwenApp", "Main") fails at startup. briarthorn omits it for
-# the same reason.
+# No QT_QML_DEBUG: the QML debug server bypasses the compiled units and demands
+# the optional qtquick2plugin the deploy step does not ship, failing startup.
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -27,10 +24,8 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 if(EMSCRIPTEN)
-    # Embed ":/qt/etc/qt.conf" so QLibraryInfo skips getRelocatablePrefix() and its
-    # debug-only Q_ASSERT_X abort on this static wasm build. See the fuller note in
-    # app/briarthorn/CMakeLists.txt. wasm-only; alias lands it at
-    # exactly :/qt/etc/qt.conf.
+    # Embed ":/qt/etc/qt.conf" so QLibraryInfo skips getRelocatablePrefix(), whose
+    # debug-only assert aborts this static wasm build at startup.
     set_source_files_properties(
         "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
         PROPERTIES QT_RESOURCE_ALIAS qt.conf
@@ -40,8 +35,7 @@ if(EMSCRIPTEN)
         FILES "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
     )
 
-    # Qt is linked into the .js/.wasm rather than deployed alongside, so ship the
-    # generated bundle; see app/briarthorn/CMakeLists.txt.
+    # Qt is linked into the .js/.wasm, so ship the generated bundle.
     install(FILES
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.html"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/awen.js"
@@ -60,8 +54,7 @@ if(EMSCRIPTEN)
 endif()
 
 if(ANDROID)
-    # The framework sample packages under Qt's default template identity; see
-    # app/briarthorn/CMakeLists.txt for the apk mechanics.
+    # The framework sample packages under Qt's default template identity.
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/android-build/awen.apk"
         DESTINATION android
     )

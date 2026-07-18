@@ -10,14 +10,14 @@
             "platform": "!emscripten & !android"
         },
         {
-            "$comment": "SDL3 backs the awen.gamepad module (SDL_INIT_GAMEPAD; see src/awen/gamepad) on desktop AND wasm — SDL's emscripten joystick backend wraps the browser Gamepad API, so the same SDL event pump runs in the browser. Excluded only on android: controller input there needs SDL's own activity, which androiddeployqt does not provide — android compiles an inert stub, so the module still imports. default-features off: the Linux gamepad backend is evdev (core to SDL, needs no features), and the port's defaults (ibus/wayland/x11) pull SDL's IME, leaving SDL_ime.c referencing SDL_IBus_* symbols that only exist under libdbus -> undefined references at link, plus x11/wayland/dbus build deps SDL does not need for gamepad. On emscripten the defaults resolve empty anyway (all are linux-gated) and the emscripten-pthreads feature must stay off — the Qt wasm build is single-threaded.",
+            "$comment": "Backs awen.gamepad on desktop and wasm (SDL's emscripten backend wraps the browser Gamepad API); android compiles an inert stub instead. default-features off: the port's linux defaults (ibus/wayland/x11) break the link via SDL's IME, and the gamepad backend (evdev) needs none of them.",
             "name": "sdl3",
             "default-features": false,
             "platform": "!android"
         },
         "qtdeclarative",
         {
-            "$comment": "Host-tool Qt (qmlcachegen, qsb, moc) with the default features (icu, openssl, sql, dbus, widgets, ...) stripped; the ports re-add the few they need (e.g. qtshadertools adds gui). thread + concurrent are kept explicitly: host qtdeclarative only builds its qmlls MODULE when QT_FEATURE_thread is on, but still builds the qmlls TOOL that links it unconditionally, so without thread the host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found'). The port forces FEATURE_thread=OFF for any feature it does not list, so thread must be named directly; concurrent (which pulls future) matches what QmlLSPrivate actually uses. The desktop presets mask this because host == target there merges the target features (which pull thread) into this same qtbase; the wasm cross-build is the first host-only qtbase, where nothing else re-adds it.",
+            "$comment": "Host-tool Qt (qmlcachegen, moc, ...) with default features stripped. thread + concurrent must stay: without them host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found').",
             "name": "qtbase",
             "host": true,
             "default-features": false,
@@ -34,26 +34,26 @@
                 "gui",
                 "png",
                 {
-                    "$comment": "Every platform, wasm included: the port maps this to Qt's umbrella FEATURE_opengl, which is what compiles QPlatformOpenGLContext. gles2 only sets FEATURE_opengles2 and INPUT_opengl='es2' (it selects the backend, it does not enable OpenGL), so dropping opengl here builds a Qt whose own wasm platform plugin fails to compile against the missing QPlatformOpenGLContext.",
+                    "$comment": "Every platform, wasm included: this maps to Qt's umbrella FEATURE_opengl. gles2 alone only selects the backend, and without opengl the wasm platform plugin fails to compile.",
                     "name": "opengl"
                 },
                 {
-                    "$comment": "Selects the GLES backend in place of desktop GL: WebGL in the browser, EGL/GLES on android. On android this documents intent rather than changes the graph — the qtbase port's gui feature already pulls egl/freetype/gles2/opengl there; on emscripten it is load-bearing.",
+                    "$comment": "Selects the GLES backend in place of desktop GL (WebGL in the browser, EGL/GLES on android); load-bearing on emscripten.",
                     "name": "gles2",
                     "platform": "emscripten | android"
                 },
                 {
-                    "$comment": "No fontconfig outside desktop linux: the browser sandbox has no system fonts at all, and the android QPA feeds /system/fonts through QFreeTypeFontDatabase — all android text goes through the FreeType engine.",
+                    "$comment": "No system fonts in the browser sandbox, and android feeds /system/fonts through the FreeType engine.",
                     "name": "freetype",
                     "platform": "emscripten | android"
                 },
                 {
-                    "$comment": "Not needed by Quick, but qtbase 6.11 only links libresolv into QtNetwork under dnslookup AND libresolv (src/network/CMakeLists.txt), while qhostinfo_unix.cpp needs it under libresolv alone - without dnslookup the QtNetwork dylib fails to link (undefined _res_9_ninit) on macOS/Linux. Dependency-free, so keeping it restores Qt's tested configuration. Excluded on emscripten: the port turns it into FEATURE_libresolv=ON, and the browser sandbox has no resolver, so Qt fails configure with 'Feature libresolv: Forcing to ON breaks its condition'.",
+                    "$comment": "Without dnslookup the QtNetwork dylib fails to link on macOS/Linux (undefined _res_9_ninit). Excluded on emscripten, where it breaks Qt's configure (no resolver in the browser sandbox).",
                     "name": "dnslookup",
                     "platform": "!emscripten"
                 },
                 {
-                    "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it qt_generate_deploy_qml_app_script's install step fails with 'No Qt deploy tool available for this target platform'. macdeployqt is not gated, so only windows needs it.",
+                    "$comment": "qtbase 6.11 gates the windeployqt tool behind this feature; without it the deploy install step fails with 'No Qt deploy tool available'.",
                     "name": "windeployqt",
                     "platform": "windows"
                 },
