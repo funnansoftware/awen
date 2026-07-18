@@ -1,7 +1,5 @@
 # awen
 
-![awen banner](banner.png)
-
 [![windows](https://github.com/funnansoftware/awen/actions/workflows/windows.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/windows.yml)
 [![macos](https://github.com/funnansoftware/awen/actions/workflows/macos.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/macos.yml)
 [![linux](https://github.com/funnansoftware/awen/actions/workflows/linux.yml/badge.svg?branch=main)](https://github.com/funnansoftware/awen/actions/workflows/linux.yml)
@@ -16,6 +14,8 @@ modules live under `src/`; the apps built on it live under `app/`:
 - **awen** — the framework sample app.
 - **[briarthorn](app/briarthorn)** — a flight/combat roguelike (its own
   [non-commercial license](app/briarthorn/LICENSE.md)).
+
+[![briarthorn](app/briarthorn/assets/briarthorn.png)](app/briarthorn)
 
 Qt Quick is the sole rendering backend. vcpkg builds Qt from source on the first
 configure; the Qt libraries link dynamically while everything else links
