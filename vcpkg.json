@@ -17,6 +17,15 @@
         },
         "qtdeclarative",
         {
+            "$comment": "QtWebSockets backs the Twitch chat transport (IRC-over-WebSocket / EventSub); QtNetworkAuth drives the YouTube and Twitch OAuth2 sign-in flows. QtNetwork itself already arrives via qtdeclarative. Neither is wired into a target yet — this enables the toolchain to provide them.",
+            "name": "qtwebsockets",
+            "default-features": false
+        },
+        {
+            "name": "qtnetworkauth",
+            "default-features": false
+        },
+        {
             "$comment": "Host-tool Qt (qmlcachegen, moc, ...) with default features stripped. thread + concurrent must stay: without them host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found').",
             "name": "qtbase",
             "host": true,
@@ -50,6 +59,11 @@
                 {
                     "$comment": "Without dnslookup the QtNetwork dylib fails to link on macOS/Linux (undefined _res_9_ninit). Excluded on emscripten, where it breaks Qt's configure (no resolver in the browser sandbox).",
                     "name": "dnslookup",
+                    "platform": "!emscripten"
+                },
+                {
+                    "$comment": "TLS backend for HTTPS/WSS (YouTube Data API, Twitch chat, OAuth token exchange). Windows also has native Schannel, but enabling OpenSSL gives every desktop and android build a consistent TLS backend. Excluded on emscripten, where the browser terminates TLS and OpenSSL has no sandbox build.",
+                    "name": "openssl",
                     "platform": "!emscripten"
                 },
                 {
