@@ -19,7 +19,10 @@
                 "config-vcpkg",
                 "compiler-gcc-14",
                 "target-linux"
-            ]
+            ],
+            "cacheVariables": {
+                "AWEN_QT": "vcpkg"
+            }
         }
     ],
     "buildPresets": [

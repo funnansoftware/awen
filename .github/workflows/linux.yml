@@ -56,6 +56,13 @@ jobs:
 
       - uses: ./.github/actions/get-vcpkg
 
+      # Prebuilt Qt (cached) instead of a vcpkg source build; the devcontainer
+      # image ships the runtime libraries and python3 + pip the action needs.
+      - uses: ./.github/actions/get-qt
+        with:
+          install-deps: false
+          setup-python: false
+
       - name: cmake-configure
         shell: bash
         run: cmake --preset linux-clang-debug
@@ -91,6 +98,13 @@ jobs:
           submodules: recursive
 
       - uses: ./.github/actions/get-vcpkg
+
+      # Prebuilt Qt (cached) instead of a vcpkg source build; the devcontainer
+      # image ships the runtime libraries and python3 + pip the action needs.
+      - uses: ./.github/actions/get-qt
+        with:
+          install-deps: false
+          setup-python: false
 
       - name: cmake-configure
         shell: bash

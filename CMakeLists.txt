@@ -5,7 +5,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
+# Before project(): decides between a prebuilt Qt kit and vcpkg-built Qt, which
+# must be settled before the vcpkg toolchain runs the manifest install.
+include(cmake/qt-source.cmake)
+
 project(awen)
+
+# The cross toolchains (emscripten, android NDK) reroot find_package under
+# CMAKE_FIND_ROOT_PATH, hiding a prebuilt Qt kit that lives outside their
+# sysroots. The toolchain runs during project(), so append after it.
+if(AWEN_QT_PREBUILT_DIR)
+    list(APPEND CMAKE_FIND_ROOT_PATH "${AWEN_QT_PREBUILT_DIR}")
+
+    # Wasm target finalization calls _qt_test_emscripten_version, defined by
+    # the kit's qt.toolchain.cmake — which this build replaces with the
+    # emscripten toolchain via vcpkg. Pull in just those definitions; the check
+    # then passes because .emscripten-version matches the kit's recommended
+    # emcc release.
+    if(EMSCRIPTEN)
+        include("${AWEN_QT_PREBUILT_DIR}/lib/cmake/Qt6/QtPublicWasmToolchainHelpers.cmake")
+    endif()
+endif()
 
 include(CTest)
 include(GNUInstallDirs)
