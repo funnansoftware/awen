@@ -1,26 +1,17 @@
 <!doctype html>
 <!--
-The briarthorn.game entry page for the WebAssembly build. Ported from the
-original emscripten-style shell onto Qt for WebAssembly's loading flow: Qt does
-not use Module.canvas — qtloader.js's qtLoad() maps container elements to
-QScreens and the app renders inside the #screen div below, which is what keeps
-the game self-contained in a bounded view within the page.
-
-Self-contained by design: styling is inline, the icon is a data URI, and the
-only files referenced are the bundle's own briarthorn.js/.wasm + qtloader.js,
-so the installed web/ directory can be served as-is on briarthorn.game (or the
-page iframed into it).
+The briarthorn.game entry page for the WebAssembly build: qtLoad() maps the
+#screen div to a QScreen, so the game renders self-contained in a bounded view.
+Everything is inline; only the bundle's own js/wasm files are referenced, so the
+installed web/ directory serves as-is.
 -->
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <!-- 1:1 mapping between CSS pixels and Qt device independent pixels on
-         mobile, as in Qt's generated page. -->
+    <!-- 1:1 CSS-pixel to Qt device-independent-pixel mapping on mobile. -->
     <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0"/>
-    <!-- Application icon shown in the browser tab. Embedded as a data URI so it
-         travels with the page regardless of where the .html is served from.
-         Source of truth: assets/icon/briarthorn.svg. -->
+    <!-- Tab icon as a data URI; source of truth: assets/icon/briarthorn.svg. -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+DQogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjMwIiBmaWxsPSIjMGQxODIwIiBzdHJva2U9IiMzZmI4YjMiIHN0cm9rZS13aWR0aD0iMiIvPg0KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2ZiOGIzIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNSIvPg0KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2ZiOGIzIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPg0KICA8cGF0aCBkPSJNMzIgMTYgTDMyIDQ4IE0xNiAzMiBMNDggMzIiIHN0cm9rZT0iIzNmYjhiMyIgc3Ryb2tlLXdpZHRoPSIwLjc1IiBvcGFjaXR5PSIwLjM1Ii8+DQogIDxwYXRoIGQ9Ik0zMiAyMiBMNDAgNDQgTDMyIDM4IEwyNCA0NCBaIiBmaWxsPSIjM2ZiOGIzIi8+DQo8L3N2Zz4NCg==">
     <title>Briarthorn</title>
     <style>
@@ -45,10 +36,8 @@ page iframed into it).
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       }
 
-      /* The game view: a bounded, bordered surface the app renders inside —
-         4:3 to match the app's 800×600 window, centered, capped for large
-         screens. #screen is the container qtLoad maps to a QScreen; the app
-         (maximized on wasm) fills it exactly. */
+      /* The game view: a bordered 4:3 surface; the app (maximized on wasm)
+         fills the #screen container inside it exactly. */
       .view {
         position: relative;
         max-width: 1024px;
@@ -57,8 +46,7 @@ page iframed into it).
         border: 1px solid var(--border);
         background: var(--bg-deep);
       }
-      /* Fullscreen drops the frame and lets the view fill the display; Qt
-         follows the container's size automatically. */
+      /* Fullscreen drops the frame; Qt follows the container size automatically. */
       .view:fullscreen {
         max-width: none;
         aspect-ratio: auto;
@@ -66,8 +54,7 @@ page iframed into it).
       }
       #screen { display: none; width: 100%; height: 100%; }
 
-      /* The loading overlay: spinner, status line and progress bar centered in
-         the view until the app is up. */
+      /* The loading overlay, centered in the view until the app is up. */
       #loader {
         position: absolute;
         inset: 0;
@@ -124,9 +111,9 @@ page iframed into it).
       <div id="screen"></div>
     </div>
     <div class="controls">
-      <!-- requestFullscreen rejects when the browser denies it (e.g. not a
-           user gesture); swallow that instead of surfacing a page error. -->
-      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {})">
+      <!-- Swallow the rejection when the browser denies fullscreen, and either
+           way hand keyboard focus back to the game. -->
+      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {}).finally(() => focusGame())">
     </div>
 
     <script type="text/javascript">
@@ -135,8 +122,7 @@ page iframed into it).
       const progressElement = document.getElementById('progress');
       const screenElement = document.getElementById('screen');
 
-      // Whether the app has come up: once it has, page-level errors must not
-      // swap the running app back out for the loader overlay.
+      // Once the app is up, page-level errors must not swap it out for the loader.
       let appLoaded = false;
 
       function setStatus(text) {
@@ -147,7 +133,51 @@ page iframed into it).
         appLoaded = true;
         loaderElement.style.display = 'none';
         screenElement.style.display = 'block';
+        focusGameWhenReady();
       }
+
+      // Route the keyboard to the game: Qt wasm only delivers key events while its
+      // invisible focus helper (inside the shadow DOM, an internal detail of Qt 6)
+      // holds DOM focus, so push focus there whenever it drifts to the page. Guards
+      // mirror Qt's own focus(): leave focus already inside Qt's DOM alone, and skip
+      // an aria-hidden helper (accessibility active — Qt owns focus routing then).
+      // Returns whether the game holds focus afterwards, checked via focus() rather
+      // than element presence (focusing under a display:none ancestor is a no-op).
+      function focusGame() {
+        const shadowRoot = screenElement.querySelector('#qt-shadow-container')?.shadowRoot;
+        if (!shadowRoot)
+          return false;
+        if (shadowRoot.activeElement)
+          return true; // the game already holds focus internally
+        // Prefer the active window's helper; with one window both selectors agree.
+        const helper = shadowRoot.querySelector('.qt-decorated-window:not(.inactive) .qt-window-focus-helper')
+          ?? shadowRoot.querySelector('.qt-window-focus-helper');
+        if (!helper || helper.getAttribute('aria-hidden') === 'true')
+          return false;
+        helper.focus({ preventScroll: true });
+        return shadowRoot.activeElement === helper;
+      }
+
+      // The window DOM (and its focus helper) only exists after main() runs, so
+      // retry across frames until focus lands, bounded so a failed load or a Qt
+      // upgrade renaming the internals does not poll forever.
+      function focusGameWhenReady(deadline = performance.now() + 15000) {
+        if (focusGame())
+          return;
+        if (performance.now() < deadline)
+          requestAnimationFrame(() => focusGameWhenReady(deadline));
+        else
+          console.warn('briarthorn: could not hand keyboard focus to the game; click the game view to focus it');
+      }
+
+      // Fullscreen transitions move focus around; keep the keyboard on the game.
+      document.addEventListener('fullscreenchange', () => focusGame());
+
+      // Nothing on this page needs the keyboard except the game, so refocus it
+      // after any click — including clicks on the game itself, which Qt 6.11 does
+      // not refocus. Capture phase is required (Qt stops pointer-event propagation)
+      // and the deferral runs after Qt's own focus routing.
+      document.addEventListener('pointerup', () => setTimeout(() => focusGame(), 0), true);
 
       function showLoader(status) {
         screenElement.style.display = 'none';
@@ -156,12 +186,9 @@ page iframed into it).
         setStatus(status);
       }
 
-      // Fetch the wasm binary ourselves so the progress bar shows the real
-      // download (it is by far the largest asset); the compiled module is then
-      // handed to qtLoad via qt.module, so emscripten does not download it
-      // again. Content-Length may be absent (or the compressed size under
-      // gzip), so the percentage is clamped and the bar turns indeterminate
-      // when no total is known.
+      // Fetch the wasm ourselves so the progress bar shows the real download; the
+      // compiled module goes to qtLoad via qt.module, so emscripten does not
+      // re-download it. Indeterminate when Content-Length is absent.
       async function fetchWasmWithProgress(url) {
         const response = await fetch(url);
         if (!response.ok || !response.body) {
@@ -200,18 +227,15 @@ page iframed into it).
       }
 
       window.onerror = window.onunhandledrejection = () => {
-        // Before the app is up a page error means the load failed; after, the
-        // app keeps running and the error is left to the JavaScript console.
+        // Before the app is up a page error means the load failed; after, the app
+        // keeps running and the error stays in the console.
         if (!appLoaded) {
           showLoader('Exception thrown, see JavaScript console');
         }
       };
 
       async function init() {
-        // The qt config beyond `module`: the entry function emscripten's
-        // MODULARIZE emits, the container div Qt maps to a QScreen (the app
-        // renders inside it — the self-contained view), and the load/exit
-        // hooks driving the overlay.
+        // Entry function, the container div Qt renders into, and the overlay hooks.
         const qt = {
           onLoaded: () => showApp(),
           onExit: (exitData) => {
@@ -230,8 +254,7 @@ page iframed into it).
             progressElement.hidden = true;
             setStatus('Starting&hellip;');
           } catch (fetchError) {
-            // Progress is cosmetic: fall back to letting emscripten fetch the
-            // wasm itself rather than failing the page over it.
+            // Progress is cosmetic: let emscripten fetch the wasm itself instead.
             console.warn('wasm prefetch failed, falling back to plain load:', fetchError);
             delete qt.module;
             progressElement.hidden = true;

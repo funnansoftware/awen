@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 
 #include <QtQml/qqmlregistration.h>
@@ -18,25 +19,25 @@ namespace awen
     /// }
     /// @endcode
     ///
-    /// Unlike Keys, these fire regardless of focus: gamepad input has no focus
-    /// routing, so every attached item hears every connected device (told apart by
-    /// @p deviceId, stable while connected). The type is never instantiated from
-    /// QML — it exists for these attached signals and for its Button/Axis enums
-    /// (e.g. Gamepad.Axis.LeftX). Following the Keys pattern it attaches an instance
-    /// of itself to each item; those instances share one engine-owned SDL source
-    /// behind the scenes (desktop only; wasm/android build an inert source, so the
-    /// type and enums exist but no events fire). Axis values are normalised: sticks
-    /// [-1, 1] (Y negative upward), triggers [0, 1].
-    ///
-    /// The Button/Axis enumerators carry SDL's SDL_GamepadButton / SDL_GamepadAxis
-    /// values as explicit literals so this header needs no SDL include; a build-time
-    /// static_assert in the SDL backend keeps them in step with SDL.
+    /// Unlike Keys, these fire regardless of focus: every attached item hears every
+    /// connected device (told apart by @p deviceId). The attached instances share
+    /// one engine-owned SDL source (inert on android). Axis values are normalised:
+    /// sticks [-1, 1] (Y negative upward), triggers [0, 1].
     class Gamepad : public QObject
     {
         Q_OBJECT
         QML_ELEMENT
         QML_UNCREATABLE("Gamepad is only usable as an attached property (Gamepad.on...) and for its enums")
         QML_ATTACHED(Gamepad)
+
+        /// @brief Milliseconds between input polls while a controller is connected
+        /// and the app is active; clamped to at least 1. Engine-wide: all attached
+        /// instances share one source, so the last write wins.
+        Q_PROPERTY(int pollInterval READ pollInterval WRITE setPollInterval NOTIFY pollIntervalChanged)
+
+        /// @brief Milliseconds between polls while no controller is connected or
+        /// the app is inactive; clamped and engine-wide like pollInterval.
+        Q_PROPERTY(int idlePollInterval READ idlePollInterval WRITE setIdlePollInterval NOTIFY idlePollIntervalChanged)
 
     public:
         /// @brief A gamepad button, matching SDL's SDL_GamepadButton values.
@@ -85,10 +86,24 @@ namespace awen
         };
         Q_ENUM(Axis)
 
-        // Used by the QML engine to build the attached object for each item. Not
-        // called directly.
+        /// @brief Default pollInterval: slightly faster than display refresh keeps
+        /// input lag under one frame. On wasm 16 ms is enough — the browser only
+        /// refreshes gamepad state once per animation frame.
+        static constexpr auto DefaultPollInterval = std::chrono::milliseconds{8};
+
+        /// @brief Default idlePollInterval: catches a hotplug quickly without
+        /// waking an idle app ~125x/s.
+        static constexpr auto DefaultIdlePollInterval = std::chrono::milliseconds{250};
+
+        // Called by the QML engine to build the attached object for each item.
         explicit Gamepad(QObject* parent = nullptr);
         static auto qmlAttachedProperties(QObject* object) -> Gamepad*;
+
+        [[nodiscard]] auto pollInterval() const -> int;
+        auto setPollInterval(int intervalMs) -> void;
+
+        [[nodiscard]] auto idlePollInterval() const -> int;
+        auto setIdlePollInterval(int intervalMs) -> void;
 
     signals:
         /// @brief A controller was plugged in / unplugged. @p deviceId identifies
@@ -102,5 +117,12 @@ namespace awen
         /// @brief An axis moved. @p value is normalised: sticks [-1, 1] (Y negative
         /// upward), triggers [0, 1].
         void axisChanged(int deviceId, Axis axis, double value);
+
+        void pollIntervalChanged();
+        void idlePollIntervalChanged();
+
+    private:
+        std::chrono::milliseconds pollInterval_{DefaultPollInterval};         ///< See pollInterval.
+        std::chrono::milliseconds idlePollInterval_{DefaultIdlePollInterval}; ///< See idlePollInterval.
     };
 }

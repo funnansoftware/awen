@@ -6,12 +6,10 @@ namespace awen
 {
     class Gamepad;
 
-    /// @brief Wire @p gamepad's signals to the gamepad source owned by the QML
-    /// engine that owns @p attachee.
-    ///
-    /// The desktop backend (GamepadSource.cpp) drives it from SDL; wasm/android
-    /// provide an inert implementation (GamepadStub.cpp) — no source, no events.
+    /// @brief Wire @p gamepad's signals to the engine-owned gamepad source. The SDL
+    /// backend (GamepadSource.cpp) serves desktop and wasm; android gets the inert
+    /// GamepadStub.cpp.
     /// @param gamepad The attached instance to feed.
-    /// @param attachee The QML object the instance is attached to; its engine owns the shared source.
+    /// @param attachee The QML object the instance is attached to.
     auto attachGamepad(Gamepad* gamepad, QObject* attachee) -> void;
 }

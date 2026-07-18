@@ -9,16 +9,16 @@
 #include <QQmlEngine>
 #include <QString>
 #include <QTimer>
+#include <chrono>
 
 #include <SDL3/SDL.h>
 
 using awen::Gamepad;
 using awen::GamepadEventKind;
 
-// Enum parity with SDL. Gamepad.h defines Button/Axis with explicit literals so it
-// needs no SDL include; assert here — the one desktop TU that has the SDL headers —
-// that they still match SDL's constants, so a version bump that renumbers them
-// fails the build instead of silently mistranslating input.
+// Gamepad.h defines Button/Axis with explicit literals so it stays SDL-free; assert
+// here that they still match SDL's constants, so an SDL upgrade that renumbers them
+// fails the build.
 static_assert(static_cast<int>(Gamepad::Button::Unknown) == SDL_GAMEPAD_BUTTON_INVALID);
 static_assert(static_cast<int>(Gamepad::Button::South) == SDL_GAMEPAD_BUTTON_SOUTH);
 static_assert(static_cast<int>(Gamepad::Button::East) == SDL_GAMEPAD_BUTTON_EAST);
@@ -57,25 +57,10 @@ static_assert(static_cast<int>(Gamepad::Axis::RightTrigger) == SDL_GAMEPAD_AXIS_
 
 namespace
 {
-    // The poll cadence while a controller is connected and the app is active. SDL
-    // needs its queue drained regularly to surface events; an interval of 0 would
-    // spin a whole CPU core, so we pump a little faster than the display refreshes
-    // (~125 Hz) — well under one frame of input lag.
-    constexpr auto PollIntervalMs = 8;
-
-    // The slow heartbeat used when there is nothing to poll for at full speed — no
-    // controller connected, or the window is not active. Still frequent enough to
-    // surface a hotplug within a fraction of a second, but it stops an idle or
-    // backgrounded app waking the main thread ~125x/s.
-    constexpr auto IdlePollIntervalMs = 250;
-
-    /// @brief The single owner of SDL's gamepad subsystem for one QML engine.
-    ///
-    /// SDL_PollEvent drains one process-global queue, so exactly one of these pumps
-    /// it (on a timer) and holds the open SDL_Gamepad handles; it broadcasts raw
-    /// events, which the Gamepad attached instances forward to their items as typed
-    /// signals. Parented to the engine, so SDL is torn down with it. Reached only
-    /// via sourceFor().
+    /// @brief The single owner of SDL's gamepad subsystem for one QML engine: pumps
+    /// SDL_PollEvent on a timer, holds the open handles, and broadcasts raw events
+    /// to the Gamepad attached instances. Parented to the engine; reached via
+    /// sourceFor().
     class GamepadSource : public QObject
     {
         Q_OBJECT
@@ -95,13 +80,10 @@ namespace
             // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — Qt parents the timer to this.
             timer_ = new QTimer{this};
             connect(timer_, &QTimer::timeout, this, &GamepadSource::poll);
-            timer_->start(PollIntervalMs);
-            // Re-evaluate the cadence whenever the app gains/loses active state, so a
-            // backgrounded or unfocused window drops to the heartbeat promptly rather
-            // than only on the next poll.
+            timer_->start(pollInterval_);
+            // Drop to the idle heartbeat promptly when the app deactivates.
             connect(qApp, &QGuiApplication::applicationStateChanged, this, [this] { updatePollRate(); });
-            // Drain once now to open any controller already attached at startup and
-            // settle on the correct rate (poll() ends in updatePollRate()).
+            // Drain once now to open any controller already attached at startup.
             poll();
         }
 
@@ -111,29 +93,40 @@ namespace
             {
                 SDL_CloseGamepad(entry.second);
             }
-            // Mirror the scoped SDL_Init: SDL_QuitSubSystem honours SDL's per-subsystem
-            // reference count and is the library-safe counterpart to the global
-            // SDL_Quit (documented as unwise from a shared library). Only quit the
-            // subsystem this instance actually brought up.
+            // SDL_QuitSubSystem honours SDL's per-subsystem refcount (SDL_Quit is
+            // documented as unwise from a library); only quit what we brought up.
             if (initialized_)
             {
                 SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
             }
         }
 
-        /// @brief Whether SDL_Init succeeded. A failed source is inert (no poll
-        /// timer) and is dropped rather than cached by sourceFor(), so a later
-        /// attach retries.
+        /// @brief Whether SDL_Init succeeded; a failed source is dropped by
+        /// sourceFor() so a later attach retries.
         [[nodiscard]] auto initialized() const -> bool
         {
             return initialized_;
         }
 
+        /// @brief Retune the connected-and-active poll cadence (Gamepad's
+        /// pollInterval, already clamped there).
+        auto setPollInterval(std::chrono::milliseconds interval) -> void
+        {
+            pollInterval_ = interval;
+            updatePollRate();
+        }
+
+        /// @brief Retune the idle heartbeat cadence (Gamepad's idlePollInterval).
+        auto setIdlePollInterval(std::chrono::milliseconds interval) -> void
+        {
+            idlePollInterval_ = interval;
+            updatePollRate();
+        }
+
     signals:
-        // Commented parameter names: moc names its generated definitions _t1/_t2,
-        // so a real name here trips readability-inconsistent-declaration-parameter-name
-        // when the .moc is included in this TU — while a bare unnamed parameter trips
-        // readability-named-parameter. A comment documents intent and satisfies both.
+        // Commented parameter names: moc's generated definitions name them _t1/_t2
+        // (real names trip clang-tidy's inconsistent-declaration-parameter-name,
+        // bare ones trip named-parameter).
         void connected(int /*deviceId*/);
         void disconnected(int /*deviceId*/);
         void buttonPressed(int /*deviceId*/, int /*button*/);
@@ -141,9 +134,7 @@ namespace
         void axisChanged(int /*deviceId*/, int /*axis*/, double /*value*/);
 
     private:
-        // Drain SDL's event queue: the pure decode says what each event is, this
-        // acts on it (open/close on hotplug, broadcast button/axis). Called by the
-        // poll timer.
+        // Drain SDL's queue: open/close on hotplug, broadcast button/axis events.
         auto poll() -> void
         {
             auto event = SDL_Event{};
@@ -178,8 +169,7 @@ namespace
             updatePollRate();
         }
 
-        // SDL re-announces devices already attached at startup, so this fires for
-        // them too once we begin polling. Open each one once.
+        // SDL re-announces devices already attached at startup; open each once.
         auto open(SDL_JoystickID id) -> void
         {
             if (gamepads_.contains(id))
@@ -211,23 +201,22 @@ namespace
             emit disconnected(static_cast<int>(id));
         }
 
-        // Drop to the slow heartbeat whenever there is nothing to poll for at full
-        // speed — no controller connected, or the app is not the active window — and
-        // raise back as soon as a controller is connected and the app is active.
+        // Idle heartbeat when no pad is connected or the app is inactive.
         auto updatePollRate() -> void
         {
             const auto active = QGuiApplication::applicationState() == Qt::ApplicationActive;
-            timer_->setInterval(!gamepads_.empty() && active ? PollIntervalMs : IdlePollIntervalMs);
+            timer_->setInterval(!gamepads_.empty() && active ? pollInterval_ : idlePollInterval_);
         }
 
-        QTimer* timer_ = nullptr;
-        bool initialized_ = false;
+        QTimer* timer_{nullptr};
+        bool initialized_{false};
+        std::chrono::milliseconds pollInterval_{Gamepad::DefaultPollInterval};
+        std::chrono::milliseconds idlePollInterval_{Gamepad::DefaultIdlePollInterval};
         std::unordered_map<SDL_JoystickID, SDL_Gamepad*> gamepads_;
     };
 
-    // The one source for the engine that owns @p attachee, created on first need and
-    // parented to that engine. findChild is the registry — we only ever make one per
-    // engine.
+    // The one source for the engine that owns @p attachee, created on first need;
+    // findChild is the registry.
     auto sourceFor(QObject* attachee) -> GamepadSource*
     {
         QQmlEngine* engine = qmlEngine(attachee);
@@ -244,9 +233,7 @@ namespace
             source = new GamepadSource{engine};
             if (!source->initialized())
             {
-                // SDL init failed: drop the inert source instead of caching it on the
-                // engine forever, so a later attach can retry rather than wiring
-                // listeners to a source that will never emit.
+                // SDL init failed: drop the inert source so a later attach retries.
                 // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 delete source;
                 return nullptr;
@@ -258,9 +245,8 @@ namespace
 
 auto awen::attachGamepad(Gamepad* gamepad, QObject* attachee) -> void
 {
-    // Each attached instance is one listener on the shared source. Connection and
-    // removal pass straight through; button and axis events are re-emitted with the
-    // Gamepad type's enums so handlers receive Gamepad.Button.* / Gamepad.Axis.*.
+    // Each attached instance is one listener on the shared source; button and axis
+    // events are re-emitted with the Gamepad type's enums.
     auto* const source = sourceFor(attachee);
     if (source == nullptr)
     {
@@ -275,6 +261,13 @@ auto awen::attachGamepad(Gamepad* gamepad, QObject* attachee) -> void
                      [gamepad](int deviceId, int button) { emit gamepad->buttonReleased(deviceId, static_cast<Gamepad::Button>(button)); });
     QObject::connect(source, &GamepadSource::axisChanged, gamepad, [gamepad](int deviceId, int axis, double value)
                      { emit gamepad->axisChanged(deviceId, static_cast<Gamepad::Axis>(axis), value); });
+
+    // Cadence writes pass through to the shared source (engine-wide, last write
+    // wins). Wired before QML can assign, so no initial push is needed.
+    QObject::connect(gamepad, &Gamepad::pollIntervalChanged, source,
+                     [source, gamepad] { source->setPollInterval(std::chrono::milliseconds{gamepad->pollInterval()}); });
+    QObject::connect(gamepad, &Gamepad::idlePollIntervalChanged, source,
+                     [source, gamepad] { source->setIdlePollInterval(std::chrono::milliseconds{gamepad->idlePollInterval()}); });
 }
 
 #include "GamepadSource.moc"

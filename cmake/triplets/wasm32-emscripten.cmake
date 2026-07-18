@@ -1,10 +1,6 @@
-# Overlay shadowing vcpkg's built-in (community) wasm32-emscripten triplet:
-# identical — the EMSDK detection and toolchain chainload below are copied
-# verbatim, and every port build depends on them — plus release-only
-# dependencies at the end. Everything is static on wasm and the emscripten ABI
-# has no debug/release split, so both web presets link these release
-# libraries; debug Qt for wasm only doubled the build time and produced
-# ~380 MB debug .wasm binaries.
+# Overlay of vcpkg's community wasm32-emscripten triplet (EMSDK detection copied
+# verbatim), plus release-only dependencies — the emscripten ABI has no
+# debug/release split, and debug Qt wasm was ~380 MB.
 set(VCPKG_ENV_PASSTHROUGH_UNTRACKED EMSCRIPTEN_ROOT EMSDK PATH)
 
 if(NOT DEFINED ENV{EMSCRIPTEN_ROOT})
@@ -31,3 +27,19 @@ set(VCPKG_CMAKE_SYSTEM_NAME Emscripten)
 set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake")
 
 set(VCPKG_BUILD_TYPE release)
+
+if(PORT STREQUAL "sdl3")
+    # SDL is only used for gamepad input (joystick + events); turn the other
+    # subsystems off so wasm-ld does not retain code the game can never run.
+    list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS
+        -DSDL_AUDIO=OFF
+        -DSDL_VIDEO=OFF
+        -DSDL_RENDER=OFF
+        -DSDL_GPU=OFF
+        -DSDL_CAMERA=OFF
+        -DSDL_HAPTIC=OFF
+        -DSDL_SENSOR=OFF
+        -DSDL_POWER=OFF
+        -DSDL_DIALOG=OFF
+    )
+endif()

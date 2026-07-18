@@ -17,28 +17,22 @@ namespace awen
         AxisMotion,
     };
 
-    /// @brief A renderer-free view of one gamepad event: what happened, on which
-    /// device, to which control, at what value.
-    ///
-    /// This is the device-agnostic core the QML layer forwards as typed signals.
-    /// It is deliberately free of Qt and SDL state so it can be unit-tested from
-    /// synthetic events with no hardware.
+    /// @brief One decoded gamepad event: what happened, on which device, to which
+    /// control, at what value. Free of Qt and SDL state so it unit-tests from
+    /// synthetic events.
     struct GamepadEvent
     {
         GamepadEventKind kind; ///< The transition this event represents.
         int deviceId;          ///< SDL joystick instance id; stable while connected.
-        int code = -1;         ///< Button (SDL_GamepadButton) or axis (SDL_GamepadAxis) code; -1 for (dis)connect.
-        double value = 0.0;    ///< Normalised axis value in [-1, 1]; 0 otherwise.
+        int code{-1};          ///< Button (SDL_GamepadButton) or axis (SDL_GamepadAxis) code; -1 for (dis)connect.
+        double value{0.0};     ///< Normalised axis value in [-1, 1]; 0 otherwise.
     };
 
-    /// @brief Normalise a raw SDL axis reading to [-1, 1].
-    ///
-    /// SDL reports stick axes in [-32768, 32767] and triggers in [0, 32767];
-    /// dividing by the positive extreme normalises both (sticks to [-1, 1],
-    /// triggers to [0, 1]), and the clamp keeps the one extra negative step a
-    /// stick's range carries from landing just past -1.
+    /// @brief Normalise a raw SDL axis reading (sticks [-32768, 32767], triggers
+    /// [0, 32767]) by the positive extreme, clamping the stick range's one extra
+    /// negative step.
     /// @param raw The raw SDL axis value.
-    /// @return The normalised value, clamped to [-1, 1].
+    /// @return The normalised value in [-1, 1].
     auto normalizeAxis(int raw) -> double;
 
     /// @brief Decode one SDL event into a GamepadEvent.

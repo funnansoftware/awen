@@ -9,7 +9,8 @@
                 "ANDROID_ABI": "arm64-v8a",
                 "ANDROID_PLATFORM": "android-28",
                 "ANDROID_STL": "c++_shared",
-                "ANDROID_SDK_ROOT": "$penv{ANDROID_HOME}"
+                "ANDROID_SDK_ROOT": "$penv{ANDROID_HOME}",
+                "BUILD_TESTING": "OFF"
             }
         }
     ]

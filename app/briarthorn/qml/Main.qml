@@ -1,21 +1,16 @@
 import QtQuick
 import awen.gamepad
 
-// Placeholder shell for the briarthorn game — deliberately pure QML, no C++ game
-// logic. A marker you steer with WASD / arrow keys or a gamepad (the awen.gamepad
-// module: SDL3 on desktop), over a live idle pulse so the scene reads as running
-// even at rest. The game grows from here.
+// Placeholder shell for the briarthorn game, pure QML: a marker steered with
+// WASD / arrow keys or a gamepad. The game grows from here.
 Window {
     id: root
 
     width: 800
     height: 600
     visible: true
-    // On wasm the window maximizes into the container div the web shell hands
-    // to qtLoad (web/index.html's game view), filling it exactly; elsewhere it
-    // stays a normal 800×600 desktop window. Frameless on wasm: Qt paints its
-    // own title bar inside the container otherwise, which reads as a window
-    // within the page rather than an embedded view.
+    // On wasm, fill the web shell's container div exactly — frameless, because Qt
+    // otherwise paints its own title bar inside the embedded view.
     visibility: Qt.platform.os === "wasm" ? Window.Maximized : Window.Windowed
     flags: Qt.platform.os === "wasm" ? Qt.FramelessWindowHint : Qt.Window
     title: qsTr("briarthorn")
@@ -32,8 +27,7 @@ Window {
         property real markerX: width / 2
         property real markerY: height / 2
 
-        // Keyboard held-key set, gamepad left-stick deflection, and gamepad d-pad
-        // held-button set — all folded together in the frame loop below.
+        // Keyboard, left-stick and d-pad state, folded together in the frame loop.
         property var held: ({})
         property real padX: 0
         property real padY: 0
@@ -50,24 +44,24 @@ Window {
             return Math.abs(v) < scene.deadzone ? 0 : v;
         }
 
-        Keys.onPressed: (event) => {
+        Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
             scene.held[event.key] = true;
             event.accepted = true;
         }
-        Keys.onReleased: (event) => {
+        Keys.onReleased: event => {
             if (event.isAutoRepeat)
                 return;
             scene.held[event.key] = false;
             event.accepted = true;
         }
 
-        // Gamepad input via awen.gamepad. Unlike Keys these fire regardless of
-        // focus. On wasm/android the module is an inert stub, so these simply never
-        // fire and keyboard control stays.
-        Gamepad.onConnected: (deviceId) => scene.padConnected = true
-        Gamepad.onDisconnected: (deviceId) => scene.padConnected = false
+        // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
+        // the browser refreshes gamepad state once per frame, so poll at 16ms there.
+        Gamepad.pollInterval: Qt.platform.os === "wasm" ? 16 : 8
+        Gamepad.onConnected: deviceId => scene.padConnected = true
+        Gamepad.onDisconnected: deviceId => scene.padConnected = false
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
             if (axis === Gamepad.Axis.LeftX)
                 scene.padX = scene.deaden(value);
@@ -77,10 +71,8 @@ Window {
         Gamepad.onButtonPressed: (deviceId, button) => scene.dpad[button] = true
         Gamepad.onButtonReleased: (deviceId, button) => scene.dpad[button] = false
 
-        // The frame loop: fold keyboard, stick and d-pad into the marker position
-        // once per presented frame, scaled by the real time since the last frame so
-        // the speed is framerate-independent. Y follows screen space (down positive),
-        // which is also how SDL reports the stick.
+        // The frame loop: fold keyboard, stick and d-pad into the marker position,
+        // scaled by frame time so the speed is framerate-independent.
         FrameAnimation {
             running: true
             onTriggered: {
@@ -96,8 +88,7 @@ Window {
             }
         }
 
-        // The player marker: an orange heading-up triangle, with an expanding ring
-        // behind it that pulses forever so the scene is visibly live.
+        // The player marker: an orange triangle with a pulsing ring behind it.
         Item {
             x: scene.markerX
             y: scene.markerY
@@ -113,13 +104,27 @@ Window {
 
                 SequentialAnimation on opacity {
                     loops: Animation.Infinite
-                    NumberAnimation { from: 0.4; to: 0.0; duration: 1500; easing.type: Easing.OutQuad }
-                    PauseAnimation { duration: 250 }
+                    NumberAnimation {
+                        from: 0.4
+                        to: 0.0
+                        duration: 1500
+                        easing.type: Easing.OutQuad
+                    }
+                    PauseAnimation {
+                        duration: 250
+                    }
                 }
                 SequentialAnimation on scale {
                     loops: Animation.Infinite
-                    NumberAnimation { from: 0.5; to: 1.8; duration: 1500; easing.type: Easing.OutQuad }
-                    PauseAnimation { duration: 250 }
+                    NumberAnimation {
+                        from: 0.5
+                        to: 1.8
+                        duration: 1500
+                        easing.type: Easing.OutQuad
+                    }
+                    PauseAnimation {
+                        duration: 250
+                    }
                 }
             }
 

@@ -1,0 +1,11 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "briarthorn-web",
+            "runtimeExecutable": "python",
+            "runtimeArgs": ["-m", "http.server", "8730", "--directory", "build/web-release/installed/web"],
+            "port": 8730
+        }
+    ]
+}
