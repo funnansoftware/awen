@@ -1,5 +1,7 @@
 import QtQuick
+import awen.entity
 import awen.gamepad
+import "systems"
 
 // Placeholder shell for the briarthorn game, pure QML: a marker steered with
 // WASD / arrow keys or a gamepad. The game grows from here.
@@ -21,39 +23,20 @@ Window {
         anchors.fill: parent
         focus: true // route the window's keys (WASD / arrows) here
 
-        readonly property real speed: 260 // px per second at full deflection
-        readonly property real deadzone: 0.15 // ignore stick jitter around rest
-
-        property real markerX: width / 2
-        property real markerY: height / 2
-
-        // Keyboard, left-stick and d-pad state, folded together in the frame loop.
-        property var held: ({})
-        property real padX: 0
-        property real padY: 0
-        property var dpad: ({})
         property bool padConnected: false
 
-        function down(...keys): bool {
-            return keys.some(key => scene.held[key] === true);
-        }
-        function padDown(...buttons): bool {
-            return buttons.some(button => scene.dpad[button] === true);
-        }
-        function deaden(v: real): real {
-            return Math.abs(v) < scene.deadzone ? 0 : v;
-        }
-
+        // The input handlers only capture state into the movement system; the
+        // runner below folds it into the game once per frame.
         Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
-            scene.held[event.key] = true;
+            movement.held[event.key] = true;
             event.accepted = true;
         }
         Keys.onReleased: event => {
             if (event.isAutoRepeat)
                 return;
-            scene.held[event.key] = false;
+            movement.held[event.key] = false;
             event.accepted = true;
         }
 
@@ -64,34 +47,26 @@ Window {
         Gamepad.onDisconnected: deviceId => scene.padConnected = false
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
             if (axis === Gamepad.Axis.LeftX)
-                scene.padX = scene.deaden(value);
+                movement.padX = movement.deaden(value);
             else if (axis === Gamepad.Axis.LeftY)
-                scene.padY = scene.deaden(value);
+                movement.padY = movement.deaden(value);
         }
-        Gamepad.onButtonPressed: (deviceId, button) => scene.dpad[button] = true
-        Gamepad.onButtonReleased: (deviceId, button) => scene.dpad[button] = false
+        Gamepad.onButtonPressed: (deviceId, button) => movement.dpad[button] = true
+        Gamepad.onButtonReleased: (deviceId, button) => movement.dpad[button] = false
 
-        // The frame loop: fold keyboard, stick and d-pad into the marker position,
-        // scaled by frame time so the speed is framerate-independent.
-        FrameAnimation {
-            running: true
-            onTriggered: {
-                const dt = frameTime;
-                const kx = (scene.down(Qt.Key_D, Qt.Key_Right) ? 1 : 0) - (scene.down(Qt.Key_A, Qt.Key_Left) ? 1 : 0);
-                const ky = (scene.down(Qt.Key_S, Qt.Key_Down) ? 1 : 0) - (scene.down(Qt.Key_W, Qt.Key_Up) ? 1 : 0);
-                const px = (scene.padDown(Gamepad.Button.DpadRight) ? 1 : 0) - (scene.padDown(Gamepad.Button.DpadLeft) ? 1 : 0);
-                const py = (scene.padDown(Gamepad.Button.DpadDown) ? 1 : 0) - (scene.padDown(Gamepad.Button.DpadUp) ? 1 : 0);
-                const dx = Math.max(-1, Math.min(1, kx + scene.padX + px));
-                const dy = Math.max(-1, Math.min(1, ky + scene.padY + py));
-                scene.markerX = Math.max(0, Math.min(scene.width, scene.markerX + (dx * scene.speed * dt)));
-                scene.markerY = Math.max(0, Math.min(scene.height, scene.markerY + (dy * scene.speed * dt)));
+        // The game's systems, each updating its slice of state every frame.
+        Systems {
+            SystemMovement {
+                id: movement
+                xMax: scene.width
+                yMax: scene.height
             }
         }
 
         // The player marker: an orange triangle with a pulsing ring behind it.
         Item {
-            x: scene.markerX
-            y: scene.markerY
+            x: movement.markerX
+            y: movement.markerY
 
             Rectangle {
                 anchors.centerIn: parent
