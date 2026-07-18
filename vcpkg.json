@@ -17,13 +17,15 @@
         },
         "qtdeclarative",
         {
-            "$comment": "QtWebSockets backs the Twitch chat transport (IRC-over-WebSocket / EventSub); QtNetworkAuth drives the YouTube and Twitch OAuth2 sign-in flows. QtNetwork itself already arrives via qtdeclarative. Neither is wired into a target yet — this enables the toolchain to provide them.",
+            "$comment": "QtWebSockets backs the Twitch chat transport (IRC-over-WebSocket / EventSub), including in the browser where Qt maps QWebSocket onto the wasm WebSocket API. Not wired into a target yet; this enables the toolchain to provide it.",
             "name": "qtwebsockets",
             "default-features": false
         },
         {
+            "$comment": "QtNetworkAuth drives the YouTube and Twitch OAuth2 sign-in flows. Excluded on emscripten: its loopback-redirect handler can't run in the browser sandbox, and the port fails to build for wasm (ninja: unknown target 'install'). QtNetwork itself already arrives via qtdeclarative.",
             "name": "qtnetworkauth",
-            "default-features": false
+            "default-features": false,
+            "platform": "!emscripten"
         },
         {
             "$comment": "Host-tool Qt (qmlcachegen, moc, ...) with default features stripped. thread + concurrent must stay: without them host qtdeclarative fails to configure ('Qt6::QmlLSPrivate ... target was not found').",
