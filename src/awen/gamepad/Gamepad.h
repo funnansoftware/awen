@@ -19,20 +19,10 @@ namespace awen
     /// }
     /// @endcode
     ///
-    /// Unlike Keys, these fire regardless of focus: gamepad input has no focus
-    /// routing, so every attached item hears every connected device (told apart by
-    /// @p deviceId, stable while connected). The type is never instantiated from
-    /// QML — it exists for these attached signals and for its Button/Axis enums
-    /// (e.g. Gamepad.Axis.LeftX). Following the Keys pattern it attaches an instance
-    /// of itself to each item; those instances share one engine-owned SDL source
-    /// behind the scenes (on wasm SDL wraps the browser's Gamepad API; android
-    /// builds an inert source, so the type and enums exist but no events fire).
-    /// Axis values are normalised: sticks [-1, 1] (Y negative upward), triggers
-    /// [0, 1].
-    ///
-    /// The Button/Axis enumerators carry SDL's SDL_GamepadButton / SDL_GamepadAxis
-    /// values as explicit literals so this header needs no SDL include; a build-time
-    /// static_assert in the SDL backend keeps them in step with SDL.
+    /// Unlike Keys, these fire regardless of focus: every attached item hears every
+    /// connected device (told apart by @p deviceId). The attached instances share
+    /// one engine-owned SDL source (inert on android). Axis values are normalised:
+    /// sticks [-1, 1] (Y negative upward), triggers [0, 1].
     class Gamepad : public QObject
     {
         Q_OBJECT
@@ -41,18 +31,12 @@ namespace awen
         QML_ATTACHED(Gamepad)
 
         /// @brief Milliseconds between input polls while a controller is connected
-        /// and the app is active. Defaults to DefaultPollInterval; clamped to at
-        /// least 1 (an interval of 0 would spin the event loop).
-        ///
-        /// Engine-wide: every attached instance feeds one engine-owned source, so
-        /// setting this on any item retunes the shared polling — last write wins;
-        /// prefer setting it in one place. Inert on android (the stub backend has
-        /// nothing to poll).
+        /// and the app is active; clamped to at least 1. Engine-wide: all attached
+        /// instances share one source, so the last write wins.
         Q_PROPERTY(int pollInterval READ pollInterval WRITE setPollInterval NOTIFY pollIntervalChanged)
 
-        /// @brief Milliseconds between polls while there is nothing to poll for at
-        /// full speed — no controller connected, or the app is not active. Defaults
-        /// to DefaultIdlePollInterval; clamped and engine-wide like pollInterval.
+        /// @brief Milliseconds between polls while no controller is connected or
+        /// the app is inactive; clamped and engine-wide like pollInterval.
         Q_PROPERTY(int idlePollInterval READ idlePollInterval WRITE setIdlePollInterval NOTIFY idlePollIntervalChanged)
 
     public:
@@ -102,20 +86,16 @@ namespace awen
         };
         Q_ENUM(Axis)
 
-        /// @brief Default pollInterval. SDL needs its queue drained regularly to
-        /// surface events; a little faster than the display refreshes (~125 Hz)
-        /// keeps input lag well under one frame. On wasm the browser only refreshes
-        /// gamepad state at animation-frame rate, so one frame (16 ms) is the
-        /// sensible setting there — faster only re-reads the same snapshot.
+        /// @brief Default pollInterval: slightly faster than display refresh keeps
+        /// input lag under one frame. On wasm 16 ms is enough — the browser only
+        /// refreshes gamepad state once per animation frame.
         static constexpr auto DefaultPollInterval = std::chrono::milliseconds{8};
 
-        /// @brief Default idlePollInterval: frequent enough to surface a hotplug
-        /// within a fraction of a second, without waking an idle or backgrounded
-        /// app ~125x/s.
+        /// @brief Default idlePollInterval: catches a hotplug quickly without
+        /// waking an idle app ~125x/s.
         static constexpr auto DefaultIdlePollInterval = std::chrono::milliseconds{250};
 
-        // Used by the QML engine to build the attached object for each item. Not
-        // called directly.
+        // Called by the QML engine to build the attached object for each item.
         explicit Gamepad(QObject* parent = nullptr);
         static auto qmlAttachedProperties(QObject* object) -> Gamepad*;
 

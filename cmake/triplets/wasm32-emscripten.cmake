@@ -1,10 +1,6 @@
-# Overlay shadowing vcpkg's built-in (community) wasm32-emscripten triplet:
-# identical — the EMSDK detection and toolchain chainload below are copied
-# verbatim, and every port build depends on them — plus release-only
-# dependencies at the end. Everything is static on wasm and the emscripten ABI
-# has no debug/release split, so both web presets link these release
-# libraries; debug Qt for wasm only doubled the build time and produced
-# ~380 MB debug .wasm binaries.
+# Overlay of vcpkg's community wasm32-emscripten triplet (EMSDK detection copied
+# verbatim), plus release-only dependencies — the emscripten ABI has no
+# debug/release split, and debug Qt wasm was ~380 MB.
 set(VCPKG_ENV_PASSTHROUGH_UNTRACKED EMSCRIPTEN_ROOT EMSDK PATH)
 
 if(NOT DEFINED ENV{EMSCRIPTEN_ROOT})
@@ -33,14 +29,8 @@ set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Em
 set(VCPKG_BUILD_TYPE release)
 
 if(PORT STREQUAL "sdl3")
-    # awen uses SDL in the browser only for gamepad input (src/awen/gamepad —
-    # SDL_INIT_GAMEPAD pulls just the joystick and events subsystems). SDL's
-    # default build still compiles every other subsystem, and because the init
-    # dispatch references each one, wasm-ld retains code the game can never run
-    # (Qt owns the canvas and audio). Turn those subsystems off so they never
-    # enter the shipped .wasm; joystick/events stay on by default. Gamepad
-    # rumble is unaffected: on the web it rides the joystick backend
-    # (vibrationActuator), not SDL_HAPTIC.
+    # SDL is only used for gamepad input (joystick + events); turn the other
+    # subsystems off so wasm-ld does not retain code the game can never run.
     list(APPEND VCPKG_CMAKE_CONFIGURE_OPTIONS
         -DSDL_AUDIO=OFF
         -DSDL_VIDEO=OFF
