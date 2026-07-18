@@ -11,6 +11,13 @@ include(cmake/qt-source.cmake)
 
 project(awen)
 
+# The cross toolchains (emscripten, android NDK) reroot find_package under
+# CMAKE_FIND_ROOT_PATH, hiding a prebuilt Qt kit that lives outside their
+# sysroots. The toolchain runs during project(), so append after it.
+if(AWEN_QT_PREBUILT_DIR)
+    list(APPEND CMAKE_FIND_ROOT_PATH "${AWEN_QT_PREBUILT_DIR}")
+endif()
+
 include(CTest)
 include(GNUInstallDirs)
 

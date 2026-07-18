@@ -37,13 +37,15 @@ runs:
       shell: bash
       run: echo "version=$(tr -d ' \t\r\n' < .qt-version)" >> "$GITHUB_OUTPUT"
 
+    # --base pins the official download server: aqt's randomly-picked mirrors
+    # intermittently miss Updates.xml/checksums, which failed whole CI runs.
     - uses: jurplel/install-qt-action@v4
       with:
         version: ${{ steps.qt-version.outputs.version }}
         host: ${{ inputs.host }}
         target: ${{ inputs.target }}
         arch: ${{ inputs.arch }}
-        extra: ${{ inputs.extra }}
+        extra: ${{ inputs.extra }} --base https://download.qt.io
         cache: true
         install-deps: ${{ inputs.install-deps }}
         setup-python: ${{ inputs.setup-python }}
