@@ -75,8 +75,8 @@ Run from a Visual Studio 2022 developer shell:
 cmake --preset windows                            # configure (release)
 cmake --build --preset windows                    # build
 cmake --build --preset windows --target install   # install
-build/windows/installed/bin/briarthorn.exe        # run the game
-build/windows/installed/bin/awen.exe              # run the framework sample
+build/windows/installed/briarthorn/bin/briarthorn.exe   # run the game
+build/windows/installed/awen/bin/awen.exe               # run the framework sample
 ```
 
 ## Linux
@@ -85,7 +85,7 @@ build/windows/installed/bin/awen.exe              # run the framework sample
 cmake --preset linux                            # configure (release)
 cmake --build --preset linux                    # build
 cmake --build --preset linux --target install   # install
-./build/linux/installed/bin/briarthorn          # run
+./build/linux/installed/briarthorn/bin/briarthorn   # run
 ```
 
 ## MacOS
@@ -94,7 +94,7 @@ cmake --build --preset linux --target install   # install
 cmake --preset macos                            # configure (release)
 cmake --build --preset macos                    # build
 cmake --build --preset macos --target install   # install
-./build/macos/installed/bin/briarthorn          # run
+open ./build/macos/installed/briarthorn/briarthorn.app   # run
 ```
 
 ## Web
@@ -107,8 +107,8 @@ Windows), then serve the output over http:
 cmake --preset web                            # configure (release)
 cmake --build --preset web                    # build
 cmake --build --preset web --target install   # install
-python3 -m http.server -d build/web/installed/web
-# open http://localhost:8000/briarthorn.html
+python3 -m http.server -d build/web/installed/web/briarthorn
+# open http://localhost:8000/   (serves briarthorn's index.html)
 ```
 
 ## Android

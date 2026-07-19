@@ -4,7 +4,7 @@
         {
             "name": "briarthorn-web",
             "runtimeExecutable": "python",
-            "runtimeArgs": ["-m", "http.server", "8730", "--directory", "build/web-release/installed/web"],
+            "runtimeArgs": ["-m", "http.server", "8730", "--directory", "build/web-release/installed/web/briarthorn"],
             "port": 8730
         }
     ]

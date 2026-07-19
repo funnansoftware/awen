@@ -59,11 +59,11 @@ Before shipping, confirm nothing newer than the sniper floor leaked in (the CI
 steamos workflow runs the same check over the whole installed tree):
 
 ```sh
-objdump -T build/steamos/installed/bin/briarthorn \
+objdump -T build/steamos/installed/briarthorn/bin/briarthorn \
   | grep -oE 'GLIBC_[0-9.]+' | sort -uV | tail -1
 # expect: GLIBC_2.31 (or lower)
 ```
 
-Then copy `build/steamos/installed/` to the Deck and run `bin/briarthorn` from
-Desktop Mode, or add it to Steam as a non-Steam game so Steam wraps it in the
+Then copy `build/steamos/installed/briarthorn/` to the Deck and run `bin/briarthorn`
+from Desktop Mode, or add it to Steam as a non-Steam game so Steam wraps it in the
 Steam Linux Runtime.

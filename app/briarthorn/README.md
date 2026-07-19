@@ -6,10 +6,9 @@ A cross-platform roguelike that requires the player to pilot a unique aircraft
 class to fight through enemies and challenges to discover the mystery of
 briarthorn.
 
-Briarthorn is built in QML on the [awen](../..) framework (a thin Qt Quick
-bootstrap in `main.cpp`, the game itself under `qml/`) and builds from the
-repository root — see the [root README](../../README.md) for every platform's
-build steps.
+Briarthorn is built in QML on the [awen](../..) framework (the game under `qml/`
+on the framework's shared Qt bootstrap) and builds from the repository root —
+see the [root README](../../README.md) for every platform's build steps.
 
 # License
 

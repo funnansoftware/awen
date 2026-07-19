@@ -13,11 +13,13 @@ assembles the APK).
   QML pair games derive per-frame logic from) and `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
   gamepad attached-property type — one SDL backend on desktop and wasm (SDL wraps
   the browser Gamepad API there), an inert stub on android; its Qt-free
-  `awen-gamepad-core` is the unit-tested, coverage-observed part).
+  `awen-gamepad-core` is the unit-tested, coverage-observed part). `src/awen/app/`
+  (target `awen-app`) is the shared `awen::runApp` bootstrap behind the `main()`
+  that `awen_add_executable` generates per app.
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
-  rest of the repo is MIT). Flat: `main.cpp` is a thin Qt bootstrap that loads
-  the `Briarthorn` QML module (`qml/Main.qml`); the game is implemented in QML.
+  rest of the repo is MIT). The `Briarthorn` QML module (`qml/Main.qml`) on the
+  framework's shared bootstrap; the game is implemented in QML.
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
   (qt ports dynamic, everything else static; dependencies release-only, except
   the dual-config `x64-windows` triplet the windows debug preset needs).

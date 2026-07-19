@@ -84,7 +84,7 @@ jobs:
       - name: verify-glibc-floor
         shell: bash
         run: |
-          test -x build/steamos/installed/bin/briarthorn
+          test -x build/steamos/installed/briarthorn/bin/briarthorn
           max=$(find build/steamos/installed -type f \( -name '*.so*' -o -path '*/bin/*' \) \
             -exec objdump -T {} \; 2>/dev/null \
             | grep -oE 'GLIBC_[0-9]+\.[0-9]+(\.[0-9]+)?' | sort -uV | tail -1)
