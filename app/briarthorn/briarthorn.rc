@@ -1,7 +1,0 @@
-// Windows resource script — embeds the application icon into briarthorn.exe so
-// Windows shows it in Explorer, the taskbar, and Alt-Tab. Windows uses the icon
-// with the numerically lowest resource id as the executable's icon, so id 1.
-//
-// The path is relative to this .rc file's directory, which MSVC's rc.exe searches,
-// so a bare filename resolves.
-1 ICON "briarthorn.ico"

@@ -2,8 +2,9 @@
 <!--
 The briarthorn.game entry page for the WebAssembly build: qtLoad() maps the
 #screen div to a QScreen, so the game renders self-contained in a bounded view.
-Everything is inline; only the bundle's own js/wasm files are referenced, so the
-installed web/ directory serves as-is.
+The loader/progress/focus machinery comes from the framework's awen-shell.js;
+this page owns only the briarthorn branding and layout. Only the bundle's own
+js/wasm files are referenced, so the installed web/ directory serves as-is.
 -->
 <html lang="en-us">
   <head>
@@ -99,7 +100,7 @@ installed web/ directory serves as-is.
       input[type="button"]:hover { filter: brightness(1.08); }
     </style>
   </head>
-  <body onload="init()">
+  <body onload="awenShell.init({ name: 'briarthorn', entry: window.briarthorn_entry, wasm: 'briarthorn.wasm' })">
     <div class="view" id="view">
       <div id="loader">
         <div class="spinner"></div>
@@ -113,162 +114,10 @@ installed web/ directory serves as-is.
     <div class="controls">
       <!-- Swallow the rejection when the browser denies fullscreen, and either
            way hand keyboard focus back to the game. -->
-      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {}).finally(() => focusGame())">
+      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {}).finally(() => awenShell.focusApp())">
     </div>
 
-    <script type="text/javascript">
-      const loaderElement = document.getElementById('loader');
-      const statusElement = document.getElementById('status');
-      const progressElement = document.getElementById('progress');
-      const screenElement = document.getElementById('screen');
-
-      // Once the app is up, page-level errors must not swap it out for the loader.
-      let appLoaded = false;
-
-      function setStatus(text) {
-        statusElement.innerHTML = text;
-      }
-
-      function showApp() {
-        appLoaded = true;
-        loaderElement.style.display = 'none';
-        screenElement.style.display = 'block';
-        focusGameWhenReady();
-      }
-
-      // Route the keyboard to the game: Qt wasm only delivers key events while its
-      // invisible focus helper (inside the shadow DOM, an internal detail of Qt 6)
-      // holds DOM focus, so push focus there whenever it drifts to the page. Guards
-      // mirror Qt's own focus(): leave focus already inside Qt's DOM alone, and skip
-      // an aria-hidden helper (accessibility active — Qt owns focus routing then).
-      // Returns whether the game holds focus afterwards, checked via focus() rather
-      // than element presence (focusing under a display:none ancestor is a no-op).
-      function focusGame() {
-        const shadowRoot = screenElement.querySelector('#qt-shadow-container')?.shadowRoot;
-        if (!shadowRoot)
-          return false;
-        if (shadowRoot.activeElement)
-          return true; // the game already holds focus internally
-        // Prefer the active window's helper; with one window both selectors agree.
-        const helper = shadowRoot.querySelector('.qt-decorated-window:not(.inactive) .qt-window-focus-helper')
-          ?? shadowRoot.querySelector('.qt-window-focus-helper');
-        if (!helper || helper.getAttribute('aria-hidden') === 'true')
-          return false;
-        helper.focus({ preventScroll: true });
-        return shadowRoot.activeElement === helper;
-      }
-
-      // The window DOM (and its focus helper) only exists after main() runs, so
-      // retry across frames until focus lands, bounded so a failed load or a Qt
-      // upgrade renaming the internals does not poll forever.
-      function focusGameWhenReady(deadline = performance.now() + 15000) {
-        if (focusGame())
-          return;
-        if (performance.now() < deadline)
-          requestAnimationFrame(() => focusGameWhenReady(deadline));
-        else
-          console.warn('briarthorn: could not hand keyboard focus to the game; click the game view to focus it');
-      }
-
-      // Fullscreen transitions move focus around; keep the keyboard on the game.
-      document.addEventListener('fullscreenchange', () => focusGame());
-
-      // Nothing on this page needs the keyboard except the game, so refocus it
-      // after any click — including clicks on the game itself, which Qt 6.11 does
-      // not refocus. Capture phase is required (Qt stops pointer-event propagation)
-      // and the deferral runs after Qt's own focus routing.
-      document.addEventListener('pointerup', () => setTimeout(() => focusGame(), 0), true);
-
-      function showLoader(status) {
-        screenElement.style.display = 'none';
-        loaderElement.style.display = 'flex';
-        progressElement.hidden = true;
-        setStatus(status);
-      }
-
-      // Fetch the wasm ourselves so the progress bar shows the real download; the
-      // compiled module goes to qtLoad via qt.module, so emscripten does not
-      // re-download it. Indeterminate when Content-Length is absent.
-      async function fetchWasmWithProgress(url) {
-        const response = await fetch(url);
-        if (!response.ok || !response.body) {
-          throw new Error(`Failed to fetch ${url}: ${response.status}`);
-        }
-
-        const total = Number(response.headers.get('Content-Length')) || 0;
-        if (total === 0) {
-          progressElement.removeAttribute('value'); // indeterminate
-        }
-
-        const reader = response.body.getReader();
-        const chunks = [];
-        let received = 0;
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) {
-            break;
-          }
-          chunks.push(value);
-          received += value.length;
-          if (total > 0) {
-            const percent = Math.min(100, Math.round((received / total) * 100));
-            progressElement.value = percent;
-            setStatus(`Downloading&hellip; ${percent}%`);
-          }
-        }
-
-        const bytes = new Uint8Array(received);
-        let offset = 0;
-        for (const chunk of chunks) {
-          bytes.set(chunk, offset);
-          offset += chunk.length;
-        }
-        return WebAssembly.compile(bytes.buffer);
-      }
-
-      window.onerror = window.onunhandledrejection = () => {
-        // Before the app is up a page error means the load failed; after, the app
-        // keeps running and the error stays in the console.
-        if (!appLoaded) {
-          showLoader('Exception thrown, see JavaScript console');
-        }
-      };
-
-      async function init() {
-        // Entry function, the container div Qt renders into, and the overlay hooks.
-        const qt = {
-          onLoaded: () => showApp(),
-          onExit: (exitData) => {
-            let status = 'Application exit';
-            status += exitData.code !== undefined ? ` with code ${exitData.code}` : '';
-            status += exitData.text !== undefined ? ` (${exitData.text})` : '';
-            showLoader(status);
-          },
-          entryFunction: window.briarthorn_entry,
-          containerElements: [screenElement],
-        };
-
-        try {
-          try {
-            qt.module = await fetchWasmWithProgress('briarthorn.wasm');
-            progressElement.hidden = true;
-            setStatus('Starting&hellip;');
-          } catch (fetchError) {
-            // Progress is cosmetic: let emscripten fetch the wasm itself instead.
-            console.warn('wasm prefetch failed, falling back to plain load:', fetchError);
-            delete qt.module;
-            progressElement.hidden = true;
-            setStatus('Loading&hellip;');
-          }
-
-          await qtLoad({ qt });
-        } catch (e) {
-          console.error(e);
-          console.error(e.stack);
-          showLoader('Failed to start, see JavaScript console');
-        }
-      }
-    </script>
+    <script src="awen-shell.js"></script>
     <script src="briarthorn.js"></script>
     <script type="text/javascript" src="qtloader.js"></script>
   </body>

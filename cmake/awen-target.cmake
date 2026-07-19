@@ -1,10 +1,10 @@
 # The project's two target patterns: a framework QML module and a Qt Quick app
-# with its per-platform install/deploy story. Extra arguments forward to
-# qt_add_qml_module (URI, VERSION, QML_FILES, SOURCES, IMPORTS, ...).
+# with its per-platform install/deploy story.
 
 # A framework QML module: SHARED except on wasm (one static binary there) — a
 # static module has no loadable plugin, so a Release loadFromModule fails to
-# resolve the import.
+# resolve the import. Arguments forward to qt_add_qml_module (URI, VERSION,
+# QML_FILES, SOURCES, ...).
 function(awen_add_qml_module target)
     set(linkage "")
     if(NOT EMSCRIPTEN)
@@ -29,21 +29,68 @@ function(awen_add_qml_module target)
     endif()
 endfunction()
 
-# A Qt Quick app: the executable+module pair plus per-platform install/deploy.
-# Callers add sources, awen-module links, and platform extras after the call —
-# Qt finalization is deferred to the end of the calling directory.
+# A Qt Quick app: the executable+module pair on the generated awen::runApp
+# bootstrap, per-platform install/deploy, and a headless smoke test. The
+# keywords below are consumed here; everything else forwards to
+# qt_add_qml_module. Callers add platform extras after the call — Qt
+# finalization is deferred to the end of the calling directory.
+#   AWEN_MODULES <name>... — framework modules: imports awen.<name> and links awen-<name>.
+#   WINDOWS_ICON <ico>     — embedded into the .exe via a generated .rc.
+#   MAIN <cpp>             — custom bootstrap replacing the generated main(); it
+#                            should still call awen::runApp (see App.h).
+#   NO_SMOKE_TEST          — skip the auto-registered tst_<target>_loads.
 function(awen_add_executable target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "NO_SMOKE_TEST" "URI;MAIN;WINDOWS_ICON" "AWEN_MODULES")
+    if(NOT arg_URI)
+        message(FATAL_ERROR "awen_add_executable(${target}) requires URI")
+    endif()
+
     qt_add_executable(${target})
 
+    set(imports "")
+    foreach(module IN LISTS arg_AWEN_MODULES)
+        list(APPEND imports awen.${module})
+    endforeach()
+    if(imports)
+        set(imports IMPORTS ${imports})
+    endif()
+
+    # IMPORTS tells the import scan (qmllint, deploy) that the QML files depend
+    # on the framework modules; the types come from the linked modules below.
     qt_add_qml_module(${target}
-        ${ARGN}
+        URI ${arg_URI}
+        ${imports}
+        ${arg_UNPARSED_ARGUMENTS}
     )
 
     # No QT_QML_DEBUG: the QML debug server bypasses the compiled units and
     # demands the optional qtquick2plugin the deploy step does not ship, failing
     # startup.
 
-    target_link_libraries(${target} PRIVATE Qt6::Quick)
+    # The generated main keeps main() an object of the app target itself — a
+    # main() in a static library would be dropped from the android MODULE .so.
+    if(arg_MAIN)
+        target_sources(${target} PRIVATE ${arg_MAIN})
+    else()
+        set(AWEN_APP_TARGET ${target})
+        set(AWEN_APP_URI ${arg_URI})
+        configure_file("${CMAKE_SOURCE_DIR}/src/awen/app/main.cpp.in" "${target}_main.cpp" @ONLY)
+        target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}_main.cpp")
+    endif()
+    target_link_libraries(${target} PRIVATE awen-app)
+
+    foreach(module IN LISTS arg_AWEN_MODULES)
+        target_link_libraries(${target} PRIVATE awen-${module})
+    endforeach()
+
+    # Windows: embed the icon via a generated .rc — the resource with the lowest
+    # id is the .exe icon, so id 1. rc.exe accepts the forward-slash absolute
+    # path; RC is enabled at the root (enable_language is file-scope-only).
+    if(WIN32 AND arg_WINDOWS_ICON)
+        get_filename_component(ico "${arg_WINDOWS_ICON}" ABSOLUTE)
+        file(CONFIGURE OUTPUT "${target}.rc" CONTENT "1 ICON \"${ico}\"\n" @ONLY)
+        target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
+    endif()
 
     # qmlcachegen-generated code trips MSVC C4702 (unreachable return) inside Qt
     # headers, which /WX would turn into an error — disable just that warning.
@@ -86,6 +133,11 @@ function(awen_add_executable target)
             DESTINATION web
             OPTIONAL
         )
+
+        # The shared shell machinery an app's custom entry page builds on.
+        install(FILES "${CMAKE_SOURCE_DIR}/cmake/wasm/awen-shell.js"
+            DESTINATION web
+        )
     elseif(ANDROID)
         # androiddeployqt assembles the APK during a plain build (apk_all is in
         # ALL); ship it from the build tree.
@@ -109,5 +161,22 @@ function(awen_add_executable target)
         )
 
         install(SCRIPT ${deploy_script})
+    endif()
+
+    # Headless smoke test: run the real app (minimal platform, software scene
+    # graph) and quit via the awen::runApp seam — a clean exit proves Main.qml
+    # and its imports load. TIMEOUT keeps a seam-less custom MAIN from hanging ctest.
+    if(BUILD_TESTING AND NOT EMSCRIPTEN AND NOT ANDROID AND NOT arg_NO_SMOKE_TEST)
+        add_test(NAME tst_${target}_loads COMMAND ${target})
+        set_tests_properties(tst_${target}_loads PROPERTIES
+            ENVIRONMENT "AWEN_SMOKE_QUIT_MS=3000;QT_QPA_PLATFORM=minimal;QSG_RHI_BACKEND=software"
+            TIMEOUT 60
+        )
+        # A build-tree run has no qt.conf pointing at the in-project QML modules
+        # (that file is written on Windows only), so Release's loadFromModule
+        # needs the import path or it fails with "No module named <Uri> found".
+        set_property(TEST tst_${target}_loads APPEND PROPERTY ENVIRONMENT_MODIFICATION
+            "QML_IMPORT_PATH=path_list_append:${QT_QML_OUTPUT_DIRECTORY}"
+        )
     endif()
 endfunction()

@@ -27,6 +27,13 @@ if(AWEN_QT_PREBUILT_DIR)
     endif()
 endif()
 
+# The Windows resource compiler for the icon .rc files awen_add_executable
+# generates; enable_language is file-scope-only, so it lives here. WIN32 is off
+# for the android/wasm cross builds, which have no rc.
+if(WIN32)
+    enable_language(RC)
+endif()
+
 include(CTest)
 include(GNUInstallDirs)
 
