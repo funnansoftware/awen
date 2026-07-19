@@ -158,14 +158,21 @@ function(awen_add_executable target)
             DESTINATION android
         )
     else()
+        # Each app installs into its own ${target}/ subtree so one app's binary,
+        # Qt libraries, plugins and QML imports stay separable from another's.
         install(TARGETS ${target}
-            BUNDLE DESTINATION .
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            BUNDLE DESTINATION ${target}
+            RUNTIME DESTINATION ${target}/${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${target}/${CMAKE_INSTALL_LIBDIR}
         )
 
         # Deploy the Qt libraries, platform plugins and QML imports next to the
-        # installed app.
+        # installed app. The QT_DEPLOY_*_DIR variables (read at install time by
+        # the deploy script) carry the ${target}/ prefix so the deployment lands
+        # in the same per-app subtree as the binary above, while the install
+        # prefix stays the root so windeployqt's generated qt.conf resolves back
+        # to it. Each app sets all four unconditionally so nothing leaks from an
+        # earlier app's deploy.
         qt_generate_deploy_qml_app_script(
             TARGET ${target}
             OUTPUT_SCRIPT deploy_script
@@ -173,6 +180,12 @@ function(awen_add_executable target)
             NO_TRANSLATIONS
         )
 
+        install(CODE "
+            set(QT_DEPLOY_BIN_DIR \"${target}/${CMAKE_INSTALL_BINDIR}\")
+            set(QT_DEPLOY_LIB_DIR \"${target}/${CMAKE_INSTALL_LIBDIR}\")
+            set(QT_DEPLOY_PLUGINS_DIR \"${target}/plugins\")
+            set(QT_DEPLOY_QML_DIR \"${target}/qml\")
+        ")
         install(SCRIPT ${deploy_script})
     endif()
 

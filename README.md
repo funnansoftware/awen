@@ -75,8 +75,8 @@ Run from a Visual Studio 2022 developer shell:
 cmake --preset windows                            # configure (release)
 cmake --build --preset windows                    # build
 cmake --build --preset windows --target install   # install
-build/windows/installed/bin/briarthorn.exe        # run the game
-build/windows/installed/bin/awen.exe              # run the framework sample
+build/windows/installed/briarthorn/bin/briarthorn.exe   # run the game
+build/windows/installed/awen/bin/awen.exe               # run the framework sample
 ```
 
 ## Linux
@@ -85,7 +85,7 @@ build/windows/installed/bin/awen.exe              # run the framework sample
 cmake --preset linux                            # configure (release)
 cmake --build --preset linux                    # build
 cmake --build --preset linux --target install   # install
-./build/linux/installed/bin/briarthorn          # run
+./build/linux/installed/briarthorn/bin/briarthorn   # run
 ```
 
 ## MacOS
@@ -94,7 +94,7 @@ cmake --build --preset linux --target install   # install
 cmake --preset macos                            # configure (release)
 cmake --build --preset macos                    # build
 cmake --build --preset macos --target install   # install
-./build/macos/installed/bin/briarthorn          # run
+open ./build/macos/installed/briarthorn/briarthorn.app   # run
 ```
 
 ## Web
