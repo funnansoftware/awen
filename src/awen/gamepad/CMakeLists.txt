@@ -2,27 +2,13 @@
 # by SDL3 on desktop and wasm. The Qt-free awen-gamepad-core below holds the
 # unit-tested translation logic; this module is the SDL/QML edge on top of it.
 
-# SHARED except on wasm (one static binary there): a static module has no loadable
-# plugin, so a Release loadFromModule fails to resolve `import awen.gamepad`.
-set(_awen_gamepad_linkage "")
-if(NOT EMSCRIPTEN)
-    set(_awen_gamepad_linkage "SHARED")
-endif()
-
-qt_add_qml_module(awen-gamepad
-    ${_awen_gamepad_linkage}
+awen_add_qml_module(awen-gamepad
     URI awen.gamepad
     VERSION 1.0
     QML_FILES
     SOURCES
         Gamepad.h
         Gamepad.cpp
-)
-
-target_link_libraries(awen-gamepad
-    PUBLIC
-        Qt6::Core
-        Qt6::Quick
 )
 
 if(ANDROID)

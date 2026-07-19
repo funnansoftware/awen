@@ -69,6 +69,10 @@ set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate .qmlls.ini for qmlls" FORC
 
 include(cmake/qt-build-tree-conf.cmake)
 
+# awen_add_qml_module / awen_add_executable, the shared target patterns for
+# src/ and app/.
+include(cmake/awen-target.cmake)
+
 add_subdirectory(src)
 add_subdirectory(app)
 
