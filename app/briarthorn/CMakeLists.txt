@@ -10,13 +10,10 @@ awen_add_executable(briarthorn
         entity
         gamepad
     WINDOWS_ICON briarthorn.ico
-)
-
-if(EMSCRIPTEN)
     # The briarthorn.game entry page, embedding the app in a bounded view; Qt's
     # generated briarthorn.html stays as a debug fallback.
-    install(FILES web/index.html DESTINATION web)
-endif()
+    WEB_SHELL web/index.html
+)
 
 if(ANDROID)
     # Package identity and launcher assets; androiddeployqt overlays android/

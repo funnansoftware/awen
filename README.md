@@ -107,8 +107,8 @@ Windows), then serve the output over http:
 cmake --preset web                            # configure (release)
 cmake --build --preset web                    # build
 cmake --build --preset web --target install   # install
-python3 -m http.server -d build/web/installed/web
-# open http://localhost:8000/briarthorn.html
+python3 -m http.server -d build/web/installed/web/briarthorn
+# open http://localhost:8000/   (serves briarthorn's index.html)
 ```
 
 ## Android

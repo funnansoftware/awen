@@ -36,11 +36,12 @@ endfunction()
 # finalization is deferred to the end of the calling directory.
 #   AWEN_MODULES <name>... — framework modules: imports awen.<name> and links awen-<name>.
 #   WINDOWS_ICON <ico>     — embedded into the .exe via a generated .rc.
+#   WEB_SHELL <html>       — the wasm entry page, installed as web/<target>/index.html.
 #   MAIN <cpp>             — custom bootstrap replacing the generated main(); it
 #                            should still call awen::runApp (see App.h).
 #   NO_SMOKE_TEST          — skip the auto-registered tst_<target>_loads.
 function(awen_add_executable target)
-    cmake_parse_arguments(PARSE_ARGV 1 arg "NO_SMOKE_TEST" "URI;MAIN;WINDOWS_ICON" "AWEN_MODULES")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "NO_SMOKE_TEST" "URI;MAIN;WINDOWS_ICON;WEB_SHELL" "AWEN_MODULES")
     if(NOT arg_URI)
         message(FATAL_ERROR "awen_add_executable(${target}) requires URI")
     endif()
@@ -117,27 +118,39 @@ function(awen_add_executable target)
             FILES "${CMAKE_SOURCE_DIR}/cmake/wasm/qt.conf"
         )
 
+        # Each app ships into its own web/<target>/ directory — an independently
+        # servable docroot, so one app's entry page never collides with another's.
         # Qt is linked into the .js/.wasm, so ship the generated bundle; the
-        # install directory can then be served as-is.
+        # directory can then be served as-is.
         install(FILES
             "$<TARGET_FILE_DIR:${target}>/${target}.html"
             "$<TARGET_FILE_DIR:${target}>/${target}.js"
             "$<TARGET_FILE_DIR:${target}>/${target}.wasm"
-            DESTINATION web
+            DESTINATION web/${target}
         )
 
         # Only emitted for some configurations, so optional rather than predicted.
         install(FILES
             "$<TARGET_FILE_DIR:${target}>/qtloader.js"
             "$<TARGET_FILE_DIR:${target}>/${target}.worker.js"
-            DESTINATION web
+            DESTINATION web/${target}
             OPTIONAL
         )
 
         # The shared shell machinery an app's custom entry page builds on.
         install(FILES "${CMAKE_SOURCE_DIR}/cmake/wasm/awen-shell.js"
-            DESTINATION web
+            DESTINATION web/${target}
         )
+
+        # The app's branded entry page becomes web/<target>/index.html — the
+        # default document served for that app. Without it the app serves Qt's
+        # generated <target>.html.
+        if(arg_WEB_SHELL)
+            install(FILES "${arg_WEB_SHELL}"
+                DESTINATION web/${target}
+                RENAME index.html
+            )
+        endif()
     elseif(ANDROID)
         # androiddeployqt assembles the APK during a plain build (apk_all is in
         # ALL); ship it from the build tree.

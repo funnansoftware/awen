@@ -99,11 +99,15 @@ jobs:
       - name: verify-bundle
         shell: bash
         run: |
+          # Each app installs into its own web/<app>/ docroot; briarthorn owns
+          # the branded index.html, awen serves Qt's generated awen.html.
           out=build/web-release/installed/web
-          for f in index.html awen-shell.js briarthorn.html briarthorn.js briarthorn.wasm awen.html awen.js awen.wasm; do
+          for f in briarthorn/index.html briarthorn/awen-shell.js \
+                   briarthorn/briarthorn.html briarthorn/briarthorn.js briarthorn/briarthorn.wasm \
+                   awen/awen-shell.js awen/awen.html awen/awen.js awen/awen.wasm; do
             if [ ! -s "$out/$f" ]; then
               echo "::error::missing or empty $out/$f"
-              ls -la "$out" || true
+              ls -laR "$out" || true
               exit 1
             fi
             echo "ok: $f ($(stat -c%s "$out/$f") bytes)"
