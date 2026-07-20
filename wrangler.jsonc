@@ -1,0 +1,18 @@
+// Cloudflare Workers config for the playable briarthorn web build: the
+// installed web/briarthorn docroot is served as static assets on
+// play.briarthorn.game. Deployed by the web workflow on pushes to main; a
+// local `wrangler deploy` works after a web-release install.
+{
+    "name": "briarthorn-game",
+    "compatibility_date": "2026-07-20",
+    "workers_dev": false,
+    "assets": {
+        "directory": "build/web-release/installed/web/briarthorn"
+    },
+    "routes": [
+        {
+            "pattern": "play.briarthorn.game",
+            "custom_domain": true
+        }
+    ]
+}

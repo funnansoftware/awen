@@ -61,3 +61,6 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# wrangler local state
+.wrangler/
