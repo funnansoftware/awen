@@ -142,4 +142,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # The action's default wrangler is a 3.x, which predates assets-only
+          # workers and fails on the missing main script.
+          wranglerVersion: "4.112.0"
           command: deploy
