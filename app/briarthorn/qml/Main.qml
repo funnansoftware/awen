@@ -142,7 +142,7 @@ Window {
         centerY: height * 0.875
         radius: Math.min(width, height) * 0.8
         strokeWidth: 2
-        gapLength: 48
+        gapLength: parent.width * (1 / 32)
         gapAngle: 30
     }
 
@@ -151,7 +151,7 @@ Window {
         centerY: height * 0.875
         radius: Math.min(width, height) * 0.4
         strokeWidth: 2
-        gapLength: 48
+        gapLength: parent.width * (1 / 32)
         gapAngle: 30
     }
 }
