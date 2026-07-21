@@ -64,18 +64,6 @@ Window {
             }
         }
 
-        // The scope's range ring: fills the scene, with the centre dropped
-        // toward the bottom so the forward sector gets the space (briardart's
-        // attack scope, verticalShift 0.375 / viewScale 1.6).
-        ShapeRing {
-            anchors.fill: parent
-            centerY: height * 0.875
-            radius: Math.min(width, height) * 0.8
-            strokeWidth: 2
-            gapLength: 48
-            gapAngle: 30
-        }
-
         // The player marker: an orange triangle with a pulsing ring behind it.
         Item {
             x: movement.markerX
@@ -144,5 +132,26 @@ Window {
             font.pixelSize: 13
             visible: scene.padConnected
         }
+    }
+
+    // The scope's range ring: fills the scene, with the centre dropped
+    // toward the bottom so the forward sector gets the space (briardart's
+    // attack scope, verticalShift 0.375 / viewScale 1.6).
+    ShapeRing {
+        anchors.fill: parent
+        centerY: height * 0.875
+        radius: Math.min(width, height) * 0.8
+        strokeWidth: 2
+        gapLength: 48
+        gapAngle: 30
+    }
+
+    ShapeRing {
+        anchors.fill: parent
+        centerY: height * 0.875
+        radius: Math.min(width, height) * 0.4
+        strokeWidth: 2
+        gapLength: 48
+        gapAngle: 30
     }
 }
