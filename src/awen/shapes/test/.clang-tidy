@@ -1,0 +1,10 @@
+---
+InheritParentConfig: true
+# Relax checks the gtest macros inherently trip (non-const globals, literal
+# assertion values, optional access guarded behind ASSERT_TRUE).
+Checks: "-cert-err58-cpp,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -bugprone-unchecked-optional-access"
