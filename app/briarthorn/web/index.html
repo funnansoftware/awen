@@ -37,12 +37,12 @@ js/wasm files are referenced, so the installed web/ directory serves as-is.
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       }
 
-      /* The game view: a bordered 4:3 surface; the app (maximized on wasm)
+      /* The game view: a bordered 16:9 surface; the app (maximized on wasm)
          fills the #screen container inside it exactly. */
       .view {
         position: relative;
         max-width: 1024px;
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 16 / 9;
         margin: 0 auto;
         border: 1px solid var(--border);
         background: var(--bg-deep);
