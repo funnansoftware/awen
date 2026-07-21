@@ -1,11 +1,23 @@
+project(briarthorn)
+
+set(QML_SINGLETONS
+    qml/themes/Style.qml
+)
+
+set_source_files_properties(${QML_SINGLETONS}
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+)
+
 # Briarthorn — the game, built in QML on the awen framework; own license, see
 # LICENSE.md. The shared bootstrap loads the Briarthorn QML module.
-awen_add_executable(briarthorn
+awen_add_executable(${PROJECT_NAME}
     URI Briarthorn
     VERSION 1.0
     QML_FILES
         qml/Main.qml
         qml/systems/SystemMovement.qml
+        qml/themes/Aurora.qml
+        ${QML_SINGLETONS}
     AWEN_MODULES
         entity
         gamepad
@@ -19,7 +31,7 @@ awen_add_executable(briarthorn
 if(ANDROID)
     # Package identity and launcher assets; androiddeployqt overlays android/
     # onto Qt's package template.
-    set_target_properties(briarthorn PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
         QT_ANDROID_PACKAGE_NAME "com.funnansoftware.briarthorn"
         QT_ANDROID_VERSION_CODE 1
         QT_ANDROID_VERSION_NAME "1.0"

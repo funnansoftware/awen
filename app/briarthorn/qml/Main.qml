@@ -3,6 +3,7 @@ import awen.entity
 import awen.gamepad
 import awen.shapes
 import "systems"
+import "themes"
 
 // Placeholder shell for the briarthorn game, pure QML: a marker steered with
 // WASD / arrow keys or a gamepad. The game grows from here.
@@ -17,7 +18,7 @@ Window {
     visibility: Qt.platform.os === "wasm" ? Window.Maximized : Window.Windowed
     flags: Qt.platform.os === "wasm" ? Qt.FramelessWindowHint : Qt.Window
     title: qsTr("briarthorn")
-    color: "#505050" // the scope background
+    color: Style.theme.windowBackground
 
     Item {
         id: scene
@@ -109,7 +110,7 @@ Window {
                 width: 26
                 height: width
                 points: [Qt.point(0, -0.5), Qt.point(0.5, 0.5), Qt.point(-0.5, 0.5)]
-                fillColor: "#ffa100"
+                fillColor: Style.theme.factionOwnship
             }
         }
 
@@ -142,8 +143,9 @@ Window {
         centerY: height * 0.875
         radius: Math.min(width, height) * 0.8
         strokeWidth: 2
-        gapLength: parent.width * (1 / 32)
-        gapAngle: 30
+        gapLength: parent.width * (1 / 24)
+        gapAngle: 20
+        strokeColor: Style.theme.rangeRing
     }
 
     ShapeRing {
@@ -151,7 +153,8 @@ Window {
         centerY: height * 0.875
         radius: Math.min(width, height) * 0.4
         strokeWidth: 2
-        gapLength: parent.width * (1 / 32)
-        gapAngle: 30
+        gapLength: parent.width * (1 / 24)
+        gapAngle: 20
+        strokeColor: Style.theme.rangeRing
     }
 }
