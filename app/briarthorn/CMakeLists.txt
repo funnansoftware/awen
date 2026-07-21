@@ -17,6 +17,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/Main.qml
         qml/systems/SystemMovement.qml
         qml/themes/Aurora.qml
+        qml/ui/RangeRing.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
         entity

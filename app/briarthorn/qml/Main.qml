@@ -4,6 +4,7 @@ import awen.gamepad
 import awen.shapes
 import "systems"
 import "themes"
+import "ui"
 
 // Placeholder shell for the briarthorn game, pure QML: a marker steered with
 // WASD / arrow keys or a gamepad. The game grows from here.
@@ -19,6 +20,29 @@ Window {
     flags: Qt.platform.os === "wasm" ? Qt.FramelessWindowHint : Qt.Window
     title: qsTr("briarthorn")
     color: Style.theme.windowBackground
+
+    // The scope's range ring: fills the scene, with the centre dropped
+    // toward the bottom so the forward sector gets the space (briardart's
+    // attack scope, verticalShift 0.375 / viewScale 1.6).
+    RangeRing {
+        anchors.fill: parent
+        centerY: height * 0.875
+        radius: Math.min(width, height) * 0.4
+        strokeWidth: 2
+        gapLength: parent.width * (1 / 24)
+        gapAngle: 20
+        range: 40
+    }
+
+    RangeRing {
+        anchors.fill: parent
+        centerY: height * 0.875
+        radius: Math.min(width, height) * 0.8
+        strokeWidth: 2
+        gapLength: parent.width * (1 / 24)
+        gapAngle: 20
+        range: 80
+    }
 
     Item {
         id: scene
@@ -107,7 +131,7 @@ Window {
 
             ShapePolygon {
                 anchors.centerIn: parent
-                width: 26
+                width: root.height / 20
                 height: width
                 points: [Qt.point(0, -0.5), Qt.point(0.5, 0.5), Qt.point(-0.5, 0.5)]
                 fillColor: Style.theme.factionOwnship
@@ -133,28 +157,5 @@ Window {
             font.pixelSize: 13
             visible: scene.padConnected
         }
-    }
-
-    // The scope's range ring: fills the scene, with the centre dropped
-    // toward the bottom so the forward sector gets the space (briardart's
-    // attack scope, verticalShift 0.375 / viewScale 1.6).
-    ShapeRing {
-        anchors.fill: parent
-        centerY: height * 0.875
-        radius: Math.min(width, height) * 0.8
-        strokeWidth: 2
-        gapLength: parent.width * (1 / 24)
-        gapAngle: 20
-        strokeColor: Style.theme.rangeRing
-    }
-
-    ShapeRing {
-        anchors.fill: parent
-        centerY: height * 0.875
-        radius: Math.min(width, height) * 0.4
-        strokeWidth: 2
-        gapLength: parent.width * (1 / 24)
-        gapAngle: 20
-        strokeColor: Style.theme.rangeRing
     }
 }
