@@ -9,6 +9,7 @@ awen_add_executable(briarthorn
     AWEN_MODULES
         entity
         gamepad
+        shapes
     WINDOWS_ICON briarthorn.ico
     # The briarthorn.game entry page, embedding the app in a bounded view; Qt's
     # generated briarthorn.html stays as a debug fallback.

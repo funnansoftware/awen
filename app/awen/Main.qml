@@ -1,5 +1,6 @@
 import QtQuick
 import awen.entity
+import awen.shapes
 
 Window {
     id: window
@@ -54,26 +55,51 @@ Window {
         }
     }
 
-    Canvas {
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
+    // The range-ring pattern: a gapped ring with the app's label anchored on
+    // the exposed gapCenter readout.
+    ShapeRing {
+        id: ring
+        anchors.fill: parent
+        radius: parent.height * 0.4
+        gapAngle: 25
+        gapLength: 50
+        strokeColor: "white"
+        strokeWidth: 3
 
-        onPaint: {
-            var ctx = getContext("2d");
-            var centerX = width / 2;
-            var centerY = height / 2;
-            var radius = height * 0.4;
-            var startAngle = (30 - 90) * Math.PI / 180;
-            var endAngle = (30 + 10 - 90) * Math.PI / 180;
-
-            ctx.strokeStyle = "white";
-            ctx.lineWidth = 3;
-            ctx.lineCap = "round";
-
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, startAngle, endAngle + Math.PI * 2 - 20 * Math.PI / 180, false);
-            ctx.stroke();
+        Text {
+            x: ring.gapCenter.x - width / 2
+            y: ring.gapCenter.y - height / 2
+            text: "40"
+            color: "white"
+            font.bold: true
         }
+    }
+
+    // A gauge cycling its fill, as a living ShapeGauge example.
+    ShapeGauge {
+        width: 96
+        height: 96
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 24
+        fillColor: "#ffa100"
+
+        SequentialAnimation on value {
+            loops: Animation.Infinite
+            NumberAnimation { from: 0; to: 1; duration: 2000; easing.type: Easing.InOutQuad }
+            NumberAnimation { from: 1; to: 0; duration: 2000; easing.type: Easing.InOutQuad }
+        }
+    }
+
+    // The synthetic scope stress page; S toggles it over the sample scene.
+    StressScope {
+        id: stress
+        anchors.fill: parent
+        visible: false
+    }
+
+    Shortcut {
+        sequence: "S"
+        onActivated: stress.visible = !stress.visible
     }
 }

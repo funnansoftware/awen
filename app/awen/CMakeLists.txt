@@ -5,6 +5,8 @@ awen_add_executable(awen
     VERSION 1.0
     QML_FILES
         Main.qml
+        StressScope.qml
     AWEN_MODULES
         entity
+        shapes
 )

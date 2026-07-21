@@ -1,6 +1,7 @@
 import QtQuick
 import awen.entity
 import awen.gamepad
+import awen.shapes
 import "systems"
 
 // Placeholder shell for the briarthorn game, pure QML: a marker steered with
@@ -103,22 +104,12 @@ Window {
                 }
             }
 
-            Canvas {
+            ShapePolygon {
                 anchors.centerIn: parent
                 width: 26
                 height: width
-
-                onPaint: {
-                    const ctx = getContext("2d");
-                    ctx.reset();
-                    ctx.fillStyle = "#ffa100";
-                    ctx.beginPath();
-                    ctx.moveTo(width / 2, 0);      // nose
-                    ctx.lineTo(width, height);     // tail right
-                    ctx.lineTo(0, height);         // tail left
-                    ctx.closePath();
-                    ctx.fill();
-                }
+                points: [Qt.point(0, -0.5), Qt.point(0.5, 0.5), Qt.point(-0.5, 0.5)]
+                fillColor: "#ffa100"
             }
         }
 
