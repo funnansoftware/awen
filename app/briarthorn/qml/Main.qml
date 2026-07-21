@@ -29,9 +29,10 @@ Window {
         centerY: height * 0.875
         radius: Math.min(width, height) * 0.4
         strokeWidth: 2
-        gapLength: parent.width * (1 / 24)
+        gapLength: parent.width * (1 / 32)
         gapAngle: 20
         range: 40
+        enableTicks: false
     }
 
     RangeRing {
@@ -39,7 +40,7 @@ Window {
         centerY: height * 0.875
         radius: Math.min(width, height) * 0.8
         strokeWidth: 2
-        gapLength: parent.width * (1 / 24)
+        gapLength: parent.width * (1 / 32)
         gapAngle: 20
         range: 80
     }
@@ -91,8 +92,8 @@ Window {
 
         // The player marker: an orange triangle with a pulsing ring behind it.
         Item {
-            x: movement.markerX
-            y: movement.markerY
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: root.height * 0.875
 
             Rectangle {
                 anchors.centerIn: parent
