@@ -13,15 +13,7 @@ namespace
     // Every type the module ships; the loop below proves each one resolves and
     // instantiates from a bare import.
     constexpr auto Components = std::array{
-        "ShapeArc",
-        "ShapeGauge",
-        "ShapeLink",
-        "ShapePolygon",
-        "ShapeReticle",
-        "ShapeRing",
-        "ShapeSector",
-        "ShapeSparkline",
-        "ShapeTicks",
+        "ShapeArc", "ShapeGauge", "ShapeLink", "ShapePolygon", "ShapeReticle", "ShapeRing", "ShapeSector", "ShapeSparkline", "ShapeTicks",
     };
 }
 
@@ -51,9 +43,7 @@ TEST(Shapes, EveryComponentInstantiates)
     auto engine = QQmlEngine{};
     for (const auto* name : Components)
     {
-        const auto qml = QStringLiteral("import awen.shapes\n%1 { width: 100; height: 100 }")
-                             .arg(QLatin1String{name})
-                             .toUtf8();
+        const auto qml = QStringLiteral("import awen.shapes\n%1 { width: 100; height: 100 }").arg(QLatin1String{name}).toUtf8();
         const auto item = load(engine, qml.constData());
         EXPECT_NE(item, nullptr) << name;
     }
