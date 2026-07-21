@@ -12,6 +12,11 @@ Shape {
     // the item's bounds.
     property real radius: Math.min(width, height) / 2 - strokeWidth / 2
 
+    // The ring's centre in item coordinates; defaults to the item's middle.
+    // Rebind (e.g. centerY: height * 0.875) to shift the ring off-centre.
+    property real centerX: width / 2
+    property real centerY: height / 2
+
     // Arc length removed from the circle, in pixels; 0 draws a closed ring.
     property real gapLength: 0
 
@@ -33,9 +38,9 @@ Shape {
         return Bearing.distanceDeg(angleDeg, gapAngle) < gapHalfAngle;
     }
 
-    // The point at bearing angleDeg and distance r from the item's centre.
+    // The point at bearing angleDeg and distance r from the ring's centre.
     function pointAt(angleDeg: real, r: real): point {
-        return Bearing.point(width / 2, height / 2, angleDeg, r);
+        return Bearing.point(centerX, centerY, angleDeg, r);
     }
 
     preferredRendererType: Shape.CurveRenderer
@@ -46,8 +51,8 @@ Shape {
         capStyle: ShapePath.RoundCap
 
         PathAngleArc {
-            centerX: root.width / 2
-            centerY: root.height / 2
+            centerX: root.centerX
+            centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
             startAngle: root.gapAngle + root.gapHalfAngle - 90

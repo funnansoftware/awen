@@ -24,6 +24,10 @@ Shape {
     // Stroke thickness shared by the track and fill arcs.
     property real strokeWidth: 6
 
+    // The gauge's centre in item coordinates; defaults to the item's middle.
+    property real centerX: width / 2
+    property real centerY: height / 2
+
     property color trackColor: "#33ffffff"
     property color fillColor: "white"
     property int capStyle: ShapePath.RoundCap
@@ -37,9 +41,9 @@ Shape {
     // The fill arc's end point — a tip-marker or label anchor.
     readonly property point fillEnd: pointAt(angleStart + fillSweep, radius)
 
-    // The point at bearing angleDeg and distance r from the item's centre.
+    // The point at bearing angleDeg and distance r from the gauge's centre.
     function pointAt(angleDeg: real, r: real): point {
-        return Bearing.point(width / 2, height / 2, angleDeg, r);
+        return Bearing.point(centerX, centerY, angleDeg, r);
     }
 
     preferredRendererType: Shape.CurveRenderer
@@ -51,8 +55,8 @@ Shape {
         capStyle: root.capStyle
 
         PathAngleArc {
-            centerX: root.width / 2
-            centerY: root.height / 2
+            centerX: root.centerX
+            centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
             startAngle: root.angleStart - 90
@@ -67,8 +71,8 @@ Shape {
         capStyle: root.capStyle
 
         PathAngleArc {
-            centerX: root.width / 2
-            centerY: root.height / 2
+            centerX: root.centerX
+            centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
             startAngle: root.angleStart - 90

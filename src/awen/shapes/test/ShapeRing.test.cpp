@@ -103,6 +103,22 @@ ShapeRing { width: 0; height: 0; gapLength: 50; strokeWidth: 0 }
     EXPECT_DOUBLE_EQ(item->property("gapHalfAngle").toDouble(), 0.0);
 }
 
+TEST(ShapeRing, CenterMovesTheRingWithinTheItem)
+{
+    auto engine = QQmlEngine{};
+    const auto item = load(engine, R"(
+import awen.shapes
+ShapeRing { width: 200; height: 400; radius: 50; centerY: height * 0.75 }
+)");
+    ASSERT_NE(item, nullptr);
+
+    // centerX keeps its middle default while centerY drops to 300, so the
+    // gap centre lands one radius above the moved centre.
+    const auto center = item->property("gapCenter").toPointF();
+    EXPECT_NEAR(center.x(), 100.0, 1e-9);
+    EXPECT_NEAR(center.y(), 250.0, 1e-9);
+}
+
 TEST(ShapeRing, DefaultRadiusKeepsStrokeInsideBounds)
 {
     auto engine = QQmlEngine{};

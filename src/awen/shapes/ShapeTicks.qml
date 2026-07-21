@@ -22,6 +22,10 @@ Shape {
     // Tick length, drawn inward from radius.
     property real length: 14
 
+    // The assembly's centre in item coordinates; defaults to the item's middle.
+    property real centerX: width / 2
+    property real centerY: height / 2
+
     // The suppression window's centre bearing and half-width, in screen
     // degrees; a zero half-width suppresses nothing.
     property real gapAngle: 0
@@ -48,14 +52,14 @@ Shape {
     // The on-screen point for a tick bearing at distance r — the label anchor;
     // applies angleOffset.
     function tickPoint(bearing: real, r: real): point {
-        return Bearing.point(width / 2, height / 2, bearing + angleOffset, r);
+        return Bearing.point(centerX, centerY, bearing + angleOffset, r);
     }
 
     // All ticks as one multi-subpath SVG string, rebuilt as a single binding.
     readonly property string tickPath: {
         let d = "";
-        const cx = width / 2;
-        const cy = height / 2;
+        const cx = centerX;
+        const cy = centerY;
         for (let i = 0; i < tickAngles.length; ++i) {
             const a = tickAngles[i] + angleOffset;
             const outer = Bearing.point(cx, cy, a, radius);

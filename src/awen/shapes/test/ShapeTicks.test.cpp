@@ -86,6 +86,27 @@ ShapeTicks { width: 200; height: 200 }
     EXPECT_EQ(item->property("tickPath").toString().count(QLatin1Char('M')), 12);
 }
 
+TEST(ShapeTicks, CenterMovesTickPointsAndPath)
+{
+    auto engine = QQmlEngine{};
+    const auto item = load(engine, R"(
+import awen.shapes
+ShapeTicks {
+    width: 200
+    height: 400
+    centerY: 300
+    readonly property point north: tickPoint(0, 100)
+}
+)");
+    ASSERT_NE(item, nullptr);
+
+    // Both the label anchor and the drawn subpaths ride the moved centre.
+    const auto north = item->property("north").toPointF();
+    EXPECT_NEAR(north.x(), 100.0, 1e-9);
+    EXPECT_NEAR(north.y(), 200.0, 1e-9);
+    EXPECT_TRUE(item->property("tickPath").toString().startsWith(QLatin1String("M 100 ")));
+}
+
 TEST(ShapeTicks, OffsetMovesTickPointsNotBearings)
 {
     auto engine = QQmlEngine{};

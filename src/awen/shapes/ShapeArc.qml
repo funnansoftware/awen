@@ -17,15 +17,19 @@ Shape {
     // Arc extent in degrees, clockwise positive.
     property real angleSweep: 360
 
+    // The arc's centre in item coordinates; defaults to the item's middle.
+    property real centerX: width / 2
+    property real centerY: height / 2
+
     property alias strokeColor: path.strokeColor
     property alias strokeWidth: path.strokeWidth
     property alias capStyle: path.capStyle
     property alias strokeStyle: path.strokeStyle
     property alias dashPattern: path.dashPattern
 
-    // The point at bearing angleDeg and distance r from the item's centre.
+    // The point at bearing angleDeg and distance r from the arc's centre.
     function pointAt(angleDeg: real, r: real): point {
-        return Bearing.point(width / 2, height / 2, angleDeg, r);
+        return Bearing.point(centerX, centerY, angleDeg, r);
     }
 
     preferredRendererType: Shape.CurveRenderer
@@ -36,8 +40,8 @@ Shape {
         capStyle: ShapePath.RoundCap
 
         PathAngleArc {
-            centerX: root.width / 2
-            centerY: root.height / 2
+            centerX: root.centerX
+            centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
             startAngle: root.angleStart - 90

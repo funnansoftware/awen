@@ -9,8 +9,8 @@ import "systems"
 Window {
     id: root
 
-    width: 800
-    height: 600
+    width: 1280
+    height: 720
     visible: true
     // On wasm, fill the web shell's container div exactly — frameless, because Qt
     // otherwise paints its own title bar inside the embedded view.
@@ -62,6 +62,18 @@ Window {
                 xMax: scene.width
                 yMax: scene.height
             }
+        }
+
+        // The scope's range ring: fills the scene, with the centre dropped
+        // toward the bottom so the forward sector gets the space (briardart's
+        // attack scope, verticalShift 0.375 / viewScale 1.6).
+        ShapeRing {
+            anchors.fill: parent
+            centerY: height * 0.875
+            radius: Math.min(width, height) * 0.8
+            strokeWidth: 2
+            gapLength: 48
+            gapAngle: 30
         }
 
         // The player marker: an orange triangle with a pulsing ring behind it.

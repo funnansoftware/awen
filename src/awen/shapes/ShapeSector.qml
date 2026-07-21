@@ -18,14 +18,18 @@ Shape {
     // Total angular width of the wedge, in degrees.
     property real angleSpan: 60
 
+    // The wedge's apex in item coordinates; defaults to the item's middle.
+    property real centerX: width / 2
+    property real centerY: height / 2
+
     property color fillColor: "white"
 
     property alias strokeColor: path.strokeColor
     property alias strokeWidth: path.strokeWidth
 
-    // The point at bearing angleDeg and distance r from the item's centre.
+    // The point at bearing angleDeg and distance r from the wedge's apex.
     function pointAt(angleDeg: real, r: real): point {
-        return Bearing.point(width / 2, height / 2, angleDeg, r);
+        return Bearing.point(centerX, centerY, angleDeg, r);
     }
 
     preferredRendererType: Shape.CurveRenderer
@@ -34,15 +38,15 @@ Shape {
         id: path
         fillColor: root.fillColor
         strokeColor: "transparent"
-        startX: root.width / 2
-        startY: root.height / 2
+        startX: root.centerX
+        startY: root.centerY
 
         // moveToStart off, so the path line-connects the centre to the arc's
         // start instead of opening a new subpath.
         PathAngleArc {
             moveToStart: false
-            centerX: root.width / 2
-            centerY: root.height / 2
+            centerX: root.centerX
+            centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
             startAngle: root.angleAt - root.angleSpan / 2 - 90
@@ -50,8 +54,8 @@ Shape {
         }
 
         PathLine {
-            x: root.width / 2
-            y: root.height / 2
+            x: root.centerX
+            y: root.centerY
         }
     }
 }
