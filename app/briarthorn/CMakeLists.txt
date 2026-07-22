@@ -1,6 +1,7 @@
 project(briarthorn)
 
 set(QML_SINGLETONS
+    qml/model/Database.qml
     qml/themes/Style.qml
 )
 
@@ -15,9 +16,20 @@ awen_add_executable(${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/model/Classification.qml
+        qml/model/Data.qml
+        qml/model/Entity.qml
+        qml/model/RangeProjection.qml
+        qml/model/Side.qml
+        qml/model/Track.qml
+        qml/systems/SystemDetection.qml
         qml/systems/SystemMovement.qml
+        qml/systems/SystemPilot.qml
+        qml/systems/SystemPursuit.qml
         qml/themes/Aurora.qml
         qml/ui/RangeRing.qml
+        qml/ui/Symbol.qml
+        qml/ui/ViewTracks.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
         entity

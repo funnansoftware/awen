@@ -9,6 +9,9 @@ ShapeRing {
     property real padding: 10
     property real range: 40
     property alias enableTicks: ticks.visible
+    // Screen rotation of the tick assembly — bind -ownship.heading for a
+    // heading-up scope whose labels keep true bearings.
+    property alias tickOffset: ticks.angleOffset
 
     ShapeTicks {
         id: ticks
@@ -24,19 +27,21 @@ ShapeRing {
         strokeColor: Style.theme.rangeRing
         strokeWidth: 1.5
 
-        // One label per visible tick. tickAngles carries each tick's bearing;
-        // the Repeater hands it to the delegate as modelData, and tickPoint
-        // anchors the text just inside the tick's inner end.
+        // One label per tick, anchored just inside the tick's inner end. The
+        // model is the fixed tick count so delegates survive gap crossings;
+        // a label rotating into the gap merely hides.
         Repeater {
-            model: ticks.tickAngles
+            model: Math.ceil(360 / ticks.stepAngle)
             delegate: Text {
-                required property real modelData
-                text: Math.round(modelData) === 0 ? "N" : Math.round(modelData)
+                required property int index
+                readonly property real bearing: index * ticks.stepAngle
+                visible: !ring.inGap(bearing + ticks.angleOffset)
+                text: Math.round(bearing) === 0 ? "N" : Math.round(bearing)
                 color: Style.theme.textPrimary
                 font.pixelSize: 10
-                scale: Math.round(modelData) === 0 ? 1.5 : 1
+                scale: Math.round(bearing) === 0 ? 1.5 : 1
 
-                property point anchor: ticks.tickPoint(modelData, ticks.radius - ticks.length - ring.padding * 2)
+                property point anchor: ticks.tickPoint(bearing, ticks.radius - ticks.length - ring.padding * 2)
                 x: anchor.x - width / 2
                 y: anchor.y - height / 2
             }
