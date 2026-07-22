@@ -32,6 +32,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemMovement.qml
         qml/systems/SystemPursuit.qml
         qml/themes/Aurora.qml
+        qml/ui/Joystick.qml
         qml/ui/RangeRing.qml
         qml/ui/Symbol.qml
         qml/ui/ViewTracks.qml
