@@ -9,6 +9,9 @@ ShapeRing {
     property real padding: 10
     property real range: 40
     property alias enableTicks: ticks.visible
+    // Screen rotation of the tick assembly — bind -ownship.heading for a
+    // heading-up scope whose labels keep true bearings.
+    property alias tickOffset: ticks.angleOffset
 
     ShapeTicks {
         id: ticks
