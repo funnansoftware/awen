@@ -166,14 +166,14 @@ Window {
             fillColor: Style.theme.gaugeTrack
         }
 
-        // The track picture: every contact plotted at its azimuth and range
-        // in ownship's heading-up frame.
+        // The track picture: every contact plotted at its azimuth and range,
+        // the whole picture rotated into ownship's heading-up frame.
         ViewTracks {
             anchors.fill: parent
             centerX: root.scopeCenterX
             centerY: root.scopeCenterY
             pxPerMeter: root.pxPerMeter
-            observer: ownship
+            viewRotation: -ownship.heading
             tracks: detection.tracks
         }
 
