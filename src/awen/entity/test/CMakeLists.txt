@@ -3,6 +3,7 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(awen-entity-test
     main.cpp
     System.test.cpp
+    SystemGroup.test.cpp
 )
 
 # The tests import awen.entity through the QML engine, so the module is a

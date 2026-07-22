@@ -1,4 +1,6 @@
 add_subdirectory(app)
+add_subdirectory(command)
 add_subdirectory(entity)
 add_subdirectory(gamepad)
+add_subdirectory(input)
 add_subdirectory(shapes)

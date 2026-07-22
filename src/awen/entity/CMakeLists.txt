@@ -5,6 +5,7 @@ awen_add_qml_module(awen-entity
     VERSION 1.0
     QML_FILES
         System.qml
+        SystemGroup.qml
         Systems.qml
     SOURCES
         Entity.h
