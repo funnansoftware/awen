@@ -1,14 +1,17 @@
 import QtQuick
 import awen.entity
 import awen.gamepad
+import awen.shapes
 import "model"
 import "systems"
 import "themes"
 import "ui"
 
 // The briarthorn 1v1 duel, pure QML: ownship pinned to the scope centre and
-// flown with WASD / arrows or a gamepad, the world drawn heading-up around
-// it, versus one pursuing hostile fighter.
+// flown with WASD / arrows or a gamepad, versus one pursuing hostile
+// fighter. The scope is a radar picture — ownship's detection system builds
+// tracks (azimuth and range in the observer's frame) and the view plots
+// those, heading-up, through the range projection.
 Window {
     id: root
 
@@ -23,46 +26,55 @@ Window {
     color: Style.theme.windowBackground
 
     // Scope geometry: the centre dropped toward the bottom so the forward
-    // sector gets the space (briardart's attack scope, verticalShift 0.375 /
-    // viewScale 1.6). The camera pins ownship here.
+    // sector gets the space. The view pins ownship here.
     readonly property real scopeCenterX: width / 2
     readonly property real scopeCenterY: height * 0.875
+
+    // How world metres project onto the scope: the outer ring's edge sits
+    // 0.8 shortSide from the centre and spans the projection's range.
+    readonly property real pxPerMeter: projection.pixelsPerMeter(Math.min(width, height) * 0.8)
+
+    RangeProjection {
+        id: projection
+        step: 2 // the 40 / 80 km picture
+    }
 
     RangeRing {
         anchors.fill: parent
         centerY: root.scopeCenterY
-        radius: Math.min(width, height) * 0.4
+        radius: projection.innerRange * root.pxPerMeter
         strokeWidth: 2
         gapLength: parent.width * (1 / 32)
         gapAngle: 20
-        range: 40
+        range: projection.innerRangeKm
         enableTicks: false
     }
 
     RangeRing {
         anchors.fill: parent
         centerY: root.scopeCenterY
-        radius: Math.min(width, height) * 0.8
+        radius: projection.range * root.pxPerMeter
         strokeWidth: 2
         gapLength: parent.width * (1 / 32)
         gapAngle: 20
-        range: 80
+        range: projection.rangeKm
         tickOffset: -ownship.heading
     }
 
     // The 1v1 scenario: ownship under player control and one hostile fighter
-    // boring in from the north. Kinetic and maneuver are direct rates (px/s
-    // and deg/s); the other stats keep briardart's fighter ratings until
-    // systems read them.
+    // boring in from the north, spawned just past sensor range so it opens
+    // as an Unknown contact. Stats are direct quantities — kinetic m/s,
+    // maneuver deg/s, sensor detection range in metres.
     Entity {
         id: ownship
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Ownship
-        kinetic: 120
-        maneuver: 120
+        radarFov: 120
+        kinetic: 500
+        maneuver: 12
         durable: 5
         compute: 6
-        sensor: 7
+        sensor: 60000
         stealth: 5
     }
 
@@ -71,13 +83,14 @@ Window {
         callsign: "BANDIT 1"
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Hostile
-        posY: -400
+        posY: -65000
         heading: 180
-        kinetic: 100
-        maneuver: 90
+        radarFov: 120
+        kinetic: 450
+        maneuver: 9
         durable: 5
         compute: 6
-        sensor: 7
+        sensor: 60000
         stealth: 5
     }
 
@@ -120,7 +133,8 @@ Window {
         Gamepad.onButtonReleased: (deviceId, button) => pilot.dpad[button] = false
 
         // The game's systems, in run order: capture inputs into ownship's
-        // commands, fly the bandit, then integrate every entity's pose.
+        // commands, fly the bandit, integrate every entity's pose, then
+        // sweep ownship's radar into its track picture.
         Systems {
             SystemPilot {
                 id: pilot
@@ -133,36 +147,43 @@ Window {
             SystemMovement {
                 entities: root.entities
             }
+            SystemDetection {
+                id: detection
+                observer: ownship
+                entities: root.entities
+            }
         }
 
-        // The world, drawn heading-up around ownship: shift ownship to the
-        // origin, rotate the world against its heading, then pin it to the
-        // scope centre. Symbols are children at world coordinates.
-        Item {
-            id: world
-            transform: [
-                Translate {
-                    x: -ownship.posX
-                    y: -ownship.posY
-                },
-                Rotation {
-                    angle: -ownship.heading
-                },
-                Translate {
-                    x: root.scopeCenterX
-                    y: root.scopeCenterY
-                }
-            ]
+        // Ownship's radar volume: a wedge off the nose — always straight up
+        // on this heading-up scope — reaching the sensor's detection range.
+        ShapeSector {
+            anchors.fill: parent
+            centerX: root.scopeCenterX
+            centerY: root.scopeCenterY
+            angleAt: 0
+            angleSpan: ownship.radarFov
+            radius: ownship.sensor * root.pxPerMeter
+            fillColor: Style.theme.gaugeTrack
+        }
 
-            Repeater {
-                model: root.entities
-                delegate: EntitySymbol {
-                    required property Entity modelData
-                    entity: modelData
-                    worldRotation: -ownship.heading
-                    showLabel: modelData.side !== Side.Kind.Ownship
-                }
-            }
+        // The track picture: every contact plotted at its azimuth and range
+        // in ownship's heading-up frame.
+        ViewTracks {
+            anchors.fill: parent
+            centerX: root.scopeCenterX
+            centerY: root.scopeCenterY
+            pxPerMeter: root.pxPerMeter
+            observer: ownship
+            tracks: detection.tracks
+        }
+
+        // Ownship, pinned at the scope centre, nose up by construction.
+        Symbol {
+            x: root.scopeCenterX - width / 2
+            y: root.scopeCenterY - height / 2
+            classification: ownship.classification
+            side: ownship.side
+            showLabel: false
         }
 
         // The pulsing ring marking ownship, fixed at the scope centre the

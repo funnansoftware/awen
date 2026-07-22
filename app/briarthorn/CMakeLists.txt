@@ -19,13 +19,17 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/Classification.qml
         qml/model/Data.qml
         qml/model/Entity.qml
+        qml/model/RangeProjection.qml
         qml/model/Side.qml
+        qml/model/Track.qml
+        qml/systems/SystemDetection.qml
         qml/systems/SystemMovement.qml
         qml/systems/SystemPilot.qml
         qml/systems/SystemPursuit.qml
         qml/themes/Aurora.qml
-        qml/ui/EntitySymbol.qml
         qml/ui/RangeRing.qml
+        qml/ui/Symbol.qml
+        qml/ui/ViewTracks.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
         entity
