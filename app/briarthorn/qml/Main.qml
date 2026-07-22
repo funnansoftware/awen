@@ -1,17 +1,24 @@
 import QtQuick
+import awen.command
 import awen.entity
 import awen.gamepad
+import awen.input
 import awen.shapes
+import "commands"
 import "model"
+import "scenarios"
 import "systems"
 import "themes"
 import "ui"
 
 // The briarthorn 1v1 duel, pure QML: ownship pinned to the scope centre and
 // flown with WASD / arrows or a gamepad, versus one pursuing hostile
-// fighter. The scope is a radar picture — ownship's detection system builds
-// tracks (azimuth and range in the observer's frame) and the view plots
-// those, heading-up, through the range projection.
+// fighter. Player intent travels as command records — inputs fold into axes,
+// standing verbs post records, the game store consumes them — while the
+// simulation systems write the entities directly each tick. The
+// scope is a radar picture — ownship's detection system builds tracks
+// (azimuth and range in the observer's frame) and the view plots those,
+// heading-up, through the range projection.
 Window {
     id: root
 
@@ -25,6 +32,10 @@ Window {
     title: qsTr("briarthorn")
     color: Style.theme.windowBackground
 
+    // Focus loss swallows key releases, so drop all held input with it.
+    onActiveChanged: if (!active)
+        actions.reset()
+
     // Scope geometry: the centre dropped toward the bottom so the forward
     // sector gets the space. The view pins ownship here.
     readonly property real scopeCenterX: width / 2
@@ -33,6 +44,10 @@ Window {
     // How world metres project onto the scope: the outer ring's edge sits
     // 0.8 shortSide from the centre and spans the projection's range.
     readonly property real pxPerMeter: projection.pixelsPerMeter(Math.min(width, height) * 0.8)
+
+    // Everything the simulation integrates: the player's craft plus the
+    // current scenario's entities.
+    readonly property list<Entity> entities: [game.ownship, ...scenario.entities]
 
     RangeProjection {
         id: projection
@@ -58,43 +73,8 @@ Window {
         gapLength: parent.width * (1 / 32)
         gapAngle: 20
         range: projection.rangeKm
-        tickOffset: -ownship.heading
+        tickOffset: -game.ownship.heading
     }
-
-    // The 1v1 scenario: ownship under player control and one hostile fighter
-    // boring in from the north, spawned just past sensor range so it opens
-    // as an Unknown contact. Stats are direct quantities — kinetic m/s,
-    // maneuver deg/s, sensor detection range in metres.
-    Entity {
-        id: ownship
-        classification: Classification.Kind.AircraftFighter
-        side: Side.Kind.Ownship
-        radarFov: 120
-        kinetic: 500
-        maneuver: 12
-        durable: 5
-        compute: 6
-        sensor: 60000
-        stealth: 5
-    }
-
-    Entity {
-        id: bandit
-        callsign: "BANDIT 1"
-        classification: Classification.Kind.AircraftFighter
-        side: Side.Kind.Hostile
-        posY: -65000
-        heading: 180
-        radarFov: 120
-        kinetic: 450
-        maneuver: 9
-        durable: 5
-        compute: 6
-        sensor: 60000
-        stealth: 5
-    }
-
-    readonly property list<Entity> entities: [ownship, bandit]
 
     Item {
         id: scene
@@ -103,19 +83,75 @@ Window {
 
         property bool padConnected: false
 
-        // The input handlers only capture state into the pilot system; the
-        // runner below folds it into the game once per frame.
+        // The input layer: keys, controller and (later) touch all fold into
+        // these axes through the action bindings below.
+        Axis {
+            id: axisSteer
+        }
+
+        Axis {
+            id: axisThrottle
+            minimum: 0
+        }
+
+        Actions {
+            id: actions
+
+            ActionKey {
+                control: axisSteer
+                positive: [Qt.Key_D, Qt.Key_Right]
+                negative: [Qt.Key_A, Qt.Key_Left]
+            }
+
+            ActionKey {
+                control: axisThrottle
+                positive: [Qt.Key_W, Qt.Key_Up]
+            }
+
+            ActionButton {
+                control: axisSteer
+                positive: [Gamepad.Button.DpadRight]
+                negative: [Gamepad.Button.DpadLeft]
+            }
+
+            ActionButton {
+                control: axisThrottle
+                positive: [Gamepad.Button.DpadUp]
+            }
+            ActionAxis {
+                control: axisSteer
+                axis: Gamepad.Axis.LeftX
+            }
+            ActionAxis {
+                control: axisThrottle
+                axis: Gamepad.Axis.LeftY
+                scale: -1 // stick forward throttles up
+            }
+        }
+
+        // The standing verbs: each axis edge posts one coalesced record, and
+        // touch controls or tests can post the same records straight to the bus.
+        CommandSteer {
+            queue: bus
+            value: axisSteer.value
+            onValueChanged: post()
+        }
+
+        CommandThrottle {
+            queue: bus
+            value: axisThrottle.value
+            onValueChanged: post()
+        }
+
+        // The input handlers only route events into the action map; only
+        // mapped keys are consumed.
         Keys.onPressed: event => {
-            if (event.isAutoRepeat)
-                return;
-            pilot.held[event.key] = true;
-            event.accepted = true;
+            if (!event.isAutoRepeat)
+                event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
-            if (event.isAutoRepeat)
-                return;
-            pilot.held[event.key] = false;
-            event.accepted = true;
+            if (!event.isAutoRepeat)
+                event.accepted = actions.keyReleased(event.key);
         }
 
         // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
@@ -123,33 +159,35 @@ Window {
         Gamepad.pollInterval: Qt.platform.os === "wasm" ? 16 : 8
         Gamepad.onConnected: deviceId => scene.padConnected = true
         Gamepad.onDisconnected: deviceId => scene.padConnected = false
-        Gamepad.onAxisChanged: (deviceId, axis, value) => {
-            if (axis === Gamepad.Axis.LeftX)
-                pilot.padX = pilot.deaden(value);
-            else if (axis === Gamepad.Axis.LeftY)
-                pilot.padY = pilot.deaden(value);
-        }
-        Gamepad.onButtonPressed: (deviceId, button) => pilot.dpad[button] = true
-        Gamepad.onButtonReleased: (deviceId, button) => pilot.dpad[button] = false
+        Gamepad.onAxisChanged: (deviceId, axis, value) => actions.axisMoved(axis, value)
+        Gamepad.onButtonPressed: (deviceId, button) => actions.buttonPressed(button)
+        Gamepad.onButtonReleased: (deviceId, button) => actions.buttonReleased(button)
 
-        // The game's systems, in run order: capture inputs into ownship's
-        // commands, fly the bandit, integrate every entity's pose, then
-        // sweep ownship's radar into its track picture.
+        // Run order is the lifetimes and the data flow: publish the batch,
+        // consume player intent into the game store, run the scenario's own
+        // systems, then integrate poses and sweep the radar.
         Systems {
-            SystemPilot {
-                id: pilot
-                entity: ownship
+            CommandQueue {
+                id: bus
             }
-            SystemPursuit {
-                entity: bandit
-                target: ownship
+
+            StoreGame {
+                id: game
+                queue: bus
             }
+
+            ScenarioDuel {
+                id: scenario
+                ownship: game.ownship
+            }
+
             SystemMovement {
                 entities: root.entities
             }
+
             SystemDetection {
                 id: detection
-                observer: ownship
+                observer: game.ownship
                 entities: root.entities
             }
         }
@@ -161,8 +199,8 @@ Window {
             centerX: root.scopeCenterX
             centerY: root.scopeCenterY
             angleAt: 0
-            angleSpan: ownship.radarFov
-            radius: ownship.sensor * root.pxPerMeter
+            angleSpan: game.ownship.radarFov
+            radius: game.ownship.sensor * root.pxPerMeter
             fillColor: Style.theme.gaugeTrack
         }
 
@@ -173,7 +211,7 @@ Window {
             centerX: root.scopeCenterX
             centerY: root.scopeCenterY
             pxPerMeter: root.pxPerMeter
-            viewRotation: -ownship.heading
+            viewRotation: -game.ownship.heading
             tracks: detection.tracks
         }
 
@@ -181,8 +219,8 @@ Window {
         Symbol {
             x: root.scopeCenterX - width / 2
             y: root.scopeCenterY - height / 2
-            classification: ownship.classification
-            side: ownship.side
+            classification: game.ownship.classification
+            side: game.ownship.side
             showLabel: false
         }
 
@@ -206,6 +244,7 @@ Window {
                     duration: 1500
                     easing.type: Easing.OutQuad
                 }
+
                 PauseAnimation {
                     duration: 250
                 }

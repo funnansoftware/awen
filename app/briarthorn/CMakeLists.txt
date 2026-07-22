@@ -1,6 +1,7 @@
 project(briarthorn)
 
 set(QML_SINGLETONS
+    qml/commands/Verbs.qml
     qml/model/Database.qml
     qml/themes/Style.qml
 )
@@ -16,15 +17,19 @@ awen_add_executable(${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/commands/CommandSteer.qml
+        qml/commands/CommandThrottle.qml
         qml/model/Classification.qml
         qml/model/Data.qml
         qml/model/Entity.qml
         qml/model/RangeProjection.qml
         qml/model/Side.qml
+        qml/model/StoreGame.qml
         qml/model/Track.qml
+        qml/scenarios/Scenario.qml
+        qml/scenarios/ScenarioDuel.qml
         qml/systems/SystemDetection.qml
         qml/systems/SystemMovement.qml
-        qml/systems/SystemPilot.qml
         qml/systems/SystemPursuit.qml
         qml/themes/Aurora.qml
         qml/ui/RangeRing.qml
@@ -32,8 +37,10 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewTracks.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
+        command
         entity
         gamepad
+        input
         shapes
     WINDOWS_ICON briarthorn.ico
     # The briarthorn.game entry page, embedding the app in a bounded view; Qt's

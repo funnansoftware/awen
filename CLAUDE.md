@@ -10,12 +10,19 @@ assembles the APK).
 
 - `src/` — the framework: QML modules built with `qt_add_qml_module` — `awen.entity`
   (target `awen-entity`: the `entity` value type plus the `System`/`Systems`
-  QML pair games derive per-frame logic from) and `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
+  QML pair games derive per-frame logic from), `awen.gamepad` (target `awen-gamepad`: an SDL3-backed
   gamepad attached-property type — one SDL backend on desktop and wasm (SDL wraps
   the browser Gamepad API there), an inert stub on android; its Qt-free
-  `awen-gamepad-core` is the unit-tested, coverage-observed part). `src/awen/app/`
-  (target `awen-app`) is the shared `awen::runApp` bootstrap behind the `main()`
-  that `awen_add_executable` generates per app.
+  `awen-gamepad-core` is the unit-tested, coverage-observed part), `awen.input`
+  (target `awen-input`: `Axis` folds key/controller/touch contributions into one
+  clamped value through the `Action*` bindings and `Actions` router), `awen.command`
+  (target `awen-command`, depends on awen.entity: the command bus — plain
+  `{name, payload}` records posted to a `CommandQueue`, published once per tick
+  and consumed by `Store`s through declared `CommandHandler`s; game intents only,
+  simulation systems write entities directly) and `awen.shapes` (target
+  `awen-shapes`: instrument primitives on QtQuick.Shapes, bearing-degree angles).
+  `src/awen/app/` (target `awen-app`) is the shared `awen::runApp` bootstrap
+  behind the `main()` that `awen_add_executable` generates per app.
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
   rest of the repo is MIT). The `Briarthorn` QML module (`qml/Main.qml`) on the
