@@ -32,9 +32,14 @@ Window {
     title: qsTr("briarthorn")
     color: Style.theme.windowBackground
 
-    // Focus loss swallows key releases, so drop all held input with it.
-    onActiveChanged: if (!active)
-        actions.reset()
+    // Focus loss swallows key and touch releases, so drop all held input with
+    // it: reset the action bindings and zero the stick's own axis slots, which
+    // sit outside the router.
+    onActiveChanged: if (!active) {
+        actions.reset();
+        axisSteer.invoke(0);
+        axisThrottle.invoke(0);
+    }
 
     // Scope geometry: the centre dropped toward the bottom so the forward
     // sector gets the space. The view pins ownship here.
@@ -267,7 +272,7 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
-            text: qsTr("W to thrust, A/D to turn — arrows, stick or d-pad too")
+            text: qsTr("drag the stick, or W to thrust & A/D to turn — arrows, gamepad too")
             color: "#99ffffff"
             font.pixelSize: 14
         }
@@ -281,6 +286,25 @@ Window {
             color: "#66bfff"
             font.pixelSize: 13
             visible: scene.padConnected
+        }
+
+        // The on-screen stick: another source folding into the same axes — its x
+        // steers, forward throttles. It contributes under the axis key, summed
+        // with keys and the pad, so release must zero it back out.
+        Joystick {
+            id: stick
+            implicitWidth: root.width * 0.125
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.margins: 24
+            onValueXChanged: axisSteer.invoke(valueX)
+            // The stick has no reverse, so a downward pull must not subtract
+            // from a throttle another source (keys, pad) is holding up.
+            onValueYChanged: axisThrottle.invoke(Math.max(0, valueY))
+            onActiveChanged: if (!active) {
+                axisSteer.invoke(0);
+                axisThrottle.invoke(0);
+            }
         }
     }
 }
