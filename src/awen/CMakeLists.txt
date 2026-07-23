@@ -1,4 +1,5 @@
 add_subdirectory(app)
+add_subdirectory(buildinfo)
 add_subdirectory(command)
 add_subdirectory(entity)
 add_subdirectory(gamepad)

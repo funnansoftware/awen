@@ -38,6 +38,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewTracks.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
+        buildinfo
         command
         entity
         gamepad
