@@ -1,4 +1,5 @@
 import QtQuick
+import awen.buildinfo
 import awen.command
 import awen.entity
 import awen.gamepad
@@ -277,11 +278,23 @@ Window {
             font.pixelSize: 14
         }
 
-        // Lights up when a controller is connected, so the gamepad path is visible.
+        // The build's date-based version, stamped when the package is built.
         Text {
+            id: versionLabel
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.margins: 16
+            text: "v" + BuildInfo.version
+            color: "#66ffffff"
+            font.pixelSize: 12
+        }
+
+        // Lights up when a controller is connected, so the gamepad path is visible.
+        Text {
+            anchors.right: parent.right
+            anchors.top: versionLabel.bottom
+            anchors.rightMargin: 16
+            anchors.topMargin: 6
             text: qsTr("controller connected")
             color: "#66bfff"
             font.pixelSize: 13

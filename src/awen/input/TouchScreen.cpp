@@ -2,14 +2,12 @@
 
 #include <QtGlobal>
 
-#if defined(Q_OS_WASM)
+#ifdef Q_OS_WASM
 #include <emscripten.h>
 
 // The browser's touch-point count, compiled in as a tiny JS probe — no eval, no
 // embind. `| 0` coerces an undefined maxTouchPoints to 0.
-EM_JS(int, awen_max_touch_points, (), {
-    return navigator.maxTouchPoints | 0;
-});
+EM_JS(int, awen_max_touch_points, (), { return navigator.maxTouchPoints | 0; });
 #else
 #include <algorithm>
 
@@ -22,7 +20,7 @@ namespace
 {
     auto detectTouchScreen() -> bool
     {
-#if defined(Q_OS_WASM)
+#ifdef Q_OS_WASM
         // Qt's wasm plugin exposes no persistent touch QInputDevice, so ask the
         // browser directly: a positive maxTouchPoints is how a phone browser tells
         // itself apart from a desktop one.
@@ -35,16 +33,13 @@ namespace
         // Desktop: a real touchscreen registers a QInputDevice; a plain
         // mouse-and-keyboard box reports none.
         const auto devices = QInputDevice::devices();
-        return std::any_of(devices.cbegin(), devices.cend(), [](const QInputDevice* device) {
-            return device != nullptr && device->type() == QInputDevice::DeviceType::TouchScreen;
-        });
+        return std::ranges::any_of(
+            devices, [](const QInputDevice* device) { return device != nullptr && device->type() == QInputDevice::DeviceType::TouchScreen; });
 #endif
     }
 }
 
-TouchScreen::TouchScreen(QObject* parent)
-    : QObject{parent}
-    , available_{detectTouchScreen()}
+TouchScreen::TouchScreen(QObject* parent) : QObject{parent}, available_{detectTouchScreen()}
 {
 }
 
