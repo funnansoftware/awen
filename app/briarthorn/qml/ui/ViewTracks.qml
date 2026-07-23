@@ -19,6 +19,16 @@ Item {
     // Screen rotation of the picture about the scope centre.
     property real viewRotation: 0
 
+    // Symbol size in px before the classification's own scale.
+    property real symbolSize: 36
+
+    // Whether track symbols carry their contact-id labels.
+    property bool showLabels: true
+
+    // When positive, off-scale contacts pin to this pixel radius (the outer
+    // rim) instead of plotting beyond it — the minimap's overview behaviour.
+    property real clampRadius: 0
+
     transform: Rotation {
         origin.x: view.centerX
         origin.y: view.centerY
@@ -31,14 +41,19 @@ Item {
             required property Track modelData
 
             readonly property real azimuthRad: modelData.azimuth * Math.PI / 180
-            readonly property real screenRange: modelData.range * view.pxPerMeter
+            readonly property real trueRange: modelData.range * view.pxPerMeter
+            // Clamp beyond-scale contacts to the rim when asked, so they read
+            // at the ring edge rather than off the display.
+            readonly property real screenRange: view.clampRadius > 0 ? Math.min(trueRange, view.clampRadius) : trueRange
 
             x: view.centerX + Math.sin(azimuthRad) * screenRange - width / 2
             y: view.centerY - Math.cos(azimuthRad) * screenRange - height / 2
+            symbolSize: view.symbolSize
             noseAngle: modelData.heading
             viewRotation: view.viewRotation
             classification: modelData.classification
             side: modelData.side
+            showLabel: view.showLabels
             label: modelData.classification === Classification.Kind.Unknown ? "" : modelData.contactId
         }
     }

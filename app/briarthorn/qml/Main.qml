@@ -4,7 +4,6 @@ import awen.command
 import awen.entity
 import awen.gamepad
 import awen.input
-import awen.shapes
 import "commands"
 import "model"
 import "scenarios"
@@ -42,44 +41,15 @@ Window {
         axisThrottle.invoke(0);
     }
 
-    // Scope geometry: the centre dropped toward the bottom so the forward
-    // sector gets the space. The view pins ownship here.
-    readonly property real scopeCenterX: width / 2
-    readonly property real scopeCenterY: height * 0.875
-
-    // How world metres project onto the scope: the outer ring's edge sits
-    // 0.8 shortSide from the centre and spans the projection's range.
-    readonly property real pxPerMeter: projection.pixelsPerMeter(Math.min(width, height) * 0.8)
-
     // Everything the simulation integrates: the player's craft plus the
     // current scenario's entities.
     readonly property list<Entity> entities: [game.ownship, ...scenario.entities]
 
+    // The one display projection both scopes share: ranging in or out moves the
+    // centre attack scope and the corner minimap together.
     RangeProjection {
         id: projection
         step: 2 // the 40 / 80 km picture
-    }
-
-    RangeRing {
-        anchors.fill: parent
-        centerY: root.scopeCenterY
-        radius: projection.innerRange * root.pxPerMeter
-        strokeWidth: 2
-        gapLength: parent.width * (1 / 32)
-        gapAngle: 20
-        range: projection.innerRangeKm
-        enableTicks: false
-    }
-
-    RangeRing {
-        anchors.fill: parent
-        centerY: root.scopeCenterY
-        radius: projection.range * root.pxPerMeter
-        strokeWidth: 2
-        gapLength: parent.width * (1 / 32)
-        gapAngle: 20
-        range: projection.rangeKm
-        tickOffset: -game.ownship.heading
     }
 
     Item {
@@ -198,75 +168,15 @@ Window {
             }
         }
 
-        // Ownship's radar volume: a wedge off the nose — always straight up
-        // on this heading-up scope — reaching the sensor's detection range.
-        ShapeSector {
+        // The attack scope: the game's main centre display. Rings, ownship's
+        // radar cone, the heading-up track picture and ownship pinned at the
+        // dropped centre — all composed by ViewSituation on the shared
+        // projection.
+        ViewSituationAttack {
             anchors.fill: parent
-            centerX: root.scopeCenterX
-            centerY: root.scopeCenterY
-            angleAt: 0
-            angleSpan: game.ownship.radarFov
-            radius: game.ownship.sensor * root.pxPerMeter
-            fillColor: Style.theme.gaugeTrack
-        }
-
-        // The track picture: every contact plotted at its azimuth and range,
-        // the whole picture rotated into ownship's heading-up frame.
-        ViewTracks {
-            anchors.fill: parent
-            centerX: root.scopeCenterX
-            centerY: root.scopeCenterY
-            pxPerMeter: root.pxPerMeter
-            viewRotation: -game.ownship.heading
+            projection: projection
+            observer: game.ownship
             tracks: detection.tracks
-        }
-
-        // Ownship, pinned at the scope centre, nose up by construction.
-        Symbol {
-            x: root.scopeCenterX - width / 2
-            y: root.scopeCenterY - height / 2
-            classification: game.ownship.classification
-            side: game.ownship.side
-            showLabel: false
-        }
-
-        // The pulsing ring marking ownship, fixed at the scope centre the
-        // camera pins it to.
-        Rectangle {
-            x: root.scopeCenterX - width / 2
-            y: root.scopeCenterY - height / 2
-            width: 48
-            height: width
-            radius: width / 2
-            color: "transparent"
-            border.color: Style.theme.factionOwnship
-            border.width: 2
-
-            SequentialAnimation on opacity {
-                loops: Animation.Infinite
-                NumberAnimation {
-                    from: 0.4
-                    to: 0.0
-                    duration: 1500
-                    easing.type: Easing.OutQuad
-                }
-
-                PauseAnimation {
-                    duration: 250
-                }
-            }
-            SequentialAnimation on scale {
-                loops: Animation.Infinite
-                NumberAnimation {
-                    from: 0.5
-                    to: 1.8
-                    duration: 1500
-                    easing.type: Easing.OutQuad
-                }
-                PauseAnimation {
-                    duration: 250
-                }
-            }
         }
 
         Text {
@@ -276,29 +186,6 @@ Window {
             text: qsTr("drag the stick, or W to thrust & A/D to turn — arrows, gamepad too")
             color: "#99ffffff"
             font.pixelSize: 14
-        }
-
-        // The build's date-based version, stamped when the package is built.
-        Text {
-            id: versionLabel
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 16
-            text: "v" + BuildInfo.version
-            color: "#66ffffff"
-            font.pixelSize: 12
-        }
-
-        // Lights up when a controller is connected, so the gamepad path is visible.
-        Text {
-            anchors.right: parent.right
-            anchors.top: versionLabel.bottom
-            anchors.rightMargin: 16
-            anchors.topMargin: 6
-            text: qsTr("controller connected")
-            color: "#66bfff"
-            font.pixelSize: 13
-            visible: scene.padConnected
         }
 
         // The on-screen stick: another source folding into the same axes — its x
@@ -321,6 +208,63 @@ Window {
             onActiveChanged: if (!active) {
                 axisSteer.invoke(0);
                 axisThrottle.invoke(0);
+            }
+        }
+
+        // The top-right corner group: the build version tucked into the corner,
+        // the corner minimap inboard beneath it, and the controller lamp below
+        // that (so a connecting pad never nudges the map). Stacked, not rowed, so
+        // the version keeps the actual corner while the map sits inward. Right
+        // anchors inside a Column are allowed (Column manages only the y axis).
+        Column {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 16
+            spacing: 8
+
+            // The build's date-based version, stamped when the package is built.
+            Text {
+                anchors.right: parent.right
+                text: "v" + BuildInfo.version
+                color: "#66ffffff"
+                font.pixelSize: 12
+            }
+
+            // The corner minimap: the same situation display, stripped to a clean
+            // overview. It shares the attack scope's projection, so it ranges with
+            // it. Off-scale contacts pin to the rim and an opaque disc backs the
+            // picture, masking anything outside the view from rendering over the
+            // scope beneath it.
+            ViewSituation {
+                id: minimap
+                width: Math.min(root.width, root.height) * 0.22
+                height: width
+
+                projection: projection
+                observer: game.ownship
+                tracks: detection.tracks
+
+                radiusFraction: 0.45
+                symbolSize: 18
+                backgroundColor: Style.theme.instrumentBackground
+                rimClamp: true
+                closedRings: true
+                showNorth: true
+                showInnerRing: false
+                showTicks: false
+                showRadarCone: true
+                showOwnshipPulse: false
+                showTrackLabels: false
+            }
+
+            // Lights up when a controller is connected, so the gamepad path is
+            // visible. Below the map, so connecting it doesn't shift the map.
+            Text {
+                anchors.right: parent.right
+                text: qsTr("controller connected")
+                color: "#66bfff"
+                font.pixelSize: 13
+                visible: scene.padConnected
             }
         }
     }
