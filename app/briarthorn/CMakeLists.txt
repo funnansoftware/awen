@@ -29,6 +29,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/scenarios/Scenario.qml
         qml/scenarios/ScenarioDuel.qml
         qml/systems/SystemDetection.qml
+        qml/systems/SystemFuel.qml
         qml/systems/SystemMovement.qml
         qml/systems/SystemPursuit.qml
         qml/themes/Aurora.qml
@@ -37,6 +38,8 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/Symbol.qml
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml
+        qml/ui/ViewStatus.qml
+        qml/ui/ViewTopBar.qml
         qml/ui/ViewTracks.qml
         ${QML_SINGLETONS}
     AWEN_MODULES

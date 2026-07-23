@@ -59,15 +59,21 @@ Item {
     // The range-label gap arc length, in px; 0 (closedRings) draws closed rings.
     readonly property real ringGapLength: closedRings ? 0 : Math.max(28, outerRadius * 0.1)
 
+    // North-marker size (shared with the backing disc below), floored so the
+    // 'N' stays legible when the map is small.
+    readonly property real northFontSize: Math.max(9, outerRadius * 0.16)
+
     // Compact-overview plumbing. rimClamp pins off-scale contacts to the outer
     // rim; backgroundColor paints an opaque disc behind the picture so it reads
-    // over whatever sits behind it. The disc reaches a symbol past the outer
-    // ring, so a rim-pinned mark can never spill past it — the mask that keeps
-    // objects outside the view from rendering under the minimap (briardart clips
-    // to this same disc, then pins off-scale tracks to its rim).
+    // over whatever sits behind it. The disc reaches just past the outer ring —
+    // to the north marker's outer edge when shown, else far enough to seat a
+    // rim-pinned symbol — and both margins scale with the map, so the disc no
+    // longer bloats past the picture as the minimap shrinks. This is the mask
+    // that keeps objects outside the view from rendering under the minimap
+    // (briardart clips to this same disc, then pins off-scale tracks to its rim).
     property bool rimClamp: false
     property color backgroundColor: "transparent"
-    readonly property real discRadius: outerRadius + symbolSize
+    readonly property real discRadius: outerRadius + Math.max(showNorth ? northFontSize * 1.15 : 0, symbolSize * 0.6)
 
     // The opaque backing disc (minimap only; transparent by default). A circle
     // centred on the scope, so the box's corners stay clear.
@@ -157,12 +163,12 @@ Item {
         text: "N"
         color: Style.theme.textBright
         font.bold: true
-        font.pixelSize: Math.max(9, view.outerRadius * 0.16)
+        font.pixelSize: view.northFontSize
 
         // North (true bearing 0) sits at screen angle viewRotation on a
         // heading-up scope; seat the label a little past the ring.
         readonly property real northRad: view.viewRotation * Math.PI / 180
-        readonly property real seatRadius: view.outerRadius + font.pixelSize * 0.7
+        readonly property real seatRadius: view.outerRadius + view.northFontSize * 0.7
         x: view.centerX + Math.sin(northRad) * seatRadius - width / 2
         y: view.centerY - Math.cos(northRad) * seatRadius - height / 2
     }
