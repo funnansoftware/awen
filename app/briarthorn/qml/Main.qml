@@ -172,20 +172,8 @@ Window {
             }
         }
 
-        // The attack scope: the game's main centre display. Rings, ownship's
-        // radar cone, the heading-up track picture and ownship pinned at the
-        // dropped centre — all composed by ViewSituation on the shared
-        // projection.
-        ViewSituationAttack {
-            anchors.fill: parent
-            projection: projection
-            observer: game.ownship
-            tracks: detection.tracks
-            symbolSize: height * 0.08
-        }
-
         // The full-width top band: persistent meta-game state (the credit purse)
-        // and the build version. The corner instruments hang below it.
+        // and the build version. It owns the top strip; the scope sits below it.
         ViewTopBar {
             id: topBar
             anchors.left: parent.left
@@ -193,6 +181,25 @@ Window {
             anchors.top: parent.top
             credits: game.credits
             version: "v" + BuildInfo.version
+        }
+
+        // The attack scope: the game's main centre display. Rings, ownship's
+        // radar cone, the heading-up track picture and ownship pinned at the
+        // dropped centre — all composed by ViewSituation on the shared
+        // projection. It fills the area BELOW the bar, with a gap so a track
+        // plotting along the top edge clears the bar, and clips so nothing ever
+        // renders up into it.
+        ViewSituationAttack {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: topBar.bottom
+            anchors.topMargin: 16
+            anchors.bottom: parent.bottom
+            clip: true
+            projection: projection
+            observer: game.ownship
+            tracks: detection.tracks
+            symbolSize: height * 0.08
         }
 
         // Ownship condition readout, top-left: a round dual-arc gauge (hull +
