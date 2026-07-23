@@ -35,6 +35,8 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/Joystick.qml
         qml/ui/RangeRing.qml
         qml/ui/Symbol.qml
+        qml/ui/ViewSituation.qml
+        qml/ui/ViewSituationAttack.qml
         qml/ui/ViewTracks.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
