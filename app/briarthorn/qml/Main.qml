@@ -294,6 +294,10 @@ Window {
         Joystick {
             id: stick
             implicitWidth: root.width * 0.125
+            // Touch play only: the on-screen stick shows on phones, tablets and
+            // touch browsers, and stays hidden where keys and a gamepad already
+            // drive the axes.
+            visible: TouchScreen.available
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.margins: 24
