@@ -161,6 +161,10 @@ Window {
                 entities: root.entities
             }
 
+            SystemFuel {
+                entity: game.ownship
+            }
+
             SystemDetection {
                 id: detection
                 observer: game.ownship
@@ -177,6 +181,31 @@ Window {
             projection: projection
             observer: game.ownship
             tracks: detection.tracks
+            symbolSize: height * 0.08
+        }
+
+        // The full-width top band: persistent meta-game state (the credit purse)
+        // and the build version. The corner instruments hang below it.
+        ViewTopBar {
+            id: topBar
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            credits: game.credits
+            version: "v" + BuildInfo.version
+        }
+
+        // Ownship condition readout, top-left: a round dual-arc gauge (hull +
+        // fuel) sized to the minimap opposite, so the two round instruments read
+        // as a matched, compact pair. Dropped below the top band.
+        ViewStatus {
+            width: Math.min(root.width, root.height) * 0.22
+            height: width
+            anchors.left: parent.left
+            anchors.leftMargin: 16
+            anchors.top: topBar.bottom
+            anchors.topMargin: 12
+            ownship: game.ownship
         }
 
         Text {
@@ -211,61 +240,49 @@ Window {
             }
         }
 
-        // The top-right corner group: the build version tucked into the corner,
-        // the corner minimap inboard beneath it, and the controller lamp below
-        // that (so a connecting pad never nudges the map). Stacked, not rowed, so
-        // the version keeps the actual corner while the map sits inward. Right
-        // anchors inside a Column are allowed (Column manages only the y axis).
-        Column {
+        // The corner minimap, top-right — mirroring the round condition gauge in
+        // the opposite corner. The same situation display, stripped to a clean
+        // overview. It shares the attack scope's projection, so it ranges with
+        // it. Off-scale contacts pin to the rim and an opaque disc backs the
+        // picture, masking anything outside the view from rendering over the
+        // scope beneath it.
+        ViewSituation {
+            id: minimap
+            width: Math.min(root.width, root.height) * 0.22
+            height: width
             anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 16
-            spacing: 8
+            anchors.rightMargin: 16
+            anchors.top: topBar.bottom
+            anchors.topMargin: 12
 
-            // The build's date-based version, stamped when the package is built.
-            Text {
-                anchors.right: parent.right
-                text: "v" + BuildInfo.version
-                color: "#66ffffff"
-                font.pixelSize: 12
-            }
+            projection: projection
+            observer: game.ownship
+            tracks: detection.tracks
 
-            // The corner minimap: the same situation display, stripped to a clean
-            // overview. It shares the attack scope's projection, so it ranges with
-            // it. Off-scale contacts pin to the rim and an opaque disc backs the
-            // picture, masking anything outside the view from rendering over the
-            // scope beneath it.
-            ViewSituation {
-                id: minimap
-                width: Math.min(root.width, root.height) * 0.22
-                height: width
+            radiusFraction: 0.45
+            symbolSize: height * 0.08
+            backgroundColor: Style.theme.windowBackground
+            rimClamp: true
+            closedRings: true
+            showNorth: true
+            showInnerRing: false
+            showTicks: false
+            showRadarCone: true
+            showOwnshipPulse: false
+            showTrackLabels: false
+        }
 
-                projection: projection
-                observer: game.ownship
-                tracks: detection.tracks
-
-                radiusFraction: 0.45
-                symbolSize: 18
-                backgroundColor: Style.theme.instrumentBackground
-                rimClamp: true
-                closedRings: true
-                showNorth: true
-                showInnerRing: false
-                showTicks: false
-                showRadarCone: true
-                showOwnshipPulse: false
-                showTrackLabels: false
-            }
-
-            // Lights up when a controller is connected, so the gamepad path is
-            // visible. Below the map, so connecting it doesn't shift the map.
-            Text {
-                anchors.right: parent.right
-                text: qsTr("controller connected")
-                color: "#66bfff"
-                font.pixelSize: 13
-                visible: scene.padConnected
-            }
+        // The controller lamp, tucked under the minimap on the right; lights up
+        // when a controller is connected, so the gamepad path is visible.
+        Text {
+            anchors.right: parent.right
+            anchors.rightMargin: 16
+            anchors.top: minimap.bottom
+            anchors.topMargin: 6
+            text: qsTr("controller connected")
+            color: "#66bfff"
+            font.pixelSize: 13
+            visible: scene.padConnected
         }
     }
 }

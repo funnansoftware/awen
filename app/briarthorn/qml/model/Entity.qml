@@ -34,4 +34,12 @@ QtObject {
     property real compute: 0
     property real sensor: 0
     property real stealth: 0
+
+    // Condition: current and maximum hull integrity and fuel. Pure state — a
+    // damage system will write health, SystemFuel writes fuel, the view reads
+    // both. maxHealth derives from durable at spawn; both start full.
+    property real health: 0
+    property real maxHealth: 0
+    property real fuel: 0
+    property real maxFuel: 0
 }

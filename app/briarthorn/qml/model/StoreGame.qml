@@ -7,6 +7,11 @@ import "../commands"
 Store {
     id: store
 
+    // Campaign meta-state the top bar reads: the shared credit purse. A
+    // placeholder until an economy writes it; player-facing persistent state
+    // belongs on the store, not on any one entity.
+    property int credits: 1250
+
     // Ownship under player control.
     readonly property Entity ownship: Entity {
         classification: Classification.Kind.AircraftFighter
@@ -18,6 +23,12 @@ Store {
         compute: 6
         sensor: 60000
         stealth: 5
+        // Condition: hull scaled from durability, fuel a full tank. Both start
+        // topped off; SystemFuel draws the tank down as the player flies.
+        maxHealth: durable * 20
+        health: maxHealth
+        maxFuel: 100
+        fuel: maxFuel
     }
 
     CommandHandler {
