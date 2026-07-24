@@ -1,5 +1,6 @@
 import QtQuick
 import awen.shapes
+import "../themes"
 
 ShapeRing {
     id: ring

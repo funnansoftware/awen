@@ -1,5 +1,6 @@
 import QtQuick
 import awen.shapes
+import "../themes"
 
 // A spring-return virtual thumbstick driven by touch or mouse. The whole pad
 // is the target; the thumb tracks the held point clamped to the rim and

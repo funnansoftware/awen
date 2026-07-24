@@ -21,12 +21,13 @@ assembles the APK).
   and consumed by `Store`s through declared `CommandHandler`s; game intents only,
   simulation systems write entities directly) and `awen.shapes` (target
   `awen-shapes`: instrument primitives on QtQuick.Shapes, bearing-degree angles).
-  `src/awen/app/` (target `awen-app`) is the shared `awen::runApp` bootstrap
-  behind the `main()` that `awen_add_executable` generates per app.
+  There is no shared bootstrap: every app writes its own `main.cpp` and names it
+  with `awen_add_executable`'s required `MAIN` keyword, duplication accepted so
+  an app can load its QML its own way.
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
-  rest of the repo is MIT). The `Briarthorn` QML module (`qml/Main.qml`) on the
-  framework's shared bootstrap; the game is implemented in QML.
+  rest of the repo is MIT). The `Briarthorn` QML module (`qml/Main.qml`); the
+  game is implemented in QML.
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
   (qt ports dynamic, everything else static; dependencies release-only, except
   the dual-config `x64-windows` triplet the windows debug preset needs).
@@ -43,9 +44,15 @@ assembles the APK).
   way.
 - Build: `cmake --build --preset windows-msvc-debug`
 - Test: `ctest --preset windows-msvc-debug`
-- QML is embedded via qmlcachegen, so QML edits need a rebuild. If a QML edit
-  trips MSVC C4702 in Qt headers under /WX, that warning is already disabled on
-  the briarthorn target.
+- QML is embedded via qmlcachegen, so a release QML edit needs a rebuild. If a
+  QML edit trips MSVC C4702 in Qt headers under /WX, that warning is already
+  disabled on the briarthorn target.
+- Desktop **debug** builds instead load `Main.qml` from the source tree, so
+  `qmlpreview <build dir>/briarthorn.exe` live-reloads QML edits with no
+  rebuild. The `qmldir` beside each of briarthorn's singleton folders is what
+  makes them resolve on that path, and a file using a type from another folder
+  must directory-import it (`import "../themes"`) rather than lean on the
+  compiled module — mirror singleton changes into `QML_SINGLETONS` too.
 
 ## Conventions
 

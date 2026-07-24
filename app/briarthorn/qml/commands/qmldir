@@ -1,0 +1,7 @@
+# Registers this folder's singleton for the directory import (`import "commands"`),
+# which is how it resolves when a debug build loads Main.qml from the source tree:
+# a `pragma Singleton` file counts as a singleton only with a qmldir entry, and
+# sibling non-singleton components are found without one. No `module` line — this
+# must stay a plain directory. Mirror changes into QML_SINGLETONS in
+# ../../CMakeLists.txt, which covers the compiled module.
+singleton Verbs Verbs.qml

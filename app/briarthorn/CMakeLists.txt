@@ -12,10 +12,12 @@ set_source_files_properties(${QML_SINGLETONS}
 )
 
 # Briarthorn — the game, built in QML on the awen framework; own license, see
-# LICENSE.md. The shared bootstrap loads the Briarthorn QML module.
+# LICENSE.md. main.cpp loads Main.qml, from the source tree or the compiled
+# Briarthorn module depending on the config (see the debug block below).
 awen_add_executable(${PROJECT_NAME}
     URI Briarthorn
     VERSION 1.0
+    MAIN main.cpp
     QML_FILES
         qml/Main.qml
         qml/commands/CommandAbility.qml
@@ -71,6 +73,26 @@ awen_add_executable(${PROJECT_NAME}
     # generated briarthorn.html stays as a debug fallback.
     WEB_SHELL web/index.html
 )
+
+# qmlpreview live-reload: a desktop debug build loads Main.qml from the source
+# tree instead of the compiled module, because the engine only reloads QML that
+# came from a file URL. Main.qml's directory imports then resolve on disk as
+# well, so every game file reloads — each folder's singletons through the qmldir
+# beside them. The cross builds have no source tree on the device and stay on
+# the module path.
+if(NOT EMSCRIPTEN AND NOT ANDROID)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        # QT_QML_DEBUG instantiates QQmlDebuggingEnabler in main.cpp's translation
+        # unit, opening the debug connection when the app is started with
+        # -qmljsdebugger=... — which is how qmlpreview launches it. Debug only:
+        # with the debug server on, the engine wants QML imports the deploy step
+        # does not ship.
+        $<$<CONFIG:Debug>:QT_QML_DEBUG>
+        # Absolute path to the QML sources for main.cpp's file load. Forward
+        # slashes from CMake are fine for QUrl::fromLocalFile.
+        $<$<CONFIG:Debug>:BRIARTHORN_QML_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml">
+    )
+endif()
 
 if(ANDROID)
     # Package identity and launcher assets; androiddeployqt overlays android/

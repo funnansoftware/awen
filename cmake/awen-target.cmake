@@ -29,21 +29,25 @@ function(awen_add_qml_module target)
     endif()
 endfunction()
 
-# A Qt Quick app: the executable+module pair on the generated awen::runApp
-# bootstrap, per-platform install/deploy, and a headless smoke test. The
-# keywords below are consumed here; everything else forwards to
-# qt_add_qml_module. Callers add platform extras after the call — Qt
-# finalization is deferred to the end of the calling directory.
+# A Qt Quick app: the executable+module pair, per-platform install/deploy, and a
+# headless smoke test. Each app writes its own main() — the framework ships no
+# shared bootstrap, so an app is free to load Main its own way (see briarthorn's
+# debug source-tree load for qmlpreview). The keywords below are consumed here;
+# everything else forwards to qt_add_qml_module. Callers add platform extras
+# after the call — Qt finalization is deferred to the end of the calling
+# directory.
+#   MAIN <cpp>             — the app's bootstrap, holding main(). Required.
 #   AWEN_MODULES <name>... — framework modules: imports awen.<name> and links awen-<name>.
 #   WINDOWS_ICON <ico>     — embedded into the .exe via a generated .rc.
 #   WEB_SHELL <html>       — the wasm entry page, installed as web/<target>/index.html.
-#   MAIN <cpp>             — custom bootstrap replacing the generated main(); it
-#                            should still call awen::runApp (see App.h).
 #   NO_SMOKE_TEST          — skip the auto-registered tst_<target>_loads.
 function(awen_add_executable target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "NO_SMOKE_TEST" "URI;MAIN;WINDOWS_ICON;WEB_SHELL" "AWEN_MODULES")
     if(NOT arg_URI)
         message(FATAL_ERROR "awen_add_executable(${target}) requires URI")
+    endif()
+    if(NOT arg_MAIN)
+        message(FATAL_ERROR "awen_add_executable(${target}) requires MAIN")
     endif()
 
     qt_add_executable(${target})
@@ -64,21 +68,18 @@ function(awen_add_executable target)
         ${arg_UNPARSED_ARGUMENTS}
     )
 
-    # No QT_QML_DEBUG: the QML debug server bypasses the compiled units and
-    # demands the optional qtquick2plugin the deploy step does not ship, failing
-    # startup.
+    # No QT_QML_DEBUG here: with the debug server on, the engine bypasses the
+    # compiled units and demands the optional qtquick2plugin the deploy step does
+    # not ship, so a deployed build fails to start. An app that wants qmlpreview
+    # defines it itself, scoped to the configs it never deploys.
 
-    # The generated main keeps main() an object of the app target itself — a
-    # main() in a static library would be dropped from the android MODULE .so.
-    if(arg_MAIN)
-        target_sources(${target} PRIVATE ${arg_MAIN})
-    else()
-        set(AWEN_APP_TARGET ${target})
-        set(AWEN_APP_URI ${arg_URI})
-        configure_file("${CMAKE_SOURCE_DIR}/src/awen/app/main.cpp.in" "${target}_main.cpp" @ONLY)
-        target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}_main.cpp")
-    endif()
-    target_link_libraries(${target} PRIVATE awen-app)
+    # main() belongs to the app target's own sources — in a static library it
+    # would be dropped from the android MODULE .so.
+    target_sources(${target} PRIVATE ${arg_MAIN})
+
+    # Quick directly, not just through whichever awen modules the app links: the
+    # bootstrap itself needs it, and an app may link no framework module at all.
+    target_link_libraries(${target} PRIVATE Qt6::Quick)
 
     foreach(module IN LISTS arg_AWEN_MODULES)
         target_link_libraries(${target} PRIVATE awen-${module})
@@ -190,8 +191,9 @@ function(awen_add_executable target)
     endif()
 
     # Headless smoke test: run the real app (minimal platform, software scene
-    # graph) and quit via the awen::runApp seam — a clean exit proves Main.qml
-    # and its imports load. TIMEOUT keeps a seam-less custom MAIN from hanging ctest.
+    # graph) and quit via the app's AWEN_SMOKE_QUIT_MS seam — a clean exit proves
+    # Main.qml and its imports load on whichever path the config uses. TIMEOUT
+    # keeps a seam-less MAIN from hanging ctest.
     if(BUILD_TESTING AND NOT EMSCRIPTEN AND NOT ANDROID AND NOT arg_NO_SMOKE_TEST)
         add_test(NAME tst_${target}_loads COMMAND ${target})
         set_tests_properties(tst_${target}_loads PROPERTIES
