@@ -27,4 +27,5 @@ QtObject {
     property color cursorFree: "#FFFFC23D"
     property color cursorLatched: "#FF6CFBFF"
     property color detonation: "#FFFF6FA8"
+    property color flare: "#FFFFC23D"
 }

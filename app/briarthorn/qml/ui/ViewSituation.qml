@@ -24,6 +24,12 @@ Item {
     // The contact picture, plotted at each track's azimuth and range.
     property list<Track> tracks
 
+    // Engagement truth for the overlay: the world's entities (scanned for
+    // fuzing missiles) and the blasts in progress. Optional — leave empty
+    // (and showEngagements off) for a clean overview.
+    property list<Entity> entities
+    property list<Detonation> detonations
+
     // Geometry. The outer ring's radius is a fraction of the short side; the
     // centre drops by verticalShift (and slides by horizontalShift) so the
     // attack scope can push ownship down and crop the rear off the bottom edge.
@@ -50,6 +56,7 @@ Item {
     property bool showInnerRing: true
     property bool showTicks: true
     property bool showRadarCone: true
+    property bool showEngagements: true
     property bool showOwnship: true
     property bool showOwnshipPulse: true
     property bool showTrackLabels: true
@@ -141,6 +148,20 @@ Item {
         symbolSize: view.symbolSize
         showLabels: view.showTrackLabels
         clampRadius: view.rimClamp ? view.outerRadius : 0
+    }
+
+    // Fuzing lines and blast rings, over the tracks in the same rotated
+    // observer frame.
+    ViewEngagements {
+        anchors.fill: parent
+        visible: view.showEngagements
+        observer: view.observer
+        entities: view.entities
+        detonations: view.detonations
+        centerX: view.centerX
+        centerY: view.centerY
+        pxPerMeter: view.pxPerMeter
+        viewRotation: view.viewRotation
     }
 
     // Ownship, pinned at the scope centre; nose up on a heading-up scope.

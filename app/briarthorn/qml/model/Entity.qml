@@ -25,9 +25,11 @@ QtObject {
     property real commandedSteer: 0
 
     // The six stats, as direct game quantities: kinetic is the full-throttle
-    // speed in m/s, maneuver the full-deflection turn rate in deg/s and
-    // sensor the radar detection range in metres; the other three wait on
-    // the systems that will read them.
+    // speed in m/s, maneuver the full-deflection turn rate in deg/s, sensor
+    // the radar detection range in metres, durable scales maxHealth at spawn
+    // and stealth is the emission signature — lower is louder, and a guided
+    // seeker homes on the loudest illuminated return; compute waits on the
+    // system that will read it.
     property real kinetic: 0
     property real maneuver: 0
     property real durable: 0
@@ -35,11 +37,22 @@ QtObject {
     property real sensor: 0
     property real stealth: 0
 
-    // Condition: current and maximum hull integrity and fuel. Pure state — a
-    // damage system will write health, SystemFuel writes fuel, the view reads
-    // both. maxHealth derives from durable at spawn; both start full.
+    // Condition: current and maximum hull integrity and fuel. Pure state —
+    // SystemWeapon's blasts write health, SystemFuel writes fuel, the view
+    // reads both. maxHealth derives from durable at spawn; both start full.
     property real health: 0
     property real maxHealth: 0
     property real fuel: 0
     property real maxFuel: 0
+
+    // The entity that launched or deployed this one; null for craft. Fuzes
+    // ignore anything the owner also owns, the blast spares the owner and a
+    // guided seeker sees only what the owner's radar illuminates.
+    property Entity owner: null
+
+    // The abilities this entity can invoke, as live slots.
+    property list<AbilitySlot> abilities
+
+    // The munition role state; non-null only when this entity is a missile.
+    property Weapon weapon: null
 }
