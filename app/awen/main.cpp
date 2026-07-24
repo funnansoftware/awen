@@ -1,13 +1,12 @@
-#include "App.h"
-
 #include <cstdlib>
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QTimer>
+#include <QUrl>
 
-auto awen::runApp(int argc, char** argv, const char* uri) -> int
+auto main(int argc, char** argv) -> int
 {
     QGuiApplication app{argc, argv};
 
@@ -17,9 +16,21 @@ auto awen::runApp(int argc, char** argv, const char* uri) -> int
 
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(EXIT_FAILURE); }, Qt::QueuedConnection);
-    engine.loadFromModule(uri, "Main");
 
-    // Test seam for the tst_<app>_loads ctest awen_add_executable registers: quit
+#ifdef AWENAPP_QML_SOURCE_DIR
+    // Load the QML straight from the source tree so qmlpreview can live-reload
+    // it: qmlpreview pushes edited files over the QML debug connection, and the
+    // engine only reloads QML it loaded from a file URL. The define is
+    // desktop-debug only (see CMakeLists.txt), which is exactly where the source
+    // tree is present and the debug connection exists.
+    engine.load(QUrl::fromLocalFile(QStringLiteral(AWENAPP_QML_SOURCE_DIR "/Main.qml")));
+#else
+    // Everywhere else, load the compiled AwenApp module baked into the binary,
+    // so the shipped app carries its own QML and needs no source tree.
+    engine.loadFromModule("AwenApp", "Main");
+#endif
+
+    // Test seam for the tst_awen_loads ctest awen_add_executable registers: quit
     // after the given delay, so a clean exit asserts Main.qml fully loaded.
     if (qEnvironmentVariableIsSet("AWEN_SMOKE_QUIT_MS"))
     {
