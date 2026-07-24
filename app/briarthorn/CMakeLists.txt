@@ -2,6 +2,7 @@ project(briarthorn)
 
 set(QML_SINGLETONS
     qml/commands/Verbs.qml
+    qml/model/Abilities.qml
     qml/model/Database.qml
     qml/themes/Style.qml
 )
@@ -17,25 +18,41 @@ awen_add_executable(${PROJECT_NAME}
     VERSION 1.0
     QML_FILES
         qml/Main.qml
+        qml/commands/CommandAbility.qml
         qml/commands/CommandSteer.qml
         qml/commands/CommandThrottle.qml
+        qml/model/Ability.qml
+        qml/model/AbilityFlare.qml
+        qml/model/AbilityLaunch.qml
+        qml/model/AbilitySlot.qml
         qml/model/Classification.qml
         qml/model/Data.qml
+        qml/model/DataWeapon.qml
+        qml/model/Detonation.qml
         qml/model/Entity.qml
         qml/model/RangeProjection.qml
         qml/model/Side.qml
         qml/model/StoreGame.qml
         qml/model/Track.qml
+        qml/model/Weapon.qml
+        qml/model/World.qml
         qml/scenarios/Scenario.qml
         qml/scenarios/ScenarioDuel.qml
+        qml/systems/SystemAbility.qml
+        qml/systems/SystemCountermeasure.qml
         qml/systems/SystemDetection.qml
+        qml/systems/SystemEngage.qml
         qml/systems/SystemFuel.qml
         qml/systems/SystemMovement.qml
         qml/systems/SystemPursuit.qml
+        qml/systems/SystemThreat.qml
+        qml/systems/SystemWeapon.qml
         qml/themes/Aurora.qml
         qml/ui/Joystick.qml
         qml/ui/RangeRing.qml
         qml/ui/Symbol.qml
+        qml/ui/SymbolFlare.qml
+        qml/ui/ViewEngagements.qml
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml
         qml/ui/ViewStatus.qml

@@ -29,6 +29,19 @@ Store {
         health: maxHealth
         maxFuel: 100
         fuel: maxFuel
+
+        // The invocable loadout: both missile kinds and a flare pod.
+        abilities: [
+            AbilitySlot {
+                def: Abilities.launchGuided
+            },
+            AbilitySlot {
+                def: Abilities.launchKinetic
+            },
+            AbilitySlot {
+                def: Abilities.flare
+            }
+        ]
     }
 
     CommandHandler {
@@ -39,5 +52,20 @@ Store {
     CommandHandler {
         name: Verbs.throttle
         onHandle: payload => store.ownship.commandedThrottle = payload.value
+    }
+
+    // Ability invocation routes to the named slot; activation is a no-op
+    // while the slot is cooling or out of charges.
+    CommandHandler {
+        name: Verbs.ability
+        onHandle: payload => {
+            const slots = store.ownship.abilities;
+            for (let i = 0; i < slots.length; ++i) {
+                if (slots[i].def.name === payload.ability) {
+                    slots[i].activate();
+                    return;
+                }
+            }
+        }
     }
 }

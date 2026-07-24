@@ -37,7 +37,8 @@ Item {
 
     Repeater {
         model: view.tracks
-        delegate: Symbol {
+        delegate: Loader {
+            id: mark
             required property Track modelData
 
             readonly property real azimuthRad: modelData.azimuth * Math.PI / 180
@@ -48,13 +49,29 @@ Item {
 
             x: view.centerX + Math.sin(azimuthRad) * screenRange - width / 2
             y: view.centerY - Math.cos(azimuthRad) * screenRange - height / 2
-            symbolSize: view.symbolSize
-            noseAngle: modelData.heading
-            viewRotation: view.viewRotation
-            classification: modelData.classification
-            side: modelData.side
-            showLabel: view.showLabels
-            label: modelData.classification === Classification.Kind.Unknown ? "" : modelData.contactId
+
+            // A contact classified as a countermeasure plots as a burning
+            // flare, no faction symbol or label — briardart skips the symbol
+            // the same way. Everything else keeps the classification mark.
+            sourceComponent: mark.modelData.classification === Classification.Kind.Decoy ? mark.flareMark : mark.symbolMark
+
+            readonly property Component symbolMark: Component {
+                Symbol {
+                    symbolSize: view.symbolSize
+                    noseAngle: mark.modelData.heading
+                    viewRotation: view.viewRotation
+                    classification: mark.modelData.classification
+                    side: mark.modelData.side
+                    showLabel: view.showLabels
+                    label: mark.modelData.classification === Classification.Kind.Unknown ? "" : mark.modelData.contactId
+                }
+            }
+
+            readonly property Component flareMark: Component {
+                SymbolFlare {
+                    symbolSize: view.symbolSize
+                }
+            }
         }
     }
 }

@@ -6,4 +6,5 @@ import QtQml
 QtObject {
     readonly property string steer: "steer"
     readonly property string throttle: "throttle"
+    readonly property string ability: "ability"
 }

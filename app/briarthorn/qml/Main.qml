@@ -41,9 +41,17 @@ Window {
         axisThrottle.invoke(0);
     }
 
-    // Everything the simulation integrates: the player's craft plus the
-    // current scenario's entities.
-    readonly property list<Entity> entities: [game.ownship, ...scenario.entities]
+    // The world's roster is everything the simulation integrates: the
+    // player's craft and the scenario's entities are enrolled at startup,
+    // and the weapon systems spawn and reap missiles and decoys in it.
+    readonly property World world: World {}
+    readonly property list<Entity> entities: root.world.entities
+
+    Component.onCompleted: {
+        root.world.add(game.ownship);
+        for (let i = 0; i < scenario.entities.length; ++i)
+            root.world.add(scenario.entities[i]);
+    }
 
     // The one display projection both scopes share: ranging in or out moves the
     // centre attack scope and the corner minimap together.
@@ -70,6 +78,29 @@ Window {
             minimum: 0
         }
 
+        // Ability triggers: one 0..1 axis per ability, posting the intent on
+        // the rising edge so a held key fires once.
+        Axis {
+            id: axisFireGuided
+            minimum: 0
+            onValueChanged: if (value > 0.5)
+                fireGuided.post()
+        }
+
+        Axis {
+            id: axisFireKinetic
+            minimum: 0
+            onValueChanged: if (value > 0.5)
+                fireKinetic.post()
+        }
+
+        Axis {
+            id: axisFlare
+            minimum: 0
+            onValueChanged: if (value > 0.5)
+                popFlare.post()
+        }
+
         Actions {
             id: actions
 
@@ -94,6 +125,37 @@ Window {
                 control: axisThrottle
                 positive: [Gamepad.Button.DpadUp]
             }
+
+            ActionKey {
+                control: axisFireGuided
+                positive: [Qt.Key_Space]
+            }
+
+            ActionKey {
+                control: axisFireKinetic
+                positive: [Qt.Key_E]
+            }
+
+            ActionKey {
+                control: axisFlare
+                positive: [Qt.Key_F]
+            }
+
+            ActionButton {
+                control: axisFireGuided
+                positive: [Gamepad.Button.RightShoulder]
+            }
+
+            ActionButton {
+                control: axisFireKinetic
+                positive: [Gamepad.Button.West]
+            }
+
+            ActionButton {
+                control: axisFlare
+                positive: [Gamepad.Button.South]
+            }
+
             ActionAxis {
                 control: axisSteer
                 axis: Gamepad.Axis.LeftX
@@ -119,6 +181,24 @@ Window {
             onValueChanged: post()
         }
 
+        CommandAbility {
+            id: fireGuided
+            queue: bus
+            ability: "guided"
+        }
+
+        CommandAbility {
+            id: fireKinetic
+            queue: bus
+            ability: "kinetic"
+        }
+
+        CommandAbility {
+            id: popFlare
+            queue: bus
+            ability: "flare"
+        }
+
         // The input handlers only route events into the action map; only
         // mapped keys are consumed.
         Keys.onPressed: event => {
@@ -141,7 +221,9 @@ Window {
 
         // Run order is the lifetimes and the data flow: publish the batch,
         // consume player intent into the game store, run the scenario's own
-        // systems, then integrate poses and sweep the radar.
+        // systems (AI steering and trigger discipline), age ability clocks,
+        // integrate poses, then resolve weapons, countermeasures and the
+        // radar sweep — detection last, so tracks see the tick's outcome.
         Systems {
             CommandQueue {
                 id: bus
@@ -155,6 +237,11 @@ Window {
             ScenarioDuel {
                 id: scenario
                 ownship: game.ownship
+                world: root.world
+            }
+
+            SystemAbility {
+                world: root.world
             }
 
             SystemMovement {
@@ -163,6 +250,16 @@ Window {
 
             SystemFuel {
                 entity: game.ownship
+            }
+
+            SystemWeapon {
+                id: weapons
+                world: root.world
+                invulnerable: [game.ownship]
+            }
+
+            SystemCountermeasure {
+                world: root.world
             }
 
             SystemDetection {
@@ -199,7 +296,9 @@ Window {
             projection: projection
             observer: game.ownship
             tracks: detection.tracks
-            symbolSize: height * 0.08
+            entities: root.entities
+            detonations: weapons.detonations
+            symbolSize: height * 0.04
         }
 
         // Ownship condition readout, top-left: a round dual-arc gauge (hull +
@@ -219,7 +318,7 @@ Window {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
-            text: qsTr("drag the stick, or W to thrust & A/D to turn — arrows, gamepad too")
+            text: qsTr("W thrust · A/D turn · SPACE guided · E kinetic · F flare — arrows, gamepad too")
             color: "#99ffffff"
             font.pixelSize: 14
         }
@@ -277,6 +376,7 @@ Window {
             showRadarCone: true
             showOwnshipPulse: false
             showTrackLabels: false
+            showEngagements: false
         }
 
         // The controller lamp, tucked under the minimap on the right; lights up

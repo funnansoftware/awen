@@ -7,6 +7,9 @@ QtObject {
     enum Kind {
         Unknown,
         AircraftFighter,
+        MissileGuided,
+        MissileKinetic,
+        Decoy,
         Count
     }
 }
