@@ -1,4 +1,5 @@
 import QtQuick
+import "../database"
 import "../model"
 
 // Renders a track picture: each Track plots at its true azimuth and range

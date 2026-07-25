@@ -1,5 +1,6 @@
 import QtQml
 import awen.entity
+import "../database"
 import "../model"
 
 // The weapon engine, ported from briardart's SystemWeapon: consumes raised
@@ -87,9 +88,9 @@ System {
     }
 
     // Consumes raised launch intents: a guided round refuses (keeping its
-    // charge) without an illuminated return to lock; a kinetic round fires
-    // straight off the nose. The spawned missile inherits the launcher's
-    // side, owns nothing and flies at full throttle from the rail.
+    // charge) without an illuminated return to lock; an unguided round fires
+    // straight off the nose. The spawned missile takes its whole flight
+    // envelope from its database row and inherits the launcher's side.
     function consumeLaunches() {
         const roster = weapons.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
@@ -110,20 +111,18 @@ System {
                     if (target === null)
                         continue;
                 }
-                const missile = weapons.world.spawn("MSL", {
-                    classification: row.classification,
+                const missile = weapons.world.spawn("MSL", row.classification, {
                     side: launcher.side,
                     owner: launcher,
                     posX: launcher.posX,
                     posY: launcher.posY,
                     heading: target !== null ? weapons.bearingTo(launcher, target) : launcher.heading,
-                    radarFov: 360,
-                    kinetic: row.speed,
-                    maneuver: row.turnRate,
-                    durable: 1,
-                    stealth: 8,
-                    maxHealth: 20,
-                    health: 20,
+                    // The motor lifts the round past the airframe ceiling and
+                    // it leaves the rail already there, rather than
+                    // accelerating up to it — an unguided slug has no agility
+                    // to do that with.
+                    speedBoost: row.speedMultiplier,
+                    speed: row.speed,
                     commandedThrottle: 1
                 });
                 missile.weapon = weapons.weaponFactory.createObject(missile, {

@@ -1,12 +1,14 @@
 import QtQml
 import awen.entity
+import "../database"
 import "../model"
 
 // Sensor sweep: the sole writer of the observer's track picture. Every tick
 // each other entity gets a track at its measured azimuth and range; a contact
-// inside the radar volume (within half of radarFov off the nose and inside
-// sensor range) resolves to its true classification, side and heading,
-// anything else stays Unknown with the heading held at its last seen value.
+// inside the radar volume (within half of radarFov off the nose and inside the
+// detection range its sensor rating affords) resolves to its true
+// classification, side and heading, anything else stays Unknown with the
+// heading held at its last seen value.
 // The observer's own launches (missiles, decoys) are datalinked: always
 // resolved, no radar volume needed.
 // Tracks update in place — the list itself changes only when a contact first
@@ -72,6 +74,6 @@ System {
     // half the FOV cone off the nose and inside sensor range.
     function detected(track: Track): bool {
         const off = (((track.azimuth - detection.observer.heading) % 360) + 540) % 360 - 180;
-        return Math.abs(off) <= detection.observer.radarFov / 2 && track.range <= detection.observer.sensor;
+        return Math.abs(off) <= detection.observer.radarFov / 2 && track.range <= detection.observer.detectionRange;
     }
 }

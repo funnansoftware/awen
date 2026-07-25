@@ -1,4 +1,5 @@
 import QtQml
+import "../database"
 
 // The world's entity roster and its spawn authority: the one mutable list
 // every system iterates and every view binds. Declared entities (ownship, a
@@ -24,11 +25,15 @@ QtObject {
         world.entities = [...world.entities, entity];
     }
 
-    // Builds an entity from properties and enrolls it; prefix names it
+    // Builds an entity of a kind and enrolls it: everything its definition
+    // carries — stats, radar cone, ability slots — comes from the database,
+    // and props overrides only what this one spawn differs in. prefix names it
     // ("MSL" becomes callsign "MSL 1").
-    function spawn(prefix: string, props: var): Entity {
-        props.callsign = prefix + " " + (++world.serial);
-        const entity = world.entityFactory.createObject(world, props);
+    function spawn(prefix: string, classification: int, props: var): Entity {
+        const seed = props !== undefined ? props : {};
+        seed.classification = classification;
+        seed.callsign = prefix + " " + (++world.serial);
+        const entity = world.entityFactory.createObject(world, seed) as Entity;
         world.spawned.add(entity);
         world.add(entity);
         return entity;

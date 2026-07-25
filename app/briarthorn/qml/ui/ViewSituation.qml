@@ -1,5 +1,6 @@
 import QtQuick
 import awen.shapes
+import "../database"
 import "../model"
 import "../themes"
 
@@ -132,7 +133,7 @@ Item {
         centerY: view.centerY
         angleAt: view.headingUp ? 0 : (view.observer ? view.observer.heading : 0)
         angleSpan: view.observer ? view.observer.radarFov : 0
-        radius: view.observer ? Math.min(view.observer.sensor * view.pxPerMeter, view.outerRadius) : 0
+        radius: view.observer ? Math.min(view.observer.detectionRange * view.pxPerMeter, view.outerRadius) : 0
         fillColor: Style.theme.gaugeTrack
     }
 

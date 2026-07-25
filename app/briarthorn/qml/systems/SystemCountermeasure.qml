@@ -1,19 +1,17 @@
 import awen.entity
+import "../database"
 import "../model"
 
-// Countermeasures, ported from briardart: consumes raised flare intents
-// into same-side decoy entities at the deployer — stealth 0, the loudest
-// possible return, so a hostile seeker re-homes on the decoy instead — and
-// ages each decoy out again. Runs after SystemWeapon, so a popped flare is
-// in play from the next tick.
+// Countermeasures, ported from briardart: consumes raised countermeasure
+// intents into same-side decoy entities at the deployer — the decoy kind's own
+// row makes it the loudest possible return, so a hostile seeker re-homes on it
+// instead — and ages each decoy out again. Runs after SystemWeapon, so a
+// popped flare is in play from the next tick.
 System {
     id: countermeasure
 
     // The world decoys spawn into.
     required property World world
-
-    // Seconds a decoy burns before it despawns.
-    property real flareLife: 10
 
     // Live decoys, as {entity, life} entries.
     property var flares: []
@@ -29,26 +27,25 @@ System {
             const carrier = roster[i];
             for (let j = 0; j < carrier.abilities.length; ++j) {
                 const slot = carrier.abilities[j];
-                if (!(slot.def instanceof AbilityFlare) || !slot.pending)
+                if (!(slot.def instanceof AbilityCountermeasure) || !slot.pending)
                     continue;
                 slot.pending = false;
                 if (!slot.ready)
                     continue;
+                // A pop spends both, as a launch does; the flare pod happens to
+                // cool in zero seconds, but the slot is what holds the rule.
                 slot.charges = slot.charges > 0 ? slot.charges - 1 : slot.charges;
-                const decoy = countermeasure.world.spawn("CM", {
-                    classification: Classification.Kind.Decoy,
+                slot.cooldownRemaining = slot.def.cooldown;
+                const decoy = countermeasure.world.spawn("CM", slot.def.decoy, {
                     side: carrier.side,
                     owner: carrier,
                     posX: carrier.posX,
                     posY: carrier.posY,
-                    heading: carrier.heading,
-                    stealth: 0,
-                    maxHealth: 1,
-                    health: 1
+                    heading: carrier.heading
                 });
                 countermeasure.flares.push({
                     entity: decoy,
-                    life: countermeasure.flareLife
+                    life: slot.def.life
                 });
             }
         }

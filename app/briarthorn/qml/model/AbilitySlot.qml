@@ -1,4 +1,5 @@
 import QtQml
+import "../database"
 
 // One ability as carried by an entity: the definition row plus the live
 // cooldown, charge and intent state. activate() is the single entry point
