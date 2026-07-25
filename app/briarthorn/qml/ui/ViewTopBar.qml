@@ -74,7 +74,7 @@ Rectangle {
             color: Style.theme.textPrimary
             font.pixelSize: 15
             font.bold: true
-            font.family: "Consolas"
+            font.family: Style.monospace
         }
 
         Text {

@@ -53,6 +53,11 @@ assembles the APK).
   makes them resolve on that path, and a file using a type from another folder
   must directory-import it (`import "../themes"`) rather than lean on the
   compiled module — mirror singleton changes into `QML_SINGLETONS` too.
+- The same connection carries QML/JavaScript debugging: `.vscode/launch.json`
+  drives the Qt Qml extension (QML-only, plus a compound that pairs it with the
+  C++ debugger), building through the `cmake: build briarthorn` task. Both need
+  a **debug** preset selected in CMake Tools — `QT_QML_DEBUG` is Debug-only, and
+  without it the app has no debug connection at all.
 
 ## Conventions
 

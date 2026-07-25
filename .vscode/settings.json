@@ -2,6 +2,12 @@
     "editor.formatOnSave": true,
     "cmake.configureOnOpen": false,
     "cmake.configureOnEdit": false,
+    // Resolving ${command:cmake.launchTargetPath} otherwise builds whichever
+    // target is selected in the status bar — "install", say, which redeploys
+    // both apps — on top of the app being launched, and on top of the launch
+    // configuration's own build task. The tasks in tasks.json build the one
+    // target a launch needs.
+    "cmake.buildBeforeRun": false,
     "files.associations": {
         "*.ixx": "cpp",
         "*.cppm": "cpp"

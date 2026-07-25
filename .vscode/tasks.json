@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // Builds with whatever preset is selected in the CMake Tools status
+            // bar, so it stays correct on every platform. The launch configs run
+            // it first; keep a *-debug preset selected, since QT_QML_DEBUG (and
+            // with it the debug connection) is Debug-only.
+            "type": "cmake",
+            "label": "cmake: build briarthorn",
+            "command": "build",
+            "targets": [
+                "briarthorn"
+            ],
+            "group": "build",
+            "detail": "Build the briarthorn target with the selected CMake preset",
+            "problemMatcher": []
+        },
+        {
+            "type": "cmake",
+            "label": "cmake: build awen",
+            "command": "build",
+            "targets": [
+                "awen"
+            ],
+            "group": "build",
+            "detail": "Build the awen sample app with the selected CMake preset",
+            "problemMatcher": []
+        }
+    ]
+}

@@ -79,7 +79,7 @@ Item {
             text: view.ownship ? Math.round(view.ownship.health) : "--"
             color: view.hullLow ? Style.theme.warn : Style.theme.accent
             font.pixelSize: view.shortSide * 0.15
-            font.family: "Consolas"
+            font.family: Style.monospace
             font.bold: true
         }
 
@@ -88,7 +88,7 @@ Item {
             text: view.ownship ? Math.round(view.fuelFrac * 100) + "%" : "--"
             color: view.fuelLow ? Style.theme.warn : Style.theme.fuel
             font.pixelSize: view.shortSide * 0.11
-            font.family: "Consolas"
+            font.family: Style.monospace
         }
     }
 }
