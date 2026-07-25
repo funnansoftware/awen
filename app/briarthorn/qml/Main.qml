@@ -1,3 +1,8 @@
+// Ids from this file reach into the ability rack's delegate below; bound
+// component behaviour is what makes those resolve statically.
+pragma ComponentBehavior: Bound
+
+import QtQml.Models
 import QtQuick
 import awen.buildinfo
 import awen.command
@@ -6,6 +11,7 @@ import awen.gamepad
 import awen.input
 import "commands"
 import "database"
+import "input"
 import "model"
 import "scenarios"
 import "systems"
@@ -33,20 +39,42 @@ Window {
     title: qsTr("briarthorn")
     color: Style.theme.windowBackground
 
-    // Focus loss swallows key and touch releases, so drop all held input with
-    // it: reset the action bindings and zero the stick's own axis slots, which
-    // sit outside the router.
-    onActiveChanged: if (!active) {
-        actions.reset();
-        axisSteer.invoke(0);
-        axisThrottle.invoke(0);
-    }
+    // Focus loss swallows key and touch releases, so drop all held input with it.
+    onActiveChanged: if (!active)
+        root.dropInput()
 
     // The world's roster is everything the simulation integrates: the
     // player's craft and the scenario's entities are enrolled at startup,
     // and the weapon systems spawn and reap missiles and decoys in it.
     readonly property World world: World {}
     readonly property list<Entity> entities: root.world.entities
+
+    // The player's ability controls, loaded at startup; the settings page edits
+    // this table and every ability binding re-pushes off it.
+    readonly property Keymap keymap: Keymap {}
+
+    // Returns every input source to rest: the action bindings, and the stick's
+    // own axis slots, which it contributes under the axis itself and so the
+    // router cannot reach.
+    function dropInput() {
+        actions.reset();
+        axisSteer.invoke(0);
+        axisThrottle.invoke(0);
+    }
+
+    // Held input is released while the bus is still running, so the zeroed steer
+    // and throttle post before the simulation stops. Both verbs coalesce, so
+    // they publish on resume and the ship never carries its pre-pause command
+    // out of the page — which is also why nothing clears the queue.
+    function openSettings() {
+        root.dropInput();
+        settings.open = true;
+    }
+
+    function closeSettings() {
+        settings.open = false;
+        root.dropInput();
+    }
 
     Component.onCompleted: {
         root.world.add(game.ownship);
@@ -64,7 +92,7 @@ Window {
     Item {
         id: scene
         anchors.fill: parent
-        focus: true // route the window's keys (WASD / arrows) here
+        focus: !settings.open // the window's keys go here unless the page has them
 
         property bool padConnected: false
 
@@ -79,82 +107,34 @@ Window {
             minimum: 0
         }
 
-        // Ability triggers: one 0..1 axis per ability, posting the intent on
-        // the rising edge so a held key fires once.
-        Axis {
-            id: axisFireGuided
-            minimum: 0
-            onValueChanged: if (value > 0.5)
-                fireGuided.post()
-        }
-
-        Axis {
-            id: axisFireKinetic
-            minimum: 0
-            onValueChanged: if (value > 0.5)
-                fireKinetic.post()
-        }
-
-        Axis {
-            id: axisFlare
-            minimum: 0
-            onValueChanged: if (value > 0.5)
-                popFlare.post()
-        }
-
         Actions {
             id: actions
 
+            // The flight controls, fixed: a two-way axis and an analogue stick
+            // generalise from nothing an ability row carries. Their codes live
+            // on the keymap so a capture can refuse one — the router fans every
+            // event to every action, so an ability sharing W would thrust as
+            // well as fire.
             ActionKey {
                 control: axisSteer
-                positive: [Qt.Key_D, Qt.Key_Right]
-                negative: [Qt.Key_A, Qt.Key_Left]
+                positive: root.keymap.flight.steer.key.positive
+                negative: root.keymap.flight.steer.key.negative
             }
 
             ActionKey {
                 control: axisThrottle
-                positive: [Qt.Key_W, Qt.Key_Up]
+                positive: root.keymap.flight.throttle.key.positive
             }
 
             ActionButton {
                 control: axisSteer
-                positive: [Gamepad.Button.DpadRight]
-                negative: [Gamepad.Button.DpadLeft]
+                positive: root.keymap.flight.steer.pad.positive
+                negative: root.keymap.flight.steer.pad.negative
             }
 
             ActionButton {
                 control: axisThrottle
-                positive: [Gamepad.Button.DpadUp]
-            }
-
-            ActionKey {
-                control: axisFireGuided
-                positive: [Qt.Key_Space]
-            }
-
-            ActionKey {
-                control: axisFireKinetic
-                positive: [Qt.Key_E]
-            }
-
-            ActionKey {
-                control: axisFlare
-                positive: [Qt.Key_F]
-            }
-
-            ActionButton {
-                control: axisFireGuided
-                positive: [Gamepad.Button.RightShoulder]
-            }
-
-            ActionButton {
-                control: axisFireKinetic
-                positive: [Gamepad.Button.West]
-            }
-
-            ActionButton {
-                control: axisFlare
-                positive: [Gamepad.Button.South]
+                positive: root.keymap.flight.throttle.pad.positive
             }
 
             ActionAxis {
@@ -165,6 +145,42 @@ Window {
                 control: axisThrottle
                 axis: Gamepad.Axis.LeftY
                 scale: -1 // stick forward throttles up
+            }
+        }
+
+        // Ability input is data: one axis, one key binding, one pad binding and
+        // one command per ability the flown craft actually carries, off the
+        // loadout and through the keymap. Adding an ability touches nothing in
+        // this file.
+        Instantiator {
+            model: game.ownship.abilities
+
+            delegate: AbilityInput {
+                required property AbilitySlot modelData
+
+                def: modelData.def
+                keymap: root.keymap
+                queue: bus
+            }
+
+            // The delegate arrives typed as a bare QObject, so it is cast back
+            // to what it is before its two bindings are read.
+            onObjectAdded: (index, object) => {
+                const input = object as AbilityInput;
+                actions.actions.push(input.keys);
+                actions.actions.push(input.pad);
+            }
+            // Pruned by the object handed in, never by rescanning the rack: a
+            // delegate being removed is already on its way out.
+            onObjectRemoved: (index, object) => {
+                const input = object as AbilityInput;
+                const kept = [];
+                for (let i = 0; i < actions.actions.length; ++i) {
+                    const action = actions.actions[i];
+                    if (action !== input.keys && action !== input.pad)
+                        kept.push(action);
+                }
+                actions.actions = kept;
             }
         }
 
@@ -182,29 +198,19 @@ Window {
             onValueChanged: post()
         }
 
-        CommandAbility {
-            id: fireGuided
-            queue: bus
-            ability: "guided"
-        }
-
-        CommandAbility {
-            id: fireKinetic
-            queue: bus
-            ability: "kinetic"
-        }
-
-        CommandAbility {
-            id: popFlare
-            queue: bus
-            ability: "flare"
-        }
-
-        // The input handlers only route events into the action map; only
-        // mapped keys are consumed.
+        // The input handlers only route events into the action map; only mapped
+        // keys are consumed. The page key is handled ahead of the map: it has
+        // no axis and no rest state, and the way out of the game must never be
+        // rebound away.
         Keys.onPressed: event => {
-            if (!event.isAutoRepeat)
-                event.accepted = actions.keyPressed(event.key);
+            if (event.isAutoRepeat)
+                return;
+            if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
+                root.openSettings();
+                event.accepted = true;
+                return;
+            }
+            event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
             if (!event.isAutoRepeat)
@@ -216,9 +222,24 @@ Window {
         Gamepad.pollInterval: Qt.platform.os === "wasm" ? 16 : 8
         Gamepad.onConnected: deviceId => scene.padConnected = true
         Gamepad.onDisconnected: deviceId => scene.padConnected = false
-        Gamepad.onAxisChanged: (deviceId, axis, value) => actions.axisMoved(axis, value)
-        Gamepad.onButtonPressed: (deviceId, button) => actions.buttonPressed(button)
-        Gamepad.onButtonReleased: (deviceId, button) => actions.buttonReleased(button)
+        // Controller events ignore focus entirely, so handing the page the
+        // keyboard is not enough — the pad route is switched here instead.
+        Gamepad.onAxisChanged: (deviceId, axis, value) => {
+            if (!settings.open)
+                actions.axisMoved(axis, value);
+        }
+        Gamepad.onButtonPressed: (deviceId, button) => {
+            if (settings.open)
+                settings.padPressed(button);
+            else if (button === Gamepad.Button.Start)
+                root.openSettings();
+            else
+                actions.buttonPressed(button);
+        }
+        Gamepad.onButtonReleased: (deviceId, button) => {
+            if (!settings.open)
+                actions.buttonReleased(button);
+        }
 
         // Run order is the lifetimes and the data flow: publish the batch,
         // consume player intent into the game store, run the scenario's own
@@ -226,6 +247,11 @@ Window {
         // integrate poses, then resolve weapons, countermeasures and the
         // radar sweep — detection last, so tracks see the tick's outcome.
         Systems {
+            // The page stops the duel rather than letting it run on behind the
+            // player. dropInput() posts the zeroed axes before this flips, and
+            // nothing clears the queue, so they publish on resume.
+            running: !settings.open
+
             CommandQueue {
                 id: bus
             }
@@ -315,13 +341,14 @@ Window {
             ownship: game.ownship
         }
 
-        Text {
+        // The control hints: the fixed flight keys, then one chip per ability
+        // the craft carries, captioned with whatever it is bound to right now.
+        ViewHints {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
-            text: qsTr("W thrust · A/D turn · SPACE guided · E kinetic · F flare — arrows, gamepad too")
-            color: "#99ffffff"
-            font.pixelSize: 14
+            keymap: root.keymap
+            loadout: game.ownship.abilities
         }
 
         // The on-screen stick: another source folding into the same axes — its x
@@ -333,7 +360,7 @@ Window {
             // Touch play only: the on-screen stick shows on phones, tablets and
             // touch browsers, and stays hidden where keys and a gamepad already
             // drive the axes.
-            visible: TouchScreen.available
+            visible: TouchScreen.available && !settings.open
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.margins: 24
@@ -392,5 +419,19 @@ Window {
             font.pixelSize: 13
             visible: scene.padConnected
         }
+    }
+
+    // The controls page, a sibling of the scene rather than a child: it paints
+    // over the whole HUD, and a key it declines bubbles to the window instead of
+    // falling sideways into the game's handler. Focus follows open on both sides
+    // declaratively — an imperative hand-off leaves the scene unfocused and the
+    // game permanently deaf the moment one exit path forgets to hand it back.
+    ViewSettings {
+        id: settings
+
+        anchors.fill: parent
+        keymap: root.keymap
+        loadout: game.ownship.abilities
+        onClosed: root.closeSettings()
     }
 }

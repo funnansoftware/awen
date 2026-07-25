@@ -1,3 +1,5 @@
+import QtQml
+import awen.gamepad
 import ".."
 
 // The flare pod: ten decoys, popped one at a time off no cooldown, each
@@ -8,4 +10,6 @@ AbilityCountermeasure {
     charges: 10
     decoy: Classification.Kind.Decoy
     life: 10
+    defaultKey: Qt.Key_F
+    defaultButton: Gamepad.Button.South
 }

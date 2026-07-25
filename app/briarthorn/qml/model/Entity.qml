@@ -84,16 +84,20 @@ QtObject {
     // the whole rack.
     property list<AbilitySlot> abilities: entity.def ? entity.slotsFor(entity.def.abilities) : []
 
-    // One live slot per named ability, skipping any name the registry does not
-    // know.
+    // One live slot per named ability. An unregistered name is dropped with a
+    // warning: silently it costs a missing ability, a missing binding and a
+    // missing settings row, with nothing anywhere to notice it by.
     function slotsFor(names: list<string>): list<AbilitySlot> {
         const slots = [];
         for (let i = 0; i < names.length; ++i) {
             const def = Abilities.defFor(names[i]);
-            if (def !== null)
-                slots.push(entity.slotFactory.createObject(entity, {
-                    def: def
-                }));
+            if (def === null) {
+                console.warn("Entity: no registered ability named \"" + names[i] + "\", dropping it from the loadout");
+                continue;
+            }
+            slots.push(entity.slotFactory.createObject(entity, {
+                def: def
+            }));
         }
         return slots;
     }

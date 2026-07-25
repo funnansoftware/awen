@@ -40,6 +40,8 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/entities/DataUnknown.qml
         qml/database/weapons/DataMissileGuided.qml
         qml/database/weapons/DataMissileKinetic.qml
+        qml/input/AbilityInput.qml
+        qml/input/Keymap.qml
         qml/model/AbilitySlot.qml
         qml/model/Detonation.qml
         qml/model/Entity.qml
@@ -61,11 +63,14 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemThreat.qml
         qml/systems/SystemWeapon.qml
         qml/themes/Aurora.qml
+        qml/ui/ControlCap.qml
         qml/ui/Joystick.qml
         qml/ui/RangeRing.qml
         qml/ui/Symbol.qml
         qml/ui/SymbolFlare.qml
         qml/ui/ViewEngagements.qml
+        qml/ui/ViewHints.qml
+        qml/ui/ViewSettings.qml
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml
         qml/ui/ViewStatus.qml

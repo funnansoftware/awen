@@ -14,6 +14,14 @@ auto main(int argc, char** argv) -> int
     // Quick symbol reference the DLL is dropped and the deployed app fails to start.
     QQuickWindow::setDefaultAlphaBuffer(QQuickWindow::hasDefaultAlphaBuffer());
 
+    // QSettings — and so the QML Settings type the keymap persists through —
+    // names its store from the application identity and silently discards every
+    // write without one. Renaming these later orphans the controls a player has
+    // already saved.
+    QCoreApplication::setOrganizationName(QStringLiteral("Funnan Software"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("funnansoftware.com"));
+    QCoreApplication::setApplicationName(QStringLiteral("briarthorn"));
+
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, [] { QCoreApplication::exit(EXIT_FAILURE); }, Qt::QueuedConnection);
 

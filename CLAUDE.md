@@ -113,3 +113,10 @@ allowed to import `../database`; the database imports nothing back.
   overrides only what makes that one different; assigning nothing to `abilities`
   gives it the loadout its kind carries. `World.spawn(prefix, classification,
   props)` is the one spawn path.
+- **Ability input is generated, never written.** Adding an ability is four
+  edits: the def under `database/abilities/` (carrying its own `defaultKey` and
+  `defaultButton`), a line in the `Abilities` registry, a line in
+  `CMakeLists.txt`, and its name in a `DataEntity.abilities` list. `Main.qml`
+  builds one axis, key binding, pad binding and command per carried slot off the
+  loadout, so it needs no edit at all — and `qml/input/Keymap.qml` is what the
+  controls page rebinds, seeded from those defaults and stored as a diff.

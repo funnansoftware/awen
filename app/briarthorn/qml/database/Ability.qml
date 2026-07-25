@@ -16,4 +16,10 @@ QtObject {
 
     // Rounds a fresh slot carries; -1 is unlimited.
     property int charges: -1
+
+    // The controls this ability ships bound to: a Qt.Key code and an
+    // awen.gamepad Gamepad.Button code, -1 for unbound. The keymap seeds from
+    // these, so arming a new ability needs no entry in a binding table.
+    property int defaultKey: -1
+    property int defaultButton: -1
 }
