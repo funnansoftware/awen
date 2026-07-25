@@ -161,11 +161,20 @@ function(awen_add_executable target)
     else()
         # Each app installs into its own ${target}/ subtree so one app's binary,
         # Qt libraries, plugins and QML imports stay separable from another's.
-        install(TARGETS ${target}
-            BUNDLE DESTINATION ${target}
-            RUNTIME DESTINATION ${target}/${CMAKE_INSTALL_BINDIR}
-            LIBRARY DESTINATION ${target}/${CMAKE_INSTALL_LIBDIR}
-        )
+        # On macOS the .app bundle already is that subtree, and it has to sit at
+        # the install root: Qt's bundle deployment resolves what it copies partly
+        # against QT_DEPLOY_PREFIX and partly against CMAKE_INSTALL_PREFIX, so a
+        # bundle one level down leaves macdeployqt looking for <prefix>/app.app
+        # ("Could not find bundle binary") and scatters the QML imports into that
+        # phantom path.
+        if(APPLE)
+            install(TARGETS ${target} BUNDLE DESTINATION .)
+        else()
+            install(TARGETS ${target}
+                RUNTIME DESTINATION ${target}/${CMAKE_INSTALL_BINDIR}
+                LIBRARY DESTINATION ${target}/${CMAKE_INSTALL_LIBDIR}
+            )
+        endif()
 
         # Deploy the Qt libraries, platform plugins and QML imports next to the
         # installed app. The QT_DEPLOY_*_DIR variables (read at install time by
@@ -181,12 +190,17 @@ function(awen_add_executable target)
             NO_TRANSLATIONS
         )
 
-        install(CODE "
-            set(QT_DEPLOY_BIN_DIR \"${target}/${CMAKE_INSTALL_BINDIR}\")
-            set(QT_DEPLOY_LIB_DIR \"${target}/${CMAKE_INSTALL_LIBDIR}\")
-            set(QT_DEPLOY_PLUGINS_DIR \"${target}/plugins\")
-            set(QT_DEPLOY_QML_DIR \"${target}/qml\")
-        ")
+        # macdeployqt lays the bundle out itself, so the variables are for the
+        # other platforms; setting them there too would only point parts of the
+        # bundle deployment outside it.
+        if(NOT APPLE)
+            install(CODE "
+                set(QT_DEPLOY_BIN_DIR \"${target}/${CMAKE_INSTALL_BINDIR}\")
+                set(QT_DEPLOY_LIB_DIR \"${target}/${CMAKE_INSTALL_LIBDIR}\")
+                set(QT_DEPLOY_PLUGINS_DIR \"${target}/plugins\")
+                set(QT_DEPLOY_QML_DIR \"${target}/qml\")
+            ")
+        endif()
         install(SCRIPT ${deploy_script})
     endif()
 

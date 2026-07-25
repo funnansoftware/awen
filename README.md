@@ -95,7 +95,7 @@ cmake --build --preset linux --target install   # install
 cmake --preset macos                            # configure (release)
 cmake --build --preset macos                    # build
 cmake --build --preset macos --target install   # install
-open ./build/macos/installed/briarthorn/briarthorn.app   # run
+open ./build/macos/installed/briarthorn.app   # run
 ```
 
 ## Web
