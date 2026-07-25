@@ -29,16 +29,23 @@ QtObject {
     // Returns every action to rest — call on focus loss, where key releases
     // are never delivered and held state would otherwise stick.
     function reset() {
-        for (let i = 0; i < root.actions.length; ++i)
-            root.actions[i].reset();
+        for (let i = 0; i < root.actions.length; ++i) {
+            const action = root.actions[i];
+            if (action !== null)
+                action.reset();
+        }
     }
 
     // Delivers one event to every action without short-circuiting, so shared
-    // inputs reach every binding.
+    // inputs reach every binding. A destroyed action leaves a null slot behind,
+    // and skipping it keeps one dead binding from taking the router down.
     function fan(deliver: var): bool {
         let consumed = false;
-        for (let i = 0; i < root.actions.length; ++i)
-            consumed = deliver(root.actions[i]) || consumed;
+        for (let i = 0; i < root.actions.length; ++i) {
+            const action = root.actions[i];
+            if (action !== null)
+                consumed = deliver(action) || consumed;
+        }
         return consumed;
     }
 }

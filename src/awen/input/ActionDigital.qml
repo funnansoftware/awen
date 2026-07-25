@@ -13,6 +13,12 @@ Action {
     // Held state per code, written by press() and release().
     property var held: ({})
 
+    // A rebind drops the held state along with the old codes: press() and
+    // release() both early-return on an unmapped code, so the release of a code
+    // just unbound never arrives and would pin the contribution for good.
+    onPositiveChanged: digital.reset()
+    onNegativeChanged: digital.reset()
+
     // Rest means nothing held, not just a zero value.
     function reset() {
         digital.held = ({});
