@@ -1,3 +1,4 @@
+import "../database"
 import "../model"
 import "../systems"
 
@@ -14,28 +15,24 @@ Scenario {
     // The world the bandit's defensive scan reads.
     required property World world
 
+    // The same fighter airframe the player flies, rated down a little so the
+    // duel is winnable, and carrying a lighter loadout than the stock rack.
     readonly property Entity bandit: Entity {
         callsign: "BANDIT 1"
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
-        radarFov: 120
-        kinetic: 450
-        maneuver: 9
-        durable: 5
-        compute: 6
-        sensor: 60000
-        stealth: 5
-        maxHealth: durable * 20
-        health: maxHealth
+        kinetic: 4.5 // 450 m/s against the player's 500
+        maneuver: 4 // 9.6 deg/s against the player's 12
 
+        // Guided rounds and a half-size flare pod; no kinetic rack at all.
         abilities: [
             AbilitySlot {
-                def: Abilities.launchGuided
+                def: Abilities.defFor("guided")
             },
             AbilitySlot {
-                def: Abilities.flare
+                def: Abilities.defFor("flare")
                 charges: 6
             }
         ]

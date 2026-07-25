@@ -1,4 +1,5 @@
 import awen.entity
+import "../database"
 import "../model"
 
 // Defensive reflex: pops the entity's flare once a hostile missile homing
@@ -33,7 +34,7 @@ System {
                 continue;
             for (let j = 0; j < threat.entity.abilities.length; ++j) {
                 const slot = threat.entity.abilities[j];
-                if (slot.def instanceof AbilityFlare && slot.ready) {
+                if (slot.def instanceof AbilityCountermeasure && slot.ready) {
                     slot.activate();
                     threat.timer = threat.holdoff;
                     return;

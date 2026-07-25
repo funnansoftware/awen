@@ -1,5 +1,6 @@
 import QtQuick
 import awen.shapes
+import "../database"
 import "../model"
 import "../themes"
 

@@ -1,4 +1,5 @@
 import QtQml
+import "../database"
 
 // One contact in an observer's track picture: the perception of a world
 // entity in the observer's frame. Position is polar — range in metres and

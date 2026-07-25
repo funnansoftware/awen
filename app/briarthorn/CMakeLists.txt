@@ -2,8 +2,9 @@ project(briarthorn)
 
 set(QML_SINGLETONS
     qml/commands/Verbs.qml
-    qml/model/Abilities.qml
-    qml/model/Database.qml
+    qml/database/Abilities.qml
+    qml/database/Database.qml
+    qml/database/GameRules.qml
     qml/themes/Style.qml
 )
 
@@ -23,13 +24,23 @@ awen_add_executable(${PROJECT_NAME}
         qml/commands/CommandAbility.qml
         qml/commands/CommandSteer.qml
         qml/commands/CommandThrottle.qml
-        qml/model/Ability.qml
-        qml/model/AbilityFlare.qml
-        qml/model/AbilityLaunch.qml
+        qml/database/Ability.qml
+        qml/database/AbilityCountermeasure.qml
+        qml/database/AbilityLaunch.qml
+        qml/database/Classification.qml
+        qml/database/Data.qml
+        qml/database/DataEntity.qml
+        qml/database/DataWeapon.qml
+        qml/database/Stats.qml
+        qml/database/abilities/AbilityFlare.qml
+        qml/database/abilities/AbilityLaunchGuided.qml
+        qml/database/abilities/AbilityLaunchKinetic.qml
+        qml/database/entities/DataAircraftFighter.qml
+        qml/database/entities/DataDecoy.qml
+        qml/database/entities/DataUnknown.qml
+        qml/database/weapons/DataMissileGuided.qml
+        qml/database/weapons/DataMissileKinetic.qml
         qml/model/AbilitySlot.qml
-        qml/model/Classification.qml
-        qml/model/Data.qml
-        qml/model/DataWeapon.qml
         qml/model/Detonation.qml
         qml/model/Entity.qml
         qml/model/RangeProjection.qml

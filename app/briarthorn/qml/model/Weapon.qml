@@ -1,4 +1,5 @@
 import QtQml
+import "../database"
 
 // The munition role state carried by a missile entity: its definition row,
 // seeker lock and the fuze state machine SystemWeapon drives. Non-null only
@@ -12,7 +13,7 @@ QtObject {
     // The weapon row this round was spawned from.
     property DataWeapon def: null
 
-    // The seeker's current lock; null on kinetic rounds and while no return
+    // The seeker's current lock; null on unguided rounds and while no return
     // is illuminated.
     property Entity target: null
 

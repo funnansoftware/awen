@@ -1,5 +1,6 @@
 import awen.command
 import "../commands"
+import "../database"
 
 // The game store: owns the player's craft and consumes every player intent
 // on the bus. It outlives any scenario — levels swap, these handlers stay —
@@ -12,36 +13,14 @@ Store {
     // belongs on the store, not on any one entity.
     property int credits: 1250
 
-    // Ownship under player control.
+    // Ownship under player control: a stock fighter off the database — stats,
+    // condition and the invocable loadout all come from that row — flown with
+    // a narrower radar cone than the airframe's own, so the player has to
+    // point at what they want to see.
     readonly property Entity ownship: Entity {
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Ownship
         radarFov: 60
-        kinetic: 500
-        maneuver: 12
-        durable: 5
-        compute: 6
-        sensor: 60000
-        stealth: 5
-        // Condition: hull scaled from durability, fuel a full tank. Both start
-        // topped off; SystemFuel draws the tank down as the player flies.
-        maxHealth: durable * 20
-        health: maxHealth
-        maxFuel: 100
-        fuel: maxFuel
-
-        // The invocable loadout: both missile kinds and a flare pod.
-        abilities: [
-            AbilitySlot {
-                def: Abilities.launchGuided
-            },
-            AbilitySlot {
-                def: Abilities.launchKinetic
-            },
-            AbilitySlot {
-                def: Abilities.flare
-            }
-        ]
     }
 
     CommandHandler {

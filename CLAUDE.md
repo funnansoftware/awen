@@ -27,7 +27,8 @@ assembles the APK).
 - `app/awen/` — the framework sample app (QML module `AwenApp`).
 - `app/briarthorn/` — the briarthorn game (own license: `LICENSE.md` there — the
   rest of the repo is MIT). The `Briarthorn` QML module (`qml/Main.qml`); the
-  game is implemented in QML.
+  game is implemented in QML. `qml/database/` holds the static definitions and
+  `qml/model/` the live state they seed — see the database section below.
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
   (qt ports dynamic, everything else static; dependencies release-only, except
   the dual-config `x64-windows` triplet the windows debug preset needs).
@@ -91,3 +92,24 @@ assembles the APK).
   `@p name` for parameters; trailing `///<` for data members.
 - **Commit messages are one line.** A single short imperative summary — no body,
   no trailers.
+
+## Briarthorn's game database
+
+Every static kind definition is one file under `app/briarthorn/qml/database/`,
+in `entities/`, `weapons/` or `abilities/`, registered in the single list on the
+`Database` (or `Abilities`) singleton — the lookup table derives from that list,
+so adding a kind is a new file, a new `Classification` and one line, never a
+switch to keep in step. `qml/model/` holds the live state those rows seed and is
+allowed to import `../database`; the database imports nothing back.
+
+- **Stats are ratings, never quantities.** A `DataEntity` rates a kind 0..10 on
+  the six stats and `GameRules` prices every rating into m/s, deg/s, m/s^2,
+  metres, hit points and fuel units. Speed, acceleration, turn rate, fuel flow,
+  detection range and seeker reach all come from there — a definition that
+  spells out a physical number is a bug, and retuning the game means editing
+  `GameRules.qml` alone.
+- **An `Entity` defaults from its row.** Every stat and capability binds to the
+  `DataEntity` its `classification` names, so a spawn site names a kind and
+  overrides only what makes that one different; assigning nothing to `abilities`
+  gives it the loadout its kind carries. `World.spawn(prefix, classification,
+  props)` is the one spawn path.

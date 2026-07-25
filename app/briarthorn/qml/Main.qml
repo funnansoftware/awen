@@ -5,6 +5,7 @@ import awen.entity
 import awen.gamepad
 import awen.input
 import "commands"
+import "database"
 import "model"
 import "scenarios"
 import "systems"

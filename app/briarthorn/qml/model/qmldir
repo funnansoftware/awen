@@ -1,4 +1,0 @@
-# This folder's singletons for the directory import — see commands/qmldir for the
-# full story. Mirror changes into QML_SINGLETONS in ../../CMakeLists.txt.
-singleton Abilities Abilities.qml
-singleton Database Database.qml

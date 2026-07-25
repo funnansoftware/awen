@@ -1,11 +1,11 @@
 import QtQml
 
-// Base definition row for one ability an entity can invoke: identity plus
-// the cooldown and charge tuning shared by every carrier. One instance per
-// kind lives in the Abilities registry; live per-entity state lives on an
+// Base definition row for one ability an entity can invoke: identity plus the
+// cooldown and charge tuning shared by every carrier. One instance per kind
+// lives in the Abilities registry; live per-entity state lives on an
 // AbilitySlot referencing the row.
 QtObject {
-    // The name ability commands and systems route on.
+    // The name ability commands, loadouts and systems all route on.
     property string name: ""
 
     // Player-facing label.

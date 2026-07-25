@@ -1,4 +1,5 @@
 import awen.entity
+import "../database"
 import "../model"
 
 // AI trigger discipline: invokes the entity's named launch ability when its
@@ -12,11 +13,15 @@ System {
     required property Entity entity
     required property Entity target
 
-    // The launch ability invoked, by registry name.
+    // The launch ability invoked, by registry name, and the round it spawns;
+    // the cast is null for a name that is not a launch at all.
     property string ability: "guided"
+    readonly property AbilityLaunch def: Abilities.defFor(engage.ability) as AbilityLaunch
+    readonly property DataWeapon round: engage.def ? Database.weaponDataFor(engage.def.weapon) : null
 
-    // Maximum firing range, metres.
-    property real engageRange: 45000
+    // Maximum firing range, metres: by default as far as that round can
+    // physically fly, so the envelope tracks the weapon's own tuning.
+    property real engageRange: engage.round ? engage.round.reach : 0
 
     // Minimum seconds between invocations.
     property real holdoff: 6
