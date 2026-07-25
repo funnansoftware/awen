@@ -80,6 +80,10 @@ include(cmake/qt-build-tree-conf.cmake)
 # src/ and app/.
 include(cmake/awen-target.cmake)
 
+# The <app>-qmlpreview targets awen_add_executable registers; after
+# find_package(Qt6), whose QT6_INSTALL_PREFIX locates the tool.
+include(cmake/target/qmlpreview.cmake)
+
 add_subdirectory(src)
 add_subdirectory(app)
 

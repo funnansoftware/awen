@@ -48,11 +48,16 @@ assembles the APK).
   QML edit trips MSVC C4702 in Qt headers under /WX, that warning is already
   disabled on the briarthorn target.
 - Desktop **debug** builds instead load `Main.qml` from the source tree, so
-  `qmlpreview <build dir>/briarthorn.exe` live-reloads QML edits with no
-  rebuild. The `qmldir` beside each of briarthorn's singleton folders is what
-  makes them resolve on that path, and a file using a type from another folder
-  must directory-import it (`import "../themes"`) rather than lean on the
-  compiled module — mirror singleton changes into `QML_SINGLETONS` too.
+  qmlpreview live-reloads QML edits with no rebuild: build the
+  `briarthorn-qmlpreview` target (`cmake --build --preset windows-msvc-debug
+  --target briarthorn-qmlpreview`, or the `qmlpreview: briarthorn` task), which
+  runs the app under the tool. `cmake/target/qmlpreview.cmake` locates
+  qmlpreview — it is not an imported target, and vcpkg puts it in
+  `tools/Qt6/bin` rather than the kit's `bin`. The `qmldir` beside each of
+  briarthorn's singleton folders is what makes them resolve on that path, and a
+  file using a type from another folder must directory-import it (`import
+  "../themes"`) rather than lean on the compiled module — mirror singleton
+  changes into `QML_SINGLETONS` too.
 - The same connection carries QML/JavaScript debugging: `.vscode/launch.json`
   drives the Qt Qml extension (QML-only, plus a compound that pairs it with the
   C++ debugger), building through the `cmake: build briarthorn` task. Both need
