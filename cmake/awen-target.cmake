@@ -106,6 +106,12 @@ function(awen_add_executable target)
         MACOSX_BUNDLE TRUE
     )
 
+    # <target>-qmlpreview, the live-reload run. Desktop only: the cross builds
+    # run on a device with no source tree to reload from.
+    if(NOT EMSCRIPTEN AND NOT ANDROID)
+        awen_add_qmlpreview_target(${target})
+    endif()
+
     if(EMSCRIPTEN)
         # Embed ":/qt/etc/qt.conf" so QLibraryInfo skips getRelocatablePrefix(),
         # whose debug-only assert aborts this static wasm build at startup.

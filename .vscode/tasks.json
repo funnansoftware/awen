@@ -26,6 +26,33 @@
             "group": "build",
             "detail": "Build the awen sample app with the selected CMake preset",
             "problemMatcher": []
+        },
+        {
+            // Builds the app and runs it under Qt's qmlpreview, which pushes
+            // every QML edit into the running app — no rebuild, no debugger.
+            // The CMake target holds the path to the tool, which differs
+            // between a prebuilt Qt kit and vcpkg's Qt; run it from
+            // Terminal > Run Task. Keep a *-debug preset selected: without
+            // QT_QML_DEBUG the app has no debug connection for qmlpreview to
+            // push into, and it just runs.
+            "type": "cmake",
+            "label": "qmlpreview: briarthorn",
+            "command": "build",
+            "targets": [
+                "briarthorn-qmlpreview"
+            ],
+            "detail": "Run briarthorn under qmlpreview, live-reloading QML edits",
+            "problemMatcher": []
+        },
+        {
+            "type": "cmake",
+            "label": "qmlpreview: awen",
+            "command": "build",
+            "targets": [
+                "awen-qmlpreview"
+            ],
+            "detail": "Run the awen sample app under qmlpreview, live-reloading QML edits",
+            "problemMatcher": []
         }
     ]
 }

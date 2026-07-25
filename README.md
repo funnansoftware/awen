@@ -153,8 +153,19 @@ configuration in the Run and Debug view:
 The MSVC variant of the combined session uses the C/C++ extension's `cppvsdbg`;
 the others use CodeLLDB.
 
-**qmlpreview** — `qmlpreview <build dir>/briarthorn` live-reloads QML edits into
-the running app, with no debugger attached.
+**qmlpreview** — live-reloads QML edits into the running app, with no debugger
+attached. Each app gets an `<app>-qmlpreview` target that builds it and runs it
+under the tool, so nothing has to know where Qt keeps qmlpreview (`bin/` in a
+prebuilt kit, `tools/Qt6/bin` with vcpkg's Qt):
+
+```sh
+cmake --build --preset windows-msvc-debug --target briarthorn-qmlpreview
+```
+
+In VS Code the same targets are the `qmlpreview: briarthorn` and
+`qmlpreview: awen` entries under **Terminal > Run Task**. Edit any file under
+[app/briarthorn/qml](app/briarthorn/qml) while it runs and the app reloads it;
+errors from a reload print in that terminal.
 
 Outside either tool, start the app yourself and connect any Qt debug client:
 
