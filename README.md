@@ -38,6 +38,7 @@ windows debug preset, where MSVC requires debug dependencies and the
   - [mac](#macos)
   - [web](#web)
   - [android](#android)
+- [Debugging QML](#debugging-qml)
 - [License](#license)
 
 # Prerequisites
@@ -124,6 +125,42 @@ cmake --preset android                            # configure (release)
 cmake --build --preset android                    # build (also packages APKs)
 cmake --build --preset android --target install   # install
 # APKs: build/android/installed/android/{briarthorn,awen}.apk
+```
+
+# Debugging QML
+
+A desktop **debug** build opens Qt's QML debug connection: both apps define
+`QT_QML_DEBUG` there, and their `main.cpp` loads `Main.qml` from the source tree,
+so breakpoints land in the files under
+[app/briarthorn/qml](app/briarthorn/qml) (or [app/awen](app/awen)) and a QML edit
+needs no rebuild. Two tools ride on that connection.
+
+**VS Code** — the workspace ships launch configurations in
+[.vscode/launch.json](.vscode/launch.json); they need the
+[Qt Qml](https://marketplace.visualstudio.com/items?itemName=theqtcompany.qt-qml)
+and CMake Tools extensions. Select a debug configure preset
+(`macos-clang-debug`, `linux-gcc-debug`, `windows-msvc-debug`, ...) and
+`briarthorn` as the launch target in the CMake Tools status bar, then pick a
+configuration in the Run and Debug view:
+
+| Configuration                | Debugs                                                     |
+| ---------------------------- | ---------------------------------------------------------- |
+| briarthorn (QML/JS)          | QML and JavaScript — breakpoints, stepping, locals, evaluation |
+| briarthorn (QML/JS attach)   | the same, against an app already listening on port 5678     |
+| briarthorn (C++ and QML/JS)  | both at once: LLDB launches the app, the QML debugger attaches |
+| awen (QML/JS)                | the sample app's QML and JavaScript                         |
+
+The MSVC variant of the combined session uses the C/C++ extension's `cppvsdbg`;
+the others use CodeLLDB.
+
+**qmlpreview** — `qmlpreview <build dir>/briarthorn` live-reloads QML edits into
+the running app, with no debugger attached.
+
+Outside either tool, start the app yourself and connect any Qt debug client:
+
+```sh
+./build/macos-clang-debug/app/briarthorn/briarthorn.app/Contents/MacOS/briarthorn \
+    -qmljsdebugger=host:localhost,port:5678,block,services:DebugMessages,QmlDebugger,V8Debugger
 ```
 
 # License

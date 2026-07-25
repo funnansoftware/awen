@@ -1,0 +1,103 @@
+{
+    // QML/JavaScript debugging, via the Qt Company's "Qt Qml" extension.
+    //
+    // The QML debug connection only exists in a desktop *Debug* build: that is
+    // where app/briarthorn/CMakeLists.txt defines QT_QML_DEBUG, and where
+    // main.cpp loads Main.qml from the source tree instead of the compiled
+    // module — so breakpoints land in the .qml files under app/briarthorn/qml/
+    // and edits need no rebuild. Pick a "*-clang-debug" / "windows-msvc-debug"
+    // configure preset and "briarthorn" as the launch target in the CMake Tools
+    // status bar first; ${command:cmake.launchTargetPath} resolves from those.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // QML and JavaScript only, and the one to reach for by default:
+            // breakpoints, stepping, locals and expression evaluation inside
+            // .qml files. The extension starts the app itself, appending
+            // -qmljsdebugger=... on a port it picks.
+            "name": "briarthorn (QML/JS)",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "buildDirs": [
+                "${command:cmake.buildDirectory}"
+            ],
+            "preLaunchTask": "cmake: build briarthorn"
+        },
+        {
+            // Attach to an app already listening on the debug port — either the
+            // C++ half of a compound below, or one started by hand with
+            // -qmljsdebugger=host:localhost,port:5678,block,services:DebugMessages,QmlDebugger,V8Debugger
+            // The port must stay a string; the adapter parses it as one.
+            "name": "briarthorn (QML/JS attach)",
+            "type": "qml",
+            "request": "attach",
+            "host": "localhost",
+            "port": "5678",
+            "buildDirs": [
+                "${command:cmake.buildDirectory}"
+            ]
+        },
+        {
+            // The framework sample app, set up the same way (app/awen defines
+            // QT_QML_DEBUG and loads Main.qml from its source tree in Debug).
+            "name": "awen (QML/JS)",
+            "type": "qml",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "buildDirs": [
+                "${command:cmake.buildDirectory}"
+            ],
+            "preLaunchTask": "cmake: build awen"
+        },
+        {
+            // The C++ half of the combined session on macOS/Linux (CodeLLDB).
+            // "block" holds the app at startup until the QML side attaches, so
+            // it is meant for the compound below — launched on its own it waits
+            // for a QML client that never comes.
+            "name": "briarthorn (C++)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "-qmljsdebugger=host:localhost,port:5678,block,services:DebugMessages,QmlDebugger,V8Debugger"
+            ],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "cmake: build briarthorn"
+        },
+        {
+            // Same, for the MSVC build (cppvsdbg, from the C/C++ extension).
+            "name": "briarthorn (C++, MSVC)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "-qmljsdebugger=host:localhost,port:5678,block,services:DebugMessages,QmlDebugger,V8Debugger"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "preLaunchTask": "cmake: build briarthorn"
+        }
+    ],
+    // One session per language: the C++ debugger launches the app and the QML
+    // debugger attaches to it, so breakpoints in .cpp and in .qml are both live.
+    // The QML side retries the connection while the app starts up.
+    "compounds": [
+        {
+            "name": "briarthorn (C++ and QML/JS)",
+            "configurations": [
+                "briarthorn (C++)",
+                "briarthorn (QML/JS attach)"
+            ],
+            "stopAll": true
+        },
+        {
+            "name": "briarthorn (C++ and QML/JS, MSVC)",
+            "configurations": [
+                "briarthorn (C++, MSVC)",
+                "briarthorn (QML/JS attach)"
+            ],
+            "stopAll": true
+        }
+    ]
+}
