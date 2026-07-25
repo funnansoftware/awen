@@ -32,7 +32,10 @@ System {
                 slot.pending = false;
                 if (!slot.ready)
                     continue;
+                // A pop spends both, as a launch does; the flare pod happens to
+                // cool in zero seconds, but the slot is what holds the rule.
                 slot.charges = slot.charges > 0 ? slot.charges - 1 : slot.charges;
+                slot.cooldownRemaining = slot.def.cooldown;
                 const decoy = countermeasure.world.spawn("CM", slot.def.decoy, {
                     side: carrier.side,
                     owner: carrier,
