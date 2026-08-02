@@ -4,6 +4,8 @@ import ".."
 
 // The guided rack: six fire-and-forget rounds, slow to cycle.
 AbilityLaunch {
+    id: root
+
     name: "guided"
     label: qsTr("GUIDED")
     cooldown: 2.5

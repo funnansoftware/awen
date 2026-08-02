@@ -4,6 +4,8 @@ import ".."
 // The guided round: homes on the loudest return its launcher illuminates. It
 // outruns the kinetic slug and reaches far further, but hits softer.
 DataWeapon {
+    id: root
+
     classification: Classification.Kind.MissileGuided
     outline: [Qt.point(0, -0.5), Qt.point(0.15, 0.5), Qt.point(-0.15, 0.5)]
     label: qsTr("MSL")

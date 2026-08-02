@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Shapes
 import awen.shapes
@@ -9,7 +11,7 @@ import "../themes"
 // scale while it fades. Ground-truth world positions plotted about the
 // observer and rotated as one picture, exactly like ViewTracks.
 Item {
-    id: view
+    id: root
 
     // The observer at the scope centre.
     property Entity observer
@@ -29,32 +31,24 @@ Item {
     property real viewRotation: 0
 
     transform: Rotation {
-        origin.x: view.centerX
-        origin.y: view.centerY
-        angle: view.viewRotation
-    }
-
-    // A world point's screen position about the observer (north-up; the
-    // container rotation turns the picture heading-up).
-    function sx(worldX: real): real {
-        return view.centerX + (worldX - view.observer.posX) * view.pxPerMeter;
-    }
-    function sy(worldY: real): real {
-        return view.centerY + (worldY - view.observer.posY) * view.pxPerMeter;
+        origin.x: root.centerX
+        origin.y: root.centerY
+        angle: root.viewRotation
     }
 
     // The fuzing lines.
     Repeater {
-        model: view.entities
-        delegate: ShapeLink {
+        model: root.entities
+
+        ShapeLink {
             required property Entity modelData
 
             readonly property Weapon armed: modelData.weapon
             readonly property bool fuzing: armed !== null && armed.state === Weapon.State.Fuzing && armed.fuzeTarget !== null
 
             visible: fuzing
-            from: fuzing ? Qt.point(view.sx(modelData.posX), view.sy(modelData.posY)) : Qt.point(0, 0)
-            to: fuzing ? Qt.point(view.sx(armed.fuzeTarget.posX), view.sy(armed.fuzeTarget.posY)) : Qt.point(0, 0)
+            from: fuzing ? Qt.point(root.sx(modelData.posX), root.sy(modelData.posY)) : Qt.point(0, 0)
+            to: fuzing ? Qt.point(root.sx(armed.fuzeTarget.posX), root.sy(armed.fuzeTarget.posY)) : Qt.point(0, 0)
             fromControl: from
             toControl: to
             strokeColor: Style.theme.detonation
@@ -67,15 +61,16 @@ Item {
     // The blast rings: expanding toward blastRadius as life runs down,
     // fading with the remaining fraction.
     Repeater {
-        model: view.detonations
-        delegate: Rectangle {
+        model: root.detonations
+
+        Rectangle {
             required property Detonation modelData
 
             readonly property real growth: 1 - modelData.life / modelData.maxLife
 
-            x: view.sx(modelData.worldX) - width / 2
-            y: view.sy(modelData.worldY) - height / 2
-            width: modelData.blastRadius * view.pxPerMeter * 2 * growth
+            x: root.sx(modelData.worldX) - width / 2
+            y: root.sy(modelData.worldY) - height / 2
+            width: modelData.blastRadius * root.pxPerMeter * 2 * growth
             height: width
             radius: width / 2
             color: "transparent"
@@ -83,5 +78,14 @@ Item {
             border.width: 2
             opacity: modelData.life / modelData.maxLife
         }
+    }
+
+    // A world point's screen position about the observer (north-up; the
+    // container rotation turns the picture heading-up).
+    function sx(worldX: real): real {
+        return root.centerX + (worldX - root.observer.posX) * root.pxPerMeter;
+    }
+    function sy(worldY: real): real {
+        return root.centerY + (worldY - root.observer.posY) * root.pxPerMeter;
     }
 }

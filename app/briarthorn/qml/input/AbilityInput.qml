@@ -12,7 +12,7 @@ import "../database"
 // objects rather than rebuilding anything, and the axis is owned here, so a
 // torn-down binding takes its contribution with it.
 QtObject {
-    id: input
+    id: root
 
     // The ability this fires, the keymap it binds through, and the bus its
     // record goes out on.
@@ -23,28 +23,28 @@ QtObject {
     // The name this binds and posts under. Empty for a slot carrying no
     // definition, which then binds nothing and can never fire — a loadout typo
     // must not reach into the keymap or the bus.
-    readonly property string ability: input.def ? input.def.name : ""
+    readonly property string ability: root.def ? root.def.name : ""
 
     readonly property Axis control: Axis {
         id: trigger
 
         minimum: 0
         onValueChanged: if (trigger.value > 0.5)
-            input.invoke.post()
+            root.invoke.post()
     }
 
     readonly property ActionKey keys: ActionKey {
-        control: input.control
-        positive: input.keymap.keyCodes(input.ability)
+        control: root.control
+        positive: root.keymap.keyCodes(root.ability)
     }
 
     readonly property ActionButton pad: ActionButton {
-        control: input.control
-        positive: input.keymap.buttonCodes(input.ability)
+        control: root.control
+        positive: root.keymap.buttonCodes(root.ability)
     }
 
     readonly property CommandAbility invoke: CommandAbility {
-        queue: input.queue
-        ability: input.ability
+        queue: root.queue
+        ability: root.ability
     }
 }

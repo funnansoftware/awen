@@ -1,6 +1,8 @@
 import QtQuick
 
 QtObject {
+    id: root
+
     property color windowBackground: "#05080D"
     property color panelBackground: "#C708121C"
     property color instrumentBackground: "#FF04111A"

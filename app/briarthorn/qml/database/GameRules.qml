@@ -9,7 +9,7 @@ import QtQml
 // World quantities are physical: 1 px = 1 m, so distances are metres, speeds
 // m/s and accelerations m/s^2.
 QtObject {
-    id: rules
+    id: root
 
     // The top of every stat's range; stats are rated 0..maxStat.
     readonly property real maxStat: 10
@@ -43,38 +43,38 @@ QtObject {
     // How far up its range a rating sits, clamped to [0, 1] — every rule
     // below is this fraction of the matching span.
     function fraction(stat: real): real {
-        return Math.max(0, Math.min(stat, rules.maxStat)) / rules.maxStat;
+        return Math.max(0, Math.min(stat, root.maxStat)) / root.maxStat;
     }
 
     function topSpeedFor(kinetic: real): real {
-        return rules.maxSpeed * rules.fraction(kinetic);
+        return root.maxSpeed * root.fraction(kinetic);
     }
 
     function fuelBurnFor(kinetic: real): real {
-        return rules.maxFuelBurn * rules.fraction(kinetic);
+        return root.maxFuelBurn * root.fraction(kinetic);
     }
 
     function turnRateFor(maneuver: real): real {
-        return rules.maxTurnRate * rules.fraction(maneuver);
+        return root.maxTurnRate * root.fraction(maneuver);
     }
 
     function accelerationFor(maneuver: real): real {
-        return rules.maxAcceleration * rules.fraction(maneuver);
+        return root.maxAcceleration * root.fraction(maneuver);
     }
 
     function healthFor(durable: real): real {
-        return rules.maxHealth * rules.fraction(durable);
+        return root.maxHealth * root.fraction(durable);
     }
 
     function fuelCapacityFor(durable: real): real {
-        return rules.maxFuel * rules.fraction(durable);
+        return root.maxFuel * root.fraction(durable);
     }
 
     function detectionRangeFor(sensor: real): real {
-        return rules.maxDetectionRange * rules.fraction(sensor);
+        return root.maxDetectionRange * root.fraction(sensor);
     }
 
     function guidedRangeFor(compute: real): real {
-        return rules.maxGuidedRange * rules.fraction(compute);
+        return root.maxGuidedRange * root.fraction(compute);
     }
 }

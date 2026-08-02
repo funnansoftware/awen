@@ -1,12 +1,11 @@
 import QtQml
-import "../database"
 
 // The world's entity roster and its spawn authority: the one mutable list
 // every system iterates and every view binds. Declared entities (ownship, a
 // scenario's craft) are added and removed but never destroyed; entities
 // spawned here (missiles, decoys) are destroyed again on despawn.
 QtObject {
-    id: world
+    id: root
 
     // Every live entity, in no meaningful order.
     property list<Entity> entities
@@ -22,7 +21,7 @@ QtObject {
     }
 
     function add(entity: Entity) {
-        world.entities = [...world.entities, entity];
+        root.entities = [...root.entities, entity];
     }
 
     // Builds an entity of a kind and enrolls it: everything its definition
@@ -32,16 +31,16 @@ QtObject {
     function spawn(prefix: string, classification: int, props: var): Entity {
         const seed = props !== undefined ? props : {};
         seed.classification = classification;
-        seed.callsign = prefix + " " + (++world.serial);
-        const entity = world.entityFactory.createObject(world, seed) as Entity;
-        world.spawned.add(entity);
-        world.add(entity);
+        seed.callsign = prefix + " " + (++root.serial);
+        const entity = root.entityFactory.createObject(root, seed) as Entity;
+        root.spawned.add(entity);
+        root.add(entity);
         return entity;
     }
 
     function despawn(entity: Entity) {
-        world.entities = world.entities.filter(e => e !== entity);
-        if (world.spawned.delete(entity))
+        root.entities = root.entities.filter(e => e !== entity);
+        if (root.spawned.delete(entity))
             entity.destroy();
     }
 }

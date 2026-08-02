@@ -5,6 +5,8 @@ import QtQml
 // lives in the Abilities registry; live per-entity state lives on an
 // AbilitySlot referencing the row.
 QtObject {
+    id: root
+
     // The name ability commands, loadouts and systems all route on.
     property string name: ""
 

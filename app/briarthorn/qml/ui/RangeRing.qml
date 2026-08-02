@@ -1,11 +1,11 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import awen.shapes
 import "../themes"
 
 ShapeRing {
-    id: ring
-
-    strokeColor: Style.theme.rangeRing
+    id: root
 
     // Tick geometry scales with the ring, so bearing labels stay legible on a
     // large window instead of shrinking to a static 10px. Floored at the design
@@ -17,35 +17,39 @@ ShapeRing {
     // heading-up scope whose labels keep true bearings.
     property alias tickOffset: ticks.angleOffset
 
+    strokeColor: Style.theme.rangeRing
+
     ShapeTicks {
         id: ticks
         enabled: visible
         anchors.fill: parent
-        centerX: ring.centerX
-        centerY: ring.centerY
+        centerX: root.centerX
+        centerY: root.centerY
         stepAngle: 30
-        radius: ring.radius - ring.padding
-        length: Math.max(8, ring.radius * 0.015)
-        gapAngle: ring.gapAngle
-        gapHalfAngle: ring.gapHalfAngle
+        radius: root.radius - root.padding
+        length: Math.max(8, root.radius * 0.015)
+        gapAngle: root.gapAngle
+        gapHalfAngle: root.gapHalfAngle
         strokeColor: Style.theme.rangeRing
-        strokeWidth: Math.max(1.5, ring.radius * 0.0028)
+        strokeWidth: Math.max(1.5, root.radius * 0.0028)
 
         // One label per tick, anchored just inside the tick's inner end. The
         // model is the fixed tick count so delegates survive gap crossings;
         // a label rotating into the gap merely hides.
         Repeater {
             model: Math.ceil(360 / ticks.stepAngle)
-            delegate: Text {
+
+            Text {
                 required property int index
                 readonly property real bearing: index * ticks.stepAngle
-                visible: !ring.inGap(bearing + ticks.angleOffset)
+                property point anchor: ticks.tickPoint(bearing, ticks.radius - ticks.length - root.padding)
+
+                visible: !root.inGap(bearing + ticks.angleOffset)
                 text: Math.round(bearing) === 0 ? "N" : Math.round(bearing)
                 color: Style.theme.textPrimary
-                font.pixelSize: Math.max(10, ring.radius * 0.02)
+                font.pixelSize: Math.max(10, root.radius * 0.02)
                 scale: Math.round(bearing) === 0 ? 1.5 : 1
 
-                property point anchor: ticks.tickPoint(bearing, ticks.radius - ticks.length - ring.padding)
                 x: anchor.x - width / 2
                 y: anchor.y - height / 2
             }
@@ -61,6 +65,6 @@ ShapeRing {
 
         x: parent.gapCenter.x - width / 2
         y: parent.gapCenter.y - height / 2
-        scale: parent.gapLength / (width + ring.padding)
+        scale: parent.gapLength / (width + root.padding)
     }
 }

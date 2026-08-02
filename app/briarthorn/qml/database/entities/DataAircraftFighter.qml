@@ -4,6 +4,8 @@ import ".."
 // Fast, manoeuvrable combat aircraft — the airframe both sides fly in the
 // duel. Mid-range across the board, with both missile racks and a flare pod.
 DataEntity {
+    id: root
+
     classification: Classification.Kind.AircraftFighter
     outline: [Qt.point(0, -0.5), Qt.point(0.4, 0.45), Qt.point(0, 0.18), Qt.point(-0.4, 0.45)]
     label: qsTr("FIGHTER")

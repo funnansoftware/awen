@@ -4,6 +4,8 @@ import QtQml
 // game state each tick. On its own a System does nothing — a Systems runner
 // drives the calls.
 QtObject {
+    id: root
+
     // Skipped by the Systems runner while false.
     property bool enabled: true
 

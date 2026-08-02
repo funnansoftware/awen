@@ -4,6 +4,8 @@ import QtQml
 // out. The view expands a ring toward blastRadius as life runs down and
 // fades it with the remaining fraction.
 QtObject {
+    id: root
+
     property real worldX: 0
     property real worldY: 0
     property real blastRadius: 0

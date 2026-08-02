@@ -6,7 +6,7 @@ import "../database"
 // on the bus. It outlives any scenario — levels swap, these handlers stay —
 // and the declared handlers are its whole transition surface.
 Store {
-    id: store
+    id: root
 
     // Campaign meta-state the top bar reads: the shared credit purse. A
     // placeholder until an economy writes it; player-facing persistent state
@@ -25,12 +25,12 @@ Store {
 
     CommandHandler {
         name: Verbs.steer
-        onHandle: payload => store.ownship.commandedSteer = payload.value
+        onHandle: payload => root.ownship.commandedSteer = payload.value
     }
 
     CommandHandler {
         name: Verbs.throttle
-        onHandle: payload => store.ownship.commandedThrottle = payload.value
+        onHandle: payload => root.ownship.commandedThrottle = payload.value
     }
 
     // Ability invocation routes to the named slot; activation is a no-op
@@ -38,7 +38,7 @@ Store {
     CommandHandler {
         name: Verbs.ability
         onHandle: payload => {
-            const slots = store.ownship.abilities;
+            const slots = root.ownship.abilities;
             for (let i = 0; i < slots.length; ++i) {
                 if (slots[i].def.name === payload.ability) {
                     slots[i].activate();

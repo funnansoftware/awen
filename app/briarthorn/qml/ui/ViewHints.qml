@@ -10,7 +10,7 @@ import "../themes"
 // now. Nothing here names an ability, so a new one appears the moment a loadout
 // carries it and follows every rebind.
 Row {
-    id: hints
+    id: root
 
     // The keymap the captions read, and the flown craft's live loadout.
     required property Keymap keymap
@@ -26,7 +26,7 @@ Row {
     }
 
     Repeater {
-        model: hints.loadout
+        model: root.loadout
 
         Row {
             id: chip
@@ -39,16 +39,14 @@ Row {
 
             ControlCap {
                 anchors.verticalCenter: parent.verticalCenter
-                label: hints.keymap.keyLabel(hints.keymap.keyFor(chip.ability))
+                label: root.keymap.keyLabel(root.keymap.keyFor(chip.ability))
             }
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: chip.modelData.def ? chip.modelData.def.label : ""
                 color: Style.theme.textLabel
-                font.pixelSize: 13
-                font.bold: true
-                font.letterSpacing: 1
+                font { pixelSize: 13; bold: true; letterSpacing: 1 }
             }
         }
     }

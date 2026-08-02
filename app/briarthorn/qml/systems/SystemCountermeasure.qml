@@ -8,7 +8,7 @@ import "../model"
 // re-homes on it instead — and ages each decoy out again. Runs after
 // SystemWeapon, so a popped flare is in play from the next tick.
 System {
-    id: countermeasure
+    id: root
 
     // The world decoys spawn into.
     required property World world
@@ -17,12 +17,12 @@ System {
     property var flares: []
 
     function update(dt: real) {
-        countermeasure.deploy();
-        countermeasure.age(dt);
+        root.deploy();
+        root.age(dt);
     }
 
     function deploy() {
-        const roster = countermeasure.world.entities.slice();
+        const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
             const carrier = roster[i];
             for (let j = 0; j < carrier.abilities.length; ++j) {
@@ -39,14 +39,14 @@ System {
                 // Thrown astern, so the decoy lands between the deployer and
                 // the round chasing it and the range only opens from there.
                 const rad = carrier.heading * Math.PI / 180;
-                const decoy = countermeasure.world.spawn("CM", slot.def.decoy, {
+                const decoy = root.world.spawn("CM", slot.def.decoy, {
                     side: carrier.side,
                     owner: carrier,
                     posX: carrier.posX - (Math.sin(rad) * slot.def.ejectRange),
                     posY: carrier.posY + (Math.cos(rad) * slot.def.ejectRange),
                     heading: carrier.heading
                 });
-                countermeasure.flares.push({
+                root.flares.push({
                     entity: decoy,
                     life: slot.def.life
                 });
@@ -58,18 +58,18 @@ System {
     // blast already removed just drop.
     function age(dt: real) {
         let changed = false;
-        for (let i = 0; i < countermeasure.flares.length; ++i) {
-            const entry = countermeasure.flares[i];
+        for (let i = 0; i < root.flares.length; ++i) {
+            const entry = root.flares[i];
             entry.life -= dt;
-            if (!countermeasure.world.entities.includes(entry.entity)) {
+            if (!root.world.entities.includes(entry.entity)) {
                 changed = true;
                 entry.life = 0;
             } else if (entry.life <= 0) {
-                countermeasure.world.despawn(entry.entity);
+                root.world.despawn(entry.entity);
                 changed = true;
             }
         }
         if (changed)
-            countermeasure.flares = countermeasure.flares.filter(entry => entry.life > 0);
+            root.flares = root.flares.filter(entry => entry.life > 0);
     }
 }

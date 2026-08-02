@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import "../database"
 import "../model"
@@ -8,7 +10,7 @@ import "../model"
 // viewRotation to -observer.heading for a heading-up scope, leave it 0 for
 // north-up — so delegates never apply an observer delta themselves.
 Item {
-    id: view
+    id: root
 
     property list<Track> tracks
 
@@ -38,51 +40,52 @@ Item {
     property real clampMargin: 1
 
     transform: Rotation {
-        origin.x: view.centerX
-        origin.y: view.centerY
-        angle: view.viewRotation
+        origin.x: root.centerX
+        origin.y: root.centerY
+        angle: root.viewRotation
     }
 
     Repeater {
-        model: view.tracks
-        delegate: Loader {
+        model: root.tracks
+
+        Loader {
             id: mark
             required property Track modelData
 
             readonly property real azimuthRad: modelData.azimuth * Math.PI / 180
-            readonly property real trueRange: modelData.range * view.pxPerMeter
+            readonly property real trueRange: modelData.range * root.pxPerMeter
 
             // Beyond the scale, and so clamped: the symbol steps out to its
             // seat past the clamp radius rather than plotting where it truly
             // is. A contact still on the scale is never pushed anywhere.
-            readonly property bool offScale: view.clampRadius > 0 && mark.trueRange > view.clampRadius
-            readonly property real screenRange: mark.offScale ? view.clampRadius + view.clampMargin * mark.height / 2 : mark.trueRange
-
-            x: view.centerX + Math.sin(azimuthRad) * screenRange - width / 2
-            y: view.centerY - Math.cos(azimuthRad) * screenRange - height / 2
-
-            // A contact classified as a countermeasure plots as a burning
-            // flare, no faction symbol or label — briardart skips the symbol
-            // the same way. Everything else keeps the classification mark.
-            sourceComponent: mark.modelData.classification === Classification.Kind.Decoy ? mark.flareMark : mark.symbolMark
+            readonly property bool offScale: root.clampRadius > 0 && mark.trueRange > root.clampRadius
+            readonly property real screenRange: mark.offScale ? root.clampRadius + root.clampMargin * mark.height / 2 : mark.trueRange
 
             readonly property Component symbolMark: Component {
                 Symbol {
-                    symbolSize: view.symbolSize
+                    symbolSize: root.symbolSize
                     noseAngle: mark.modelData.heading
-                    viewRotation: view.viewRotation
+                    viewRotation: root.viewRotation
                     classification: mark.modelData.classification
                     side: mark.modelData.side
-                    showLabel: view.showLabels
+                    showLabel: root.showLabels
                     label: mark.modelData.classification === Classification.Kind.Unknown ? "" : mark.modelData.contactId
                 }
             }
 
             readonly property Component flareMark: Component {
                 SymbolFlare {
-                    symbolSize: view.symbolSize
+                    symbolSize: root.symbolSize
                 }
             }
+
+            x: root.centerX + Math.sin(azimuthRad) * screenRange - width / 2
+            y: root.centerY - Math.cos(azimuthRad) * screenRange - height / 2
+
+            // A contact classified as a countermeasure plots as a burning
+            // flare, no faction symbol or label — briardart skips the symbol
+            // the same way. Everything else keeps the classification mark.
+            sourceComponent: mark.modelData.classification === Classification.Kind.Decoy ? mark.flareMark : mark.symbolMark
         }
     }
 }

@@ -6,7 +6,7 @@ import "../database"
 // player input and AI share — it raises pending for the consuming system
 // when the slot is ready, and does nothing otherwise.
 QtObject {
-    id: slot
+    id: root
 
     // The ability definition this slot instantiates.
     property Ability def: null
@@ -22,7 +22,7 @@ QtObject {
     readonly property bool ready: cooldownRemaining <= 0 && charges !== 0
 
     function activate() {
-        if (slot.ready)
-            slot.pending = true;
+        if (root.ready)
+            root.pending = true;
     }
 }

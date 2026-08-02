@@ -4,7 +4,7 @@ import QtQml
 // rings: the selectable range steps and the world-to-screen (metres to
 // pixels) scale they imply. Display-only — this never touches the sim.
 QtObject {
-    id: projection
+    id: root
 
     // The selectable steps as the outer ring's span in metres, innermost
     // first; the inner ring always sits at half the outer.
@@ -27,16 +27,16 @@ QtObject {
     // World metres to screen pixels for a scope whose outer ring is drawn
     // edgePx from the centre.
     function pixelsPerMeter(edgePx: real): real {
-        return projection.range > 0 ? edgePx / projection.range : 0;
+        return root.range > 0 ? edgePx / root.range : 0;
     }
 
     // Range in: a shorter span, so contacts plot further out. Clamped.
     function rangeIn() {
-        projection.step = Math.max(0, projection.clampedStep - 1);
+        root.step = Math.max(0, root.clampedStep - 1);
     }
 
     // Range out: a longer span, so contacts plot closer in. Clamped.
     function rangeOut() {
-        projection.step = Math.min(projection.maxStep, projection.clampedStep + 1);
+        root.step = Math.min(root.maxStep, root.clampedStep + 1);
     }
 }

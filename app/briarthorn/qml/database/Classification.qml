@@ -5,6 +5,8 @@ import QtQml
 // Count and never reorder, so the numeric values stay stable for anything that
 // persists one.
 QtObject {
+    id: root
+
     enum Kind {
         Unknown,
         AircraftFighter,

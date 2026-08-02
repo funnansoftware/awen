@@ -5,6 +5,8 @@ import QtQml
 // and GameRules decides what that rating is worth in m/s, metres or hit
 // points, so retuning the game never means editing the roster.
 QtObject {
+    id: root
+
     // Full-throttle speed, and the fuel burn that comes with holding it.
     property real kinetic: 0
 

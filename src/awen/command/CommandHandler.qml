@@ -4,6 +4,8 @@ import QtQml
 // via onHandle, the transition it applies to the store's model. Declared as
 // a child of a Store — adding a verb adds a handler, never branching.
 QtObject {
+    id: root
+
     // The record name routed here.
     required property string name
 

@@ -6,6 +6,8 @@ import QtQml
 // scale the symbol draws at. Instantiated bare it is a presentation-only row a
 // sensor plots but nothing ever spawns; spawnable kinds use DataEntity.
 QtObject {
+    id: root
+
     property int classification: Classification.Kind.Unknown
     property list<point> outline
     property string label: ""

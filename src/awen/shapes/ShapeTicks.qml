@@ -49,12 +49,6 @@ Shape {
         return out;
     }
 
-    // The on-screen point for a tick bearing at distance r — the label anchor;
-    // applies angleOffset.
-    function tickPoint(bearing: real, r: real): point {
-        return Bearing.point(centerX, centerY, bearing + angleOffset, r);
-    }
-
     // All ticks as one multi-subpath SVG string, rebuilt as a single binding.
     readonly property string tickPath: {
         let d = "";
@@ -80,5 +74,11 @@ Shape {
         PathSvg {
             path: root.tickPath
         }
+    }
+
+    // The on-screen point for a tick bearing at distance r — the label anchor;
+    // applies angleOffset.
+    function tickPoint(bearing: real, r: real): point {
+        return Bearing.point(centerX, centerY, bearing + angleOffset, r);
     }
 }

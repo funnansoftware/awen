@@ -5,6 +5,8 @@ import QtQml
 // the stats — kinetic sets speed, maneuver the turn rate, compute the seeker's
 // reach — so only the motor, the fuze and the warhead are spelled out here.
 DataEntity {
+    id: root
+
     // Multiplier on the speed the kinetic rating affords, so a motor can push
     // the round past the airframe ceiling (GameRules.maxSpeed).
     property real speedMultiplier: 1

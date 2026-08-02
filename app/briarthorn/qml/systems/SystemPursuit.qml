@@ -5,7 +5,7 @@ import "../model"
 // throttle, steer saturating once the target sits more than cutAngle off the
 // nose.
 System {
-    id: pursuit
+    id: root
 
     // The entity being flown and the entity it chases.
     required property Entity entity
@@ -15,11 +15,11 @@ System {
     readonly property real cutAngle: 30
 
     function update(dt: real) {
-        const dx = pursuit.target.posX - pursuit.entity.posX;
-        const dy = pursuit.target.posY - pursuit.entity.posY;
+        const dx = root.target.posX - root.entity.posX;
+        const dy = root.target.posY - root.entity.posY;
         const bearing = Math.atan2(dx, -dy) * 180 / Math.PI;
-        const error = (((bearing - pursuit.entity.heading) % 360) + 540) % 360 - 180;
-        pursuit.entity.commandedSteer = Math.max(-1, Math.min(1, error / pursuit.cutAngle));
-        pursuit.entity.commandedThrottle = 1;
+        const error = (((bearing - root.entity.heading) % 360) + 540) % 360 - 180;
+        root.entity.commandedSteer = Math.max(-1, Math.min(1, error / root.cutAngle));
+        root.entity.commandedThrottle = 1;
     }
 }

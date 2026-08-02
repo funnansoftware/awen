@@ -7,7 +7,7 @@ import awen.entity
 // records generically (recorders, relays) override consume() instead of
 // declaring handlers; they observe without marking records consumed.
 System {
-    id: store
+    id: root
 
     // The queue this store observes.
     required property CommandQueue queue
@@ -17,16 +17,16 @@ System {
     default property list<CommandHandler> handlers
 
     function update(dt: real) {
-        const batch = store.queue.commands;
+        const batch = root.queue.commands;
         for (let i = 0; i < batch.length; ++i)
-            store.consume(batch[i]);
+            root.consume(batch[i]);
     }
 
     // Routes one record to its named handler and marks it consumed; the scan
     // is linear because a store holds a handful of handlers.
     function consume(record: var) {
-        for (let i = 0; i < store.handlers.length; ++i) {
-            const handler = store.handlers[i];
+        for (let i = 0; i < root.handlers.length; ++i) {
+            const handler = root.handlers[i];
             if (handler.enabled && handler.name === record.name) {
                 record.consumed = true;
                 handler.handle(record.payload);
