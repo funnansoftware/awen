@@ -3,13 +3,14 @@ import awen.gamepad
 import ".."
 
 // The flare pod: ten decoys, popped one at a time off no cooldown, each
-// burning for ten seconds.
+// thrown 2 km astern and burning there for ten seconds.
 AbilityCountermeasure {
     name: "flare"
     label: qsTr("FLARE")
     charges: 10
     decoy: Classification.Kind.Decoy
     life: 10
+    ejectRange: 2000
     defaultKey: Qt.Key_F
     defaultButton: Gamepad.Button.South
 }

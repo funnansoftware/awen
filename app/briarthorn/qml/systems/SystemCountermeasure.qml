@@ -3,10 +3,10 @@ import "../database"
 import "../model"
 
 // Countermeasures, ported from briardart: consumes raised countermeasure
-// intents into same-side decoy entities at the deployer — the decoy kind's own
-// row makes it the loudest possible return, so a hostile seeker re-homes on it
-// instead — and ages each decoy out again. Runs after SystemWeapon, so a
-// popped flare is in play from the next tick.
+// intents into same-side decoy entities astern of the deployer — the decoy
+// kind's own row makes it the loudest possible return, so a hostile seeker
+// re-homes on it instead — and ages each decoy out again. Runs after
+// SystemWeapon, so a popped flare is in play from the next tick.
 System {
     id: countermeasure
 
@@ -36,11 +36,14 @@ System {
                 // cool in zero seconds, but the slot is what holds the rule.
                 slot.charges = slot.charges > 0 ? slot.charges - 1 : slot.charges;
                 slot.cooldownRemaining = slot.def.cooldown;
+                // Thrown astern, so the decoy lands between the deployer and
+                // the round chasing it and the range only opens from there.
+                const rad = carrier.heading * Math.PI / 180;
                 const decoy = countermeasure.world.spawn("CM", slot.def.decoy, {
                     side: carrier.side,
                     owner: carrier,
-                    posX: carrier.posX,
-                    posY: carrier.posY,
+                    posX: carrier.posX - (Math.sin(rad) * slot.def.ejectRange),
+                    posY: carrier.posY + (Math.cos(rad) * slot.def.ejectRange),
                     heading: carrier.heading
                 });
                 countermeasure.flares.push({
