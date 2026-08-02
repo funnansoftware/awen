@@ -106,7 +106,12 @@ Item {
 
     // A single point, grabbed on press anywhere in the pad and tracked until
     // release — no drag threshold, so the stick answers the moment it's touched.
+    // Buttons are ignored outright: a touchscreen point this handler is already
+    // tracking is also delivered as a synthetic left-button press, which
+    // de-activates the handler under the held thumb — and a release is what
+    // returns the stick to rest, so the ship would drop to neutral mid-turn.
     PointHandler {
         id: handler
+        acceptedButtons: Qt.NoButton
     }
 }

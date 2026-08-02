@@ -106,8 +106,15 @@ Item {
     // A single point, grabbed on press and held until release — no drag
     // threshold, so the control fires the moment it is touched, and its own
     // point, so a thumb here and one on the stick work at the same time.
+    // Buttons are ignored outright: a touchscreen point this handler is already
+    // tracking is also delivered as a synthetic left-button press, which
+    // de-activates the handler and re-activates it under the one finger — and
+    // the invocation rides that rising edge, so a single tap would fire twice.
+    // A cooling ability swallows the second one, which is exactly what makes
+    // this cheap to miss; a flare off no cooldown spends two decoys.
     PointHandler {
         id: handler
+        acceptedButtons: Qt.NoButton
         onActiveChanged: if (handler.active)
             button.tapped()
     }
