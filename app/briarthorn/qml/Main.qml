@@ -452,9 +452,9 @@ Window {
         // The corner minimap, top-right — mirroring the round condition gauge in
         // the opposite corner. The same situation display, stripped to a clean
         // overview. It shares the attack scope's projection, so it ranges with
-        // it. Off-scale contacts pin to the rim and an opaque disc backs the
-        // picture, masking anything outside the view from rendering over the
-        // scope beneath it.
+        // it. Off-scale contacts clamp into the gutter and an opaque disc backs
+        // the picture, masking anything outside the view from rendering over
+        // the scope beneath it.
         ViewSituation {
             id: minimap
             width: Math.min(root.width, root.height) * 0.22
@@ -471,7 +471,7 @@ Window {
             radiusFraction: 0.45
             symbolSize: height * 0.08
             backgroundColor: Style.theme.windowBackground
-            rimClamp: true
+            gutterClamp: true
             closedRings: true
             showNorth: true
             showInnerRing: false

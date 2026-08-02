@@ -26,9 +26,16 @@ Item {
     // Whether track symbols carry their contact-id labels.
     property bool showLabels: true
 
-    // When positive, off-scale contacts pin to this pixel radius (the outer
-    // rim) instead of plotting beyond it — the minimap's overview behaviour.
+    // When positive, off-scale contacts clamp to this pixel radius (the outer
+    // ring) instead of plotting beyond it, so ranging in seats a contact that
+    // no longer fits at the edge rather than losing it off the display.
     property real clampRadius: 0
+
+    // How far past that radius a clamped symbol is seated, in half-symbol
+    // extents: 1 stands the whole symbol clear of the radius, 0 puts the radius
+    // through its centre, and more pushes it further out. Measured off each
+    // symbol's own size, so a mark drawn small seats as close as a large one.
+    property real clampMargin: 1
 
     transform: Rotation {
         origin.x: view.centerX
@@ -44,9 +51,12 @@ Item {
 
             readonly property real azimuthRad: modelData.azimuth * Math.PI / 180
             readonly property real trueRange: modelData.range * view.pxPerMeter
-            // Clamp beyond-scale contacts to the rim when asked, so they read
-            // at the ring edge rather than off the display.
-            readonly property real screenRange: view.clampRadius > 0 ? Math.min(trueRange, view.clampRadius) : trueRange
+
+            // Beyond the scale, and so clamped: the symbol steps out to its
+            // seat past the clamp radius rather than plotting where it truly
+            // is. A contact still on the scale is never pushed anywhere.
+            readonly property bool offScale: view.clampRadius > 0 && mark.trueRange > view.clampRadius
+            readonly property real screenRange: mark.offScale ? view.clampRadius + view.clampMargin * mark.height / 2 : mark.trueRange
 
             x: view.centerX + Math.sin(azimuthRad) * screenRange - width / 2
             y: view.centerY - Math.cos(azimuthRad) * screenRange - height / 2

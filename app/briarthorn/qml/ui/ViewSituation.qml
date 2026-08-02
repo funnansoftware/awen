@@ -71,17 +71,26 @@ Item {
     // 'N' stays legible when the map is small.
     readonly property real northFontSize: Math.max(9, outerRadius * 0.16)
 
-    // Compact-overview plumbing. rimClamp pins off-scale contacts to the outer
-    // rim; backgroundColor paints an opaque disc behind the picture so it reads
-    // over whatever sits behind it. The disc reaches just past the outer ring —
-    // to the north marker's outer edge when shown, else far enough to seat a
-    // rim-pinned symbol — and both margins scale with the map, so the disc no
-    // longer bloats past the picture as the minimap shrinks. This is the mask
-    // that keeps objects outside the view from rendering under the minimap
-    // (briardart clips to this same disc, then pins off-scale tracks to its rim).
-    property bool rimClamp: false
+    // Off-scale contacts clamp into the gutter — the band just outside the
+    // outer ring — instead of plotting past it, so ranging the scope in seats a
+    // contact that no longer fits at the edge rather than losing it off the
+    // display. gutterClampMargin is how far into the gutter one sits, in
+    // half-symbol extents: 1 stands the whole symbol clear of the ring, 0 puts
+    // the ring through its centre.
+    property bool gutterClamp: true
+    property real gutterClampMargin: 1
+
+    // Compact-overview plumbing: backgroundColor paints an opaque disc behind
+    // the picture so it reads over whatever sits behind it. The disc reaches
+    // just past the outer ring — to the north marker's outer edge when shown,
+    // else across the gutter, far enough to seat a clamped symbol standing its
+    // own margin plus its own half-extent out — and both margins scale with the
+    // map, so the disc no longer bloats past the picture as the minimap
+    // shrinks. This is the mask that keeps objects outside the view from
+    // rendering under the minimap (briardart clips to this same disc, then pins
+    // off-scale tracks to its rim).
     property color backgroundColor: "transparent"
-    readonly property real discRadius: outerRadius + Math.max(showNorth ? northFontSize * 1.15 : 0, symbolSize * 0.6)
+    readonly property real discRadius: outerRadius + Math.max(showNorth ? northFontSize * 1.15 : 0, symbolSize * (gutterClampMargin + 1) / 2)
 
     // The opaque backing disc (minimap only; transparent by default). A circle
     // centred on the scope, so the box's corners stay clear.
@@ -138,7 +147,8 @@ Item {
     }
 
     // The track picture: every contact at its azimuth and range, the whole
-    // picture rotated into the heading-up frame; rim-clamped for the minimap.
+    // picture rotated into the heading-up frame, off-scale contacts seated in
+    // the gutter.
     ViewTracks {
         anchors.fill: parent
         centerX: view.centerX
@@ -148,7 +158,8 @@ Item {
         tracks: view.tracks
         symbolSize: view.symbolSize
         showLabels: view.showTrackLabels
-        clampRadius: view.rimClamp ? view.outerRadius : 0
+        clampRadius: view.gutterClamp ? view.outerRadius : 0
+        clampMargin: view.gutterClampMargin
     }
 
     // Fuzing lines and blast rings, over the tracks in the same rotated
