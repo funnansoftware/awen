@@ -6,10 +6,12 @@ import "../model"
 // The touch ability rack: one round button per ability the flown craft
 // carries, laid along a quarter circle swept from the bottom edge round to the
 // right edge, so a thumb pivoting in that corner reaches every one of them
-// without the hand leaving the display. The stick's counterpart in the
-// opposite corner, and like it, only a touch device shows it. Nothing here
-// names an ability — the rack is the loadout, so a craft carrying a new one
-// grows a button for it and a rack of one still lands under the thumb.
+// without the hand leaving the display. The scope's range pair sits at that
+// pivot, the one spot the thumb never travels to reach. The stick's
+// counterpart in the opposite corner, and like it, only a touch device shows
+// it. Nothing here names an ability — the rack is the loadout, so a craft
+// carrying a new one grows a button for it and a rack of one still lands under
+// the thumb.
 Item {
     id: rack
 
@@ -20,9 +22,12 @@ Item {
     // The arc's radius — how far out from the corner the buttons sit.
     property real radius: 150
 
-    // Carries the pressed ability's name out; the caller posts the record, so
-    // the rack stays a control and never touches the bus.
+    // Carries the pressed ability's name out, and the range steps the pair at
+    // the pivot asks for; the caller acts on all three, so the rack stays a
+    // control and touches neither the bus nor the projection.
     signal invoked(string ability)
+    signal rangedIn
+    signal rangedOut
 
     readonly property int count: rack.loadout.length
 
@@ -37,14 +42,23 @@ Item {
         return rack.count > 1 ? Math.min(rack.radius * 0.45, spread * 0.85) : rack.radius * 0.45;
     }
 
-    // The thumb's pivot, a button's half-width in from the item's corner: the
-    // buttons ending the arc then land inside the item rather than straddling
-    // its edges, which is also what makes the implicit size exact.
+    // The range arrows: smaller than an ability, because they step a display
+    // and cost nothing to press twice, but still a thumb's worth of target.
+    readonly property real arrowSize: rack.buttonSize * 0.7
+
+    // What the stacked pair spans, and the gap keeping the two discs apart.
+    readonly property real arrowGap: rack.arrowSize * 0.12
+    readonly property real arrowSpan: rack.arrowSize * 2 + rack.arrowGap
+
+    // The thumb's pivot, inset from the item's corner far enough that
+    // everything centred on it lands inside: half a button horizontally, and
+    // vertically whichever of the button and the arrow pair reaches further.
+    // That is also what makes the implicit size exact.
     readonly property real pivotX: width - rack.buttonSize / 2
-    readonly property real pivotY: height - rack.buttonSize / 2
+    readonly property real pivotY: height - Math.max(rack.buttonSize, rack.arrowSpan) / 2
 
     implicitWidth: rack.radius + rack.buttonSize
-    implicitHeight: implicitWidth
+    implicitHeight: rack.radius + Math.max(rack.buttonSize, rack.arrowSpan)
 
     Repeater {
         model: rack.loadout
@@ -75,6 +89,28 @@ Item {
             // a loadout typo must not reach the bus.
             onTapped: if (control.modelData.def)
                 rack.invoked(control.modelData.def.name)
+        }
+    }
+
+    // The range pair, stacked on the pivot the arc is swept around: up ranges
+    // in, down ranges out, the same way round as the wheel and the d-pad.
+    Column {
+        x: rack.pivotX - width / 2
+        y: rack.pivotY - height / 2
+        spacing: rack.arrowGap
+
+        TouchArrow {
+            width: rack.arrowSize
+            height: width
+            up: true
+            onTapped: rack.rangedIn()
+        }
+
+        TouchArrow {
+            width: rack.arrowSize
+            height: width
+            up: false
+            onTapped: rack.rangedOut()
         }
     }
 }

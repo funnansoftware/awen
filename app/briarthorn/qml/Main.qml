@@ -107,6 +107,19 @@ Window {
             minimum: 0
         }
 
+        // The scope's range control. A stepped axis, not a held one: each edge
+        // moves the picture one step and the release back to rest moves
+        // nothing, so a control held down never runs the range away.
+        Axis {
+            id: axisRange
+            onValueChanged: {
+                if (axisRange.value > 0.5)
+                    projection.rangeIn();
+                else if (axisRange.value < -0.5)
+                    projection.rangeOut();
+            }
+        }
+
         Actions {
             id: actions
 
@@ -135,6 +148,12 @@ Window {
             ActionButton {
                 control: axisThrottle
                 positive: root.keymap.flight.throttle.pad.positive
+            }
+
+            ActionButton {
+                control: axisRange
+                positive: root.keymap.range.pad.positive
+                negative: root.keymap.range.pad.negative
             }
 
             ActionAxis {
@@ -204,6 +223,31 @@ Window {
         CommandAbility {
             id: touched
             queue: bus
+        }
+
+        // The mouse's range control: wheel up ranges in, wheel down out. It
+        // steps per notch of 120 units — a trackpad sends smaller ones, so they
+        // bank up into a step, and a reversal drops what was banked rather than
+        // spending it against the new direction.
+        WheelHandler {
+            id: wheel
+
+            property real banked: 0
+
+            enabled: !settings.open
+            onWheel: event => {
+                if (wheel.banked * event.angleDelta.y < 0)
+                    wheel.banked = 0;
+                wheel.banked += event.angleDelta.y;
+                while (wheel.banked >= 120) {
+                    wheel.banked -= 120;
+                    projection.rangeIn();
+                }
+                while (wheel.banked <= -120) {
+                    wheel.banked += 120;
+                    projection.rangeOut();
+                }
+            }
         }
 
         // The input handlers only route events into the action map; only mapped
@@ -399,6 +443,10 @@ Window {
             onInvoked: ability => touched.post({
                 ability: ability
             })
+            // The range pair at the rack's pivot drives the projection direct:
+            // the scope is a display, so ranging it never goes near the bus.
+            onRangedIn: projection.rangeIn()
+            onRangedOut: projection.rangeOut()
         }
 
         // The corner minimap, top-right — mirroring the round condition gauge in

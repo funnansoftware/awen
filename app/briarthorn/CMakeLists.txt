@@ -69,6 +69,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/Symbol.qml
         qml/ui/SymbolFlare.qml
         qml/ui/TouchAbilities.qml
+        qml/ui/TouchArrow.qml
         qml/ui/TouchButton.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml

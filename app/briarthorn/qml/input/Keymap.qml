@@ -54,10 +54,26 @@ QtObject {
                     positive: [Qt.Key_W, Qt.Key_Up],
                     negative: []
                 },
+                // No button of its own: the d-pad's vertical ranges the scope
+                // and the left stick already throttles by how far it is pushed.
                 pad: {
-                    positive: [Gamepad.Button.DpadUp],
+                    positive: [],
                     negative: []
                 }
+            }
+        })
+
+    // The scope's range control, fixed like the flight map and listed for the
+    // same reason: the d-pad's vertical steps the picture in and out, and a
+    // capture must refuse those the way it refuses a flight control.
+    readonly property var range: ({
+            key: {
+                positive: [],
+                negative: []
+            },
+            pad: {
+                positive: [Gamepad.Button.DpadUp],
+                negative: [Gamepad.Button.DpadDown]
             }
         })
 
@@ -102,14 +118,17 @@ QtObject {
         return code >= 0 ? [code] : [];
     }
 
-    // Whether a control is spoken for by the flight map or by the page itself,
+    // Whether a control is spoken for by a fixed map or by the page itself,
     // and so cannot be captured.
     function reserved(pad: bool, code: int): bool {
         if ((pad ? keymap.blockedButtons : keymap.blockedKeys).includes(code))
             return true;
         const channel = pad ? "pad" : "key";
-        for (const axis in keymap.flight) {
-            const map = keymap.flight[axis][channel];
+        const fixed = [keymap.range];
+        for (const axis in keymap.flight)
+            fixed.push(keymap.flight[axis]);
+        for (let i = 0; i < fixed.length; ++i) {
+            const map = fixed[i][channel];
             if (map.positive.includes(code) || map.negative.includes(code))
                 return true;
         }

@@ -20,7 +20,7 @@ Row {
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        text: qsTr("W thrust · A/D turn")
+        text: qsTr("W thrust · A/D turn · WHEEL range")
         color: Style.theme.textMuted
         font.pixelSize: 13
     }
