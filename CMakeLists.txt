@@ -88,5 +88,7 @@ add_subdirectory(src)
 add_subdirectory(app)
 
 # After the subdirectories so targets have registered themselves in the
-# PROJECT_COVERAGE_TARGETS global property this script reads.
+# PROJECT_COVERAGE_TARGETS / PROJECT_QML_TARGETS global properties these
+# scripts read.
 include(cmake/target/llvm-coverage.cmake)
+include(cmake/target/qmllint.cmake)
