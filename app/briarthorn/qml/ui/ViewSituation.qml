@@ -12,7 +12,7 @@ import "../themes"
 // RangeProjection, so ranging in/out moves them together. Ports briardart's
 // ScopeComponent (render/scope_component.dart), the Flame counterpart of this.
 Item {
-    id: view
+    id: root
 
     // Shared display projection: the ring spans and the metres-to-pixels scale.
     property RangeProjection projection
@@ -95,41 +95,41 @@ Item {
     // The opaque backing disc (minimap only; transparent by default). A circle
     // centred on the scope, so the box's corners stay clear.
     Rectangle {
-        visible: view.backgroundColor.a > 0
-        x: view.centerX - width / 2
-        y: view.centerY - height / 2
-        width: view.discRadius * 2
+        visible: root.backgroundColor.a > 0
+        x: root.centerX - width / 2
+        y: root.centerY - height / 2
+        width: root.discRadius * 2
         height: width
         radius: width / 2
-        color: view.backgroundColor
+        color: root.backgroundColor
     }
 
     // Outer range ring: carries the bearing ticks and its span label, the ticks
     // offset to keep true bearings on the heading-up scope.
     RangeRing {
         anchors.fill: parent
-        centerX: view.centerX
-        centerY: view.centerY
-        radius: view.outerRadius
+        centerX: root.centerX
+        centerY: root.centerY
+        radius: root.outerRadius
         strokeWidth: 2
-        gapLength: view.ringGapLength
+        gapLength: root.ringGapLength
         gapAngle: 20
-        range: view.projection ? view.projection.rangeKm : 0
-        enableTicks: view.showTicks
-        tickOffset: view.viewRotation
+        range: root.projection ? root.projection.rangeKm : 0
+        enableTicks: root.showTicks
+        tickOffset: root.viewRotation
     }
 
     // Inner ring: half the span, label only.
     RangeRing {
         anchors.fill: parent
-        visible: view.showInnerRing
-        centerX: view.centerX
-        centerY: view.centerY
-        radius: view.outerRadius / 2
+        visible: root.showInnerRing
+        centerX: root.centerX
+        centerY: root.centerY
+        radius: root.outerRadius / 2
         strokeWidth: 2
-        gapLength: view.ringGapLength
+        gapLength: root.ringGapLength
         gapAngle: 20
-        range: view.projection ? view.projection.innerRangeKm : 0
+        range: root.projection ? root.projection.innerRangeKm : 0
         enableTicks: false
     }
 
@@ -137,12 +137,12 @@ Item {
     // reaching the sensor's detection range, capped at the outer ring.
     ShapeSector {
         anchors.fill: parent
-        visible: view.showRadarCone && view.observer
-        centerX: view.centerX
-        centerY: view.centerY
-        angleAt: view.headingUp ? 0 : (view.observer ? view.observer.heading : 0)
-        angleSpan: view.observer ? view.observer.radarFov : 0
-        radius: view.observer ? Math.min(view.observer.detectionRange * view.pxPerMeter, view.outerRadius) : 0
+        visible: root.showRadarCone && root.observer
+        centerX: root.centerX
+        centerY: root.centerY
+        angleAt: root.headingUp ? 0 : (root.observer ? root.observer.heading : 0)
+        angleSpan: root.observer ? root.observer.radarFov : 0
+        radius: root.observer ? Math.min(root.observer.detectionRange * root.pxPerMeter, root.outerRadius) : 0
         fillColor: Style.theme.gaugeTrack
     }
 
@@ -151,40 +151,40 @@ Item {
     // the gutter.
     ViewTracks {
         anchors.fill: parent
-        centerX: view.centerX
-        centerY: view.centerY
-        pxPerMeter: view.pxPerMeter
-        viewRotation: view.viewRotation
-        tracks: view.tracks
-        symbolSize: view.symbolSize
-        showLabels: view.showTrackLabels
-        clampRadius: view.gutterClamp ? view.outerRadius : 0
-        clampMargin: view.gutterClampMargin
+        centerX: root.centerX
+        centerY: root.centerY
+        pxPerMeter: root.pxPerMeter
+        viewRotation: root.viewRotation
+        tracks: root.tracks
+        symbolSize: root.symbolSize
+        showLabels: root.showTrackLabels
+        clampRadius: root.gutterClamp ? root.outerRadius : 0
+        clampMargin: root.gutterClampMargin
     }
 
     // Fuzing lines and blast rings, over the tracks in the same rotated
     // observer frame.
     ViewEngagements {
         anchors.fill: parent
-        visible: view.showEngagements
-        observer: view.observer
-        entities: view.entities
-        detonations: view.detonations
-        centerX: view.centerX
-        centerY: view.centerY
-        pxPerMeter: view.pxPerMeter
-        viewRotation: view.viewRotation
+        visible: root.showEngagements
+        observer: root.observer
+        entities: root.entities
+        detonations: root.detonations
+        centerX: root.centerX
+        centerY: root.centerY
+        pxPerMeter: root.pxPerMeter
+        viewRotation: root.viewRotation
     }
 
     // Ownship, pinned at the scope centre; nose up on a heading-up scope.
     Symbol {
-        visible: view.showOwnship && view.observer
-        x: view.centerX - width / 2
-        y: view.centerY - height / 2
-        symbolSize: view.symbolSize
-        noseAngle: view.headingUp ? 0 : (view.observer ? view.observer.heading : 0)
-        classification: view.observer ? view.observer.classification : Classification.Kind.Unknown
-        side: view.observer ? view.observer.side : Side.Kind.Unknown
+        visible: root.showOwnship && root.observer
+        x: root.centerX - width / 2
+        y: root.centerY - height / 2
+        symbolSize: root.symbolSize
+        noseAngle: root.headingUp ? 0 : (root.observer ? root.observer.heading : 0)
+        classification: root.observer ? root.observer.classification : Classification.Kind.Unknown
+        side: root.observer ? root.observer.side : Side.Kind.Unknown
         showLabel: false
     }
 
@@ -192,25 +192,25 @@ Item {
     // sweeping round the rim as ownship turns (heading-up). The minimap's stand-in
     // for the suppressed bearing ticks.
     Text {
-        visible: view.showNorth
+        // North (true bearing 0) sits at screen angle viewRotation on a
+        // heading-up scope; seat the label a little past the ring.
+        readonly property real northRad: root.viewRotation * Math.PI / 180
+        readonly property real seatRadius: root.outerRadius + root.northFontSize * 0.7
+
+        visible: root.showNorth
         text: "N"
         color: Style.theme.textBright
         font.bold: true
-        font.pixelSize: view.northFontSize
-
-        // North (true bearing 0) sits at screen angle viewRotation on a
-        // heading-up scope; seat the label a little past the ring.
-        readonly property real northRad: view.viewRotation * Math.PI / 180
-        readonly property real seatRadius: view.outerRadius + view.northFontSize * 0.7
-        x: view.centerX + Math.sin(northRad) * seatRadius - width / 2
-        y: view.centerY - Math.cos(northRad) * seatRadius - height / 2
+        font.pixelSize: root.northFontSize
+        x: root.centerX + Math.sin(northRad) * seatRadius - width / 2
+        y: root.centerY - Math.cos(northRad) * seatRadius - height / 2
     }
 
     // The pulsing acquisition ring marking ownship, fixed at the scope centre.
     Rectangle {
-        visible: view.showOwnshipPulse
-        x: view.centerX - width / 2
-        y: view.centerY - height / 2
+        visible: root.showOwnshipPulse
+        x: root.centerX - width / 2
+        y: root.centerY - height / 2
         width: 48
         height: width
         radius: width / 2

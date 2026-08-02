@@ -10,9 +10,6 @@ import "../themes"
 Item {
     id: root
 
-    implicitWidth: 150
-    implicitHeight: implicitWidth // keep the pad square as the width scales
-
     // The shorter half-extent, so geometry stays centred even off-square.
     readonly property real span: Math.min(width, height) / 2
     // The thumb's maximum throw from centre in px; deflection normalises to it.
@@ -42,6 +39,18 @@ Item {
     // Gates the spring so the thumb is placed at centre on load rather than
     // animating in from the origin.
     property bool settled: false
+
+    implicitWidth: 150
+    implicitHeight: implicitWidth // keep the pad square as the width scales
+
+    // Confine hit-testing to the visible disc, so a press in the square's bare
+    // corners falls through instead of snapping the stick to a diagonal.
+    containmentMask: QtObject {
+        function contains(pt: point): bool {
+            return Math.hypot(pt.x - root.width / 2, pt.y - root.height / 2) <= root.span;
+        }
+    }
+
     Component.onCompleted: settled = true
 
     // A dim filled disc so the pad reads as a control against the scope.
@@ -93,14 +102,6 @@ Item {
         }
         Behavior on opacity {
             NumberAnimation { duration: 120 }
-        }
-    }
-
-    // Confine hit-testing to the visible disc, so a press in the square's bare
-    // corners falls through instead of snapping the stick to a diagonal.
-    containmentMask: QtObject {
-        function contains(pt: point): bool {
-            return Math.hypot(pt.x - root.width / 2, pt.y - root.height / 2) <= root.span;
         }
     }
 

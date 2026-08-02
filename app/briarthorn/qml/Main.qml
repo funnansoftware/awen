@@ -10,7 +10,6 @@ import awen.entity
 import awen.gamepad
 import awen.input
 import "commands"
-import "database"
 import "input"
 import "model"
 import "scenarios"
@@ -29,6 +28,16 @@ import "ui"
 Window {
     id: root
 
+    // The world's roster is everything the simulation integrates: the
+    // player's craft and the scenario's entities are enrolled at startup,
+    // and the weapon systems spawn and reap missiles and decoys in it.
+    readonly property World world: World {}
+    readonly property list<Entity> entities: root.world.entities
+
+    // The player's ability controls, loaded at startup; the settings page edits
+    // this table and every ability binding re-pushes off it.
+    readonly property Keymap keymap: Keymap {}
+
     width: 1280
     height: 720
     visible: true
@@ -42,39 +51,6 @@ Window {
     // Focus loss swallows key and touch releases, so drop all held input with it.
     onActiveChanged: if (!active)
         root.dropInput()
-
-    // The world's roster is everything the simulation integrates: the
-    // player's craft and the scenario's entities are enrolled at startup,
-    // and the weapon systems spawn and reap missiles and decoys in it.
-    readonly property World world: World {}
-    readonly property list<Entity> entities: root.world.entities
-
-    // The player's ability controls, loaded at startup; the settings page edits
-    // this table and every ability binding re-pushes off it.
-    readonly property Keymap keymap: Keymap {}
-
-    // Returns every input source to rest: the action bindings, and the stick's
-    // own axis slots, which it contributes under the axis itself and so the
-    // router cannot reach.
-    function dropInput() {
-        actions.reset();
-        axisSteer.invoke(0);
-        axisThrottle.invoke(0);
-    }
-
-    // Held input is released while the bus is still running, so the zeroed steer
-    // and throttle post before the simulation stops. Both verbs coalesce, so
-    // they publish on resume and the ship never carries its pre-pause command
-    // out of the page — which is also why nothing clears the queue.
-    function openSettings() {
-        root.dropInput();
-        settings.open = true;
-    }
-
-    function closeSettings() {
-        settings.open = false;
-        root.dropInput();
-    }
 
     Component.onCompleted: {
         root.world.add(game.ownship);
@@ -91,10 +67,55 @@ Window {
 
     Item {
         id: scene
+
+        property bool padConnected: false
+
         anchors.fill: parent
         focus: !settings.open // the window's keys go here unless the page has them
 
-        property bool padConnected: false
+        // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
+        // the browser refreshes gamepad state once per frame, so poll at 16ms there.
+        Gamepad.pollInterval: Qt.platform.os === "wasm" ? 16 : 8
+
+        // The input handlers only route events into the action map; only mapped
+        // keys are consumed. The page key is handled ahead of the map: it has
+        // no axis and no rest state, and the way out of the game must never be
+        // rebound away.
+        Keys.onPressed: event => {
+            if (event.isAutoRepeat)
+                return;
+            if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
+                root.openSettings();
+                event.accepted = true;
+                return;
+            }
+            event.accepted = actions.keyPressed(event.key);
+        }
+        Keys.onReleased: event => {
+            if (!event.isAutoRepeat)
+                event.accepted = actions.keyReleased(event.key);
+        }
+
+        Gamepad.onConnected: deviceId => scene.padConnected = true
+        Gamepad.onDisconnected: deviceId => scene.padConnected = false
+        // Controller events ignore focus entirely, so handing the page the
+        // keyboard is not enough — the pad route is switched here instead.
+        Gamepad.onAxisChanged: (deviceId, axis, value) => {
+            if (!settings.open)
+                actions.axisMoved(axis, value);
+        }
+        Gamepad.onButtonPressed: (deviceId, button) => {
+            if (settings.open)
+                settings.padPressed(button);
+            else if (button === Gamepad.Button.Start)
+                root.openSettings();
+            else
+                actions.buttonPressed(button);
+        }
+        Gamepad.onButtonReleased: (deviceId, button) => {
+            if (!settings.open)
+                actions.buttonReleased(button);
+        }
 
         // The input layer: keys, controller and (later) touch all fold into
         // these axes through the action bindings below.
@@ -250,49 +271,6 @@ Window {
             }
         }
 
-        // The input handlers only route events into the action map; only mapped
-        // keys are consumed. The page key is handled ahead of the map: it has
-        // no axis and no rest state, and the way out of the game must never be
-        // rebound away.
-        Keys.onPressed: event => {
-            if (event.isAutoRepeat)
-                return;
-            if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
-                root.openSettings();
-                event.accepted = true;
-                return;
-            }
-            event.accepted = actions.keyPressed(event.key);
-        }
-        Keys.onReleased: event => {
-            if (!event.isAutoRepeat)
-                event.accepted = actions.keyReleased(event.key);
-        }
-
-        // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
-        // the browser refreshes gamepad state once per frame, so poll at 16ms there.
-        Gamepad.pollInterval: Qt.platform.os === "wasm" ? 16 : 8
-        Gamepad.onConnected: deviceId => scene.padConnected = true
-        Gamepad.onDisconnected: deviceId => scene.padConnected = false
-        // Controller events ignore focus entirely, so handing the page the
-        // keyboard is not enough — the pad route is switched here instead.
-        Gamepad.onAxisChanged: (deviceId, axis, value) => {
-            if (!settings.open)
-                actions.axisMoved(axis, value);
-        }
-        Gamepad.onButtonPressed: (deviceId, button) => {
-            if (settings.open)
-                settings.padPressed(button);
-            else if (button === Gamepad.Button.Start)
-                root.openSettings();
-            else
-                actions.buttonPressed(button);
-        }
-        Gamepad.onButtonReleased: (deviceId, button) => {
-            if (!settings.open)
-                actions.buttonReleased(button);
-        }
-
         // Run order is the lifetimes and the data flow: publish the batch,
         // consume player intent into the game store, run the scenario's own
         // systems (AI steering and trigger discipline), age ability clocks,
@@ -352,11 +330,15 @@ Window {
         // and the build version. It owns the top strip; the scope sits below it.
         ViewTopBar {
             id: topBar
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
+
             credits: game.credits
             version: "v" + BuildInfo.version
+
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+            }
         }
 
         // The attack scope: the game's main centre display. Rings, ownship's
@@ -366,11 +348,6 @@ Window {
         // plotting along the top edge clears the bar, and clips so nothing ever
         // renders up into it.
         ViewSituationAttack {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: topBar.bottom
-            anchors.topMargin: 16
-            anchors.bottom: parent.bottom
             clip: true
             projection: projection
             observer: game.ownship
@@ -378,6 +355,14 @@ Window {
             entities: root.entities
             detonations: weapons.detonations
             symbolSize: height * 0.04
+
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: topBar.bottom
+                topMargin: 16
+                bottom: parent.bottom
+            }
         }
 
         // Ownship condition readout, top-left: a round dual-arc gauge (hull +
@@ -386,11 +371,14 @@ Window {
         ViewStatus {
             width: Math.min(root.width, root.height) * 0.22
             height: width
-            anchors.left: parent.left
-            anchors.leftMargin: 16
-            anchors.top: topBar.bottom
-            anchors.topMargin: 12
             ownship: game.ownship
+
+            anchors {
+                left: parent.left
+                leftMargin: 16
+                top: topBar.bottom
+                topMargin: 12
+            }
         }
 
         // The control hints: the fixed flight keys, then one chip per ability
@@ -398,12 +386,15 @@ Window {
         // A touch device has no controls to caption and flies from the two
         // corner controls instead, so the line gives way to the rack there.
         ViewHints {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 24
             visible: !TouchScreen.available
             keymap: root.keymap
             loadout: game.ownship.abilities
+
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                bottom: parent.bottom
+                bottomMargin: 24
+            }
         }
 
         // The on-screen stick: another source folding into the same axes — its x
@@ -411,14 +402,12 @@ Window {
         // with keys and the pad, so release must zero it back out.
         Joystick {
             id: stick
+
             implicitWidth: root.width * 0.125
             // Touch play only: the on-screen stick shows on phones, tablets and
             // touch browsers, and stays hidden where keys and a gamepad already
             // drive the axes.
             visible: TouchScreen.available && !settings.open
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            anchors.margins: 24
             onValueXChanged: axisSteer.invoke(valueX)
             // The stick has no reverse, so a downward pull must not subtract
             // from a throttle another source (keys, pad) is holding up.
@@ -426,6 +415,12 @@ Window {
             onActiveChanged: if (!active) {
                 axisSteer.invoke(0);
                 axisThrottle.invoke(0);
+            }
+
+            anchors {
+                left: parent.left
+                bottom: parent.bottom
+                margins: 24
             }
         }
 
@@ -436,17 +431,18 @@ Window {
         TouchAbilities {
             radius: Math.min(root.width, root.height) * 0.28
             visible: TouchScreen.available && !settings.open
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 24
             loadout: game.ownship.abilities
-            onInvoked: ability => touched.post({
-                ability: ability
-            })
+            onInvoked: ability => touched.post({ ability: ability })
             // The range pair at the rack's pivot drives the projection direct:
             // the scope is a display, so ranging it never goes near the bus.
             onRangedIn: projection.rangeIn()
             onRangedOut: projection.rangeOut()
+
+            anchors {
+                right: parent.right
+                bottom: parent.bottom
+                margins: 24
+            }
         }
 
         // The corner minimap, top-right — mirroring the round condition gauge in
@@ -457,12 +453,9 @@ Window {
         // the scope beneath it.
         ViewSituation {
             id: minimap
+
             width: Math.min(root.width, root.height) * 0.22
             height: width
-            anchors.right: parent.right
-            anchors.rightMargin: 16
-            anchors.top: topBar.bottom
-            anchors.topMargin: 12
 
             projection: projection
             observer: game.ownship
@@ -480,19 +473,29 @@ Window {
             showOwnshipPulse: false
             showTrackLabels: false
             showEngagements: false
+
+            anchors {
+                right: parent.right
+                rightMargin: 16
+                top: topBar.bottom
+                topMargin: 12
+            }
         }
 
         // The controller lamp, tucked under the minimap on the right; lights up
         // when a controller is connected, so the gamepad path is visible.
         Text {
-            anchors.right: parent.right
-            anchors.rightMargin: 16
-            anchors.top: minimap.bottom
-            anchors.topMargin: 6
             text: qsTr("controller connected")
             color: "#66bfff"
             font.pixelSize: 13
             visible: scene.padConnected
+
+            anchors {
+                right: parent.right
+                rightMargin: 16
+                top: minimap.bottom
+                topMargin: 6
+            }
         }
     }
 
@@ -508,5 +511,28 @@ Window {
         keymap: root.keymap
         loadout: game.ownship.abilities
         onClosed: root.closeSettings()
+    }
+
+    // Returns every input source to rest: the action bindings, and the stick's
+    // own axis slots, which it contributes under the axis itself and so the
+    // router cannot reach.
+    function dropInput() {
+        actions.reset();
+        axisSteer.invoke(0);
+        axisThrottle.invoke(0);
+    }
+
+    // Held input is released while the bus is still running, so the zeroed steer
+    // and throttle post before the simulation stops. Both verbs coalesce, so
+    // they publish on resume and the ship never carries its pre-pause command
+    // out of the page — which is also why nothing clears the queue.
+    function openSettings() {
+        root.dropInput();
+        settings.open = true;
+    }
+
+    function closeSettings() {
+        settings.open = false;
+        root.dropInput();
     }
 }

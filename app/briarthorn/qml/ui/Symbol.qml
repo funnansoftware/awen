@@ -10,7 +10,7 @@ import "../themes"
 // a rotated view, bind viewRotation to the container's rotation so the
 // label counter-rotates and stays upright.
 Item {
-    id: symbol
+    id: root
 
     property int classification: Classification.Kind.Unknown
     property int side: Side.Kind.Unknown
@@ -27,17 +27,17 @@ Item {
     // Symbol size in px, before the classification's symbolScale.
     property real symbolSize: 36
 
-    readonly property Data def: Database.dataFor(symbol.classification)
+    readonly property Data def: Database.dataFor(root.classification)
 
     width: symbolSize * def.symbolScale
     height: width
 
     ShapePolygon {
         anchors.fill: parent
-        rotation: symbol.noseAngle
-        points: symbol.def.outline
+        rotation: root.noseAngle
+        points: root.def.outline
         fillColor: {
-            switch (symbol.side) {
+            switch (root.side) {
             case Side.Kind.Ownship:
                 return Style.theme.factionOwnship;
             case Side.Kind.Friendly:
@@ -56,16 +56,19 @@ Item {
     // upright below the symbol on screen.
     Item {
         anchors.fill: parent
-        rotation: -symbol.viewRotation
+        rotation: -root.viewRotation
 
         Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.bottom
-            anchors.topMargin: 2
-            visible: symbol.showLabel
-            text: symbol.label !== "" ? symbol.label : symbol.def.label
+            visible: root.showLabel
+            text: root.label !== "" ? root.label : root.def.label
             color: Style.theme.textLabel
             font.pixelSize: 10
+
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.bottom
+                topMargin: 2
+            }
         }
     }
 }

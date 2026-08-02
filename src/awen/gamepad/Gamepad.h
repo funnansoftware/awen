@@ -1,10 +1,10 @@
 #pragma once
 
-#include <chrono>
-#include <cstdint>
-
 #include <QtQml/qqmlregistration.h>
 #include <QObject>
+
+#include <chrono>
+#include <cstdint>
 
 namespace awen
 {
@@ -111,12 +111,16 @@ namespace awen
         void connected(int deviceId);
         void disconnected(int deviceId);
 
-        void buttonPressed(int deviceId, Button button);
-        void buttonReleased(int deviceId, Button button);
+        // The enum parameters carry their namespace: moc records the parameter
+        // type as written, and QML resolves it against the registered component
+        // name, which is awen::Gamepad. Anything shorter leaves the handler
+        // uncompilable.
+        void buttonPressed(int deviceId, awen::Gamepad::Button button);
+        void buttonReleased(int deviceId, awen::Gamepad::Button button);
 
         /// @brief An axis moved. @p value is normalised: sticks [-1, 1] (Y negative
         /// upward), triggers [0, 1].
-        void axisChanged(int deviceId, Axis axis, double value);
+        void axisChanged(int deviceId, awen::Gamepad::Axis axis, double value);
 
         void pollIntervalChanged();
         void idlePollIntervalChanged();

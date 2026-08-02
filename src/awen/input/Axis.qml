@@ -4,7 +4,7 @@ import QtQml
 // axis folds them — sum, clamped to the range. Action bindings contribute
 // through the router; touch controls and scripts call invoke() directly.
 QtObject {
-    id: axis
+    id: root
 
     // While false the fold is frozen: contributions keep recording, and the
     // value snaps back to the live input state on re-enable.
@@ -21,27 +21,27 @@ QtObject {
     // One contribution per source, keyed by the source object itself.
     property var contributions: new Map()
 
-    onEnabledChanged: axis.refold()
+    onEnabledChanged: root.refold()
 
     // Replaces source's contribution and refolds the value.
     function contribute(source: var, contribution: real) {
-        axis.contributions.set(source, contribution);
-        axis.refold();
+        root.contributions.set(source, contribution);
+        root.refold();
     }
 
     // Drives the axis directly, no action in between — the path for touch
     // controls, behaviours or scripts.
     function invoke(contribution: real) {
-        axis.contribute(axis, contribution);
+        root.contribute(root, contribution);
     }
 
     // Folds the contributions into the value, unless disabled.
     function refold() {
-        if (!axis.enabled)
+        if (!root.enabled)
             return;
         let sum = 0;
-        for (const part of axis.contributions.values())
+        for (const part of root.contributions.values())
             sum += part;
-        axis.value = Math.max(axis.minimum, Math.min(axis.maximum, sum));
+        root.value = Math.max(root.minimum, Math.min(root.maximum, sum));
     }
 }

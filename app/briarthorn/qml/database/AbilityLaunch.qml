@@ -2,6 +2,8 @@
 // return, unguided straight off the nose. SystemWeapon consumes the raised
 // intent and spawns the missile from the weapon kind named here.
 Ability {
+    id: root
+
     // The weapon kind a launch spawns.
     property int weapon: Classification.Kind.Unknown
 }

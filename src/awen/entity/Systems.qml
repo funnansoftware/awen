@@ -12,6 +12,12 @@ QtObject {
     // Whether the per-frame loop is active.
     property bool running: true
 
+    // The frame clock driving the loop, in sync with scene rendering.
+    readonly property FrameAnimation clock: FrameAnimation {
+        running: root.running
+        onTriggered: root.tick(frameTime)
+    }
+
     // One update pass: forwards dt (seconds) to every enabled system.
     function tick(dt: real) {
         for (let i = 0; i < root.systems.length; ++i) {
@@ -19,11 +25,5 @@ QtObject {
             if (system.enabled)
                 system.update(dt);
         }
-    }
-
-    // The frame clock driving the loop, in sync with scene rendering.
-    readonly property FrameAnimation clock: FrameAnimation {
-        running: root.running
-        onTriggered: root.tick(frameTime)
     }
 }

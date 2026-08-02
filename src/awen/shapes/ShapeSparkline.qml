@@ -39,11 +39,6 @@ Shape {
     // Whether the reference line lands inside the scale.
     readonly property bool referenceVisible: referenceValue > 0 && referenceValue < scaleMax
 
-    // The y for a value under the current scale — for app-side markers.
-    function yFor(v: real): real {
-        return height - v / scaleMax * height;
-    }
-
     // The trace in item-space pixels.
     readonly property list<point> tracePolyline: {
         const n = values.length;
@@ -104,5 +99,10 @@ Shape {
             x: root.width
             y: root.yFor(root.referenceValue)
         }
+    }
+
+    // The y for a value under the current scale — for app-side markers.
+    function yFor(v: real): real {
+        return height - v / scaleMax * height;
     }
 }

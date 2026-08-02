@@ -7,7 +7,7 @@ import "../systems"
 // back — guided rounds inside its engage envelope — and pops flares when a
 // missile homes in on it.
 Scenario {
-    id: scenario
+    id: root
 
     // The player's craft, for the bandit to pursue; the game store owns it.
     required property Entity ownship
@@ -38,20 +38,20 @@ Scenario {
         ]
     }
 
-    entities: [scenario.bandit]
+    entities: [root.bandit]
 
     SystemPursuit {
-        entity: scenario.bandit
-        target: scenario.ownship
+        entity: root.bandit
+        target: root.ownship
     }
 
     SystemEngage {
-        entity: scenario.bandit
-        target: scenario.ownship
+        entity: root.bandit
+        target: root.ownship
     }
 
     SystemThreat {
-        entity: scenario.bandit
-        world: scenario.world
+        entity: root.bandit
+        world: root.world
     }
 }

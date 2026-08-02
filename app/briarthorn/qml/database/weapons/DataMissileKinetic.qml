@@ -4,6 +4,8 @@ import ".."
 // The kinetic slug: unguided, so the pilot buys the aiming problem along with
 // it, but a wide fuze and a big warhead make up for the dumb seeker.
 DataWeapon {
+    id: root
+
     classification: Classification.Kind.MissileKinetic
     outline: [Qt.point(0, -0.5), Qt.point(0.15, 0.5), Qt.point(-0.15, 0.5)]
     label: qsTr("MSL")

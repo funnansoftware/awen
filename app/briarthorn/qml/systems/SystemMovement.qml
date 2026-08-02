@@ -7,14 +7,14 @@ import "../model"
 // commandedThrottle of its top speed at the acceleration its maneuver rating
 // buys. Every limit is read live, so a stat change takes effect the next tick.
 System {
-    id: movement
+    id: root
 
     // The entities to integrate.
     property list<Entity> entities
 
     function update(dt: real) {
-        for (let i = 0; i < movement.entities.length; ++i)
-            movement.advance(movement.entities[i], dt);
+        for (let i = 0; i < root.entities.length; ++i)
+            root.advance(root.entities[i], dt);
     }
 
     function advance(entity: Entity, dt: real) {

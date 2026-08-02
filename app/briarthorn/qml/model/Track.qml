@@ -6,6 +6,8 @@ import "../database"
 // azimuth as a true bearing, degrees clockwise from north, measured at the
 // observer. Pure state; SystemDetection keeps it updated.
 QtObject {
+    id: root
+
     // Stable identifier (the source entity's callsign).
     property string contactId: ""
 

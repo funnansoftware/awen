@@ -8,16 +8,11 @@ import "../themes"
 // fires on; unlike an ability it has nothing to run out of and no clock to
 // wind, so the rim is a plain frame.
 Item {
-    id: arrow
+    id: root
 
     // Which way the triangle points. The control is the same either way, so one
     // property covers both halves of a pair.
     property bool up: true
-
-    signal tapped
-
-    implicitWidth: 44
-    implicitHeight: implicitWidth
 
     // The shorter half-extent, so the disc stays round and centred off-square.
     readonly property real span: Math.min(width, height) / 2
@@ -25,18 +20,31 @@ Item {
     // True while the control is held.
     readonly property alias held: handler.active
 
-    readonly property color tint: arrow.held ? Style.theme.accentBright : Style.theme.accent
+    readonly property color tint: root.held ? Style.theme.accentBright : Style.theme.accent
+
+    signal tapped
+
+    implicitWidth: 44
+    implicitHeight: implicitWidth
+
+    // Confine hit-testing to the visible disc, so a press in the square's bare
+    // corners falls through to the scope instead of stepping the setting.
+    containmentMask: QtObject {
+        function contains(pt: point): bool {
+            return Math.hypot(pt.x - root.width / 2, pt.y - root.height / 2) <= root.span;
+        }
+    }
 
     // A filled disc, so the control reads against the scope behind it.
     Rectangle {
         anchors.centerIn: parent
-        width: arrow.span * 2
+        width: root.span * 2
         height: width
         radius: width / 2
         color: Style.theme.panelBackground
-        border.color: arrow.tint
+        border.color: root.tint
         border.width: 2
-        opacity: arrow.held ? 1 : 0.8
+        opacity: root.held ? 1 : 0.8
 
         Behavior on opacity {
             NumberAnimation { duration: 120 }
@@ -45,19 +53,11 @@ Item {
 
     ShapePolygon {
         anchors.centerIn: parent
-        width: arrow.span
+        width: root.span
         height: width
-        rotation: arrow.up ? 0 : 180
+        rotation: root.up ? 0 : 180
         points: [Qt.point(0, -0.4), Qt.point(0.4, 0.25), Qt.point(-0.4, 0.25)]
-        fillColor: arrow.tint
-    }
-
-    // Confine hit-testing to the visible disc, so a press in the square's bare
-    // corners falls through to the scope instead of stepping the setting.
-    containmentMask: QtObject {
-        function contains(pt: point): bool {
-            return Math.hypot(pt.x - arrow.width / 2, pt.y - arrow.height / 2) <= arrow.span;
-        }
+        fillColor: root.tint
     }
 
     // A single point, grabbed on press and held until release — no drag
@@ -72,6 +72,6 @@ Item {
         id: handler
         acceptedButtons: Qt.NoButton
         onActiveChanged: if (handler.active)
-            arrow.tapped()
+            root.tapped()
     }
 }

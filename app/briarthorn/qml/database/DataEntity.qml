@@ -5,6 +5,8 @@ import QtQml
 // the stats rate it and GameRules prices the ratings, so one row describes a
 // craft in the same terms whatever the game's tuning happens to be.
 Data {
+    id: root
+
     // The kind's ratings. A spawn site overrides individual ones to make its
     // instance better or worse than stock.
     property Stats stats: Stats {}

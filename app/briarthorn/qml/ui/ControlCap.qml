@@ -6,7 +6,7 @@ import "../themes"
 // does not reflow as the player rebinds it. Shared by the settings page and the
 // hint line, so a control reads the same in both.
 Rectangle {
-    id: cap
+    id: root
 
     // What the control is called; empty renders as unbound.
     property string label: ""
@@ -16,33 +16,31 @@ Rectangle {
     property bool waiting: false
     property bool displaced: false
 
-    readonly property bool bound: cap.label !== ""
+    readonly property bool bound: root.label !== ""
 
     // One tint carries the state: bright while capturing, warn just after
     // another ability took this control away, plain otherwise.
     readonly property color tint: {
-        if (cap.waiting)
+        if (root.waiting)
             return Style.theme.accentBright;
-        if (cap.displaced)
+        if (root.displaced)
             return Style.theme.warn;
-        return cap.bound ? Style.theme.textPrimary : Style.theme.textMuted;
+        return root.bound ? Style.theme.textPrimary : Style.theme.textMuted;
     }
 
     implicitWidth: Math.max(64, caption.implicitWidth + 14)
     implicitHeight: 22
     radius: Style.theme.panelRadius
-    color: cap.bound ? Style.theme.instrumentBackground : "transparent"
+    color: root.bound ? Style.theme.instrumentBackground : "transparent"
     border.width: 1
-    border.color: cap.waiting || cap.displaced ? cap.tint : (cap.bound ? Style.theme.frameInner : Style.theme.textMuted)
+    border.color: root.waiting || root.displaced ? root.tint : (root.bound ? Style.theme.frameInner : Style.theme.textMuted)
 
     Text {
         id: caption
 
         anchors.centerIn: parent
-        text: cap.waiting ? qsTr("PRESS…") : (cap.bound ? cap.label : "—")
-        color: cap.tint
-        font.pixelSize: 12
-        font.bold: true
-        font.family: Style.monospace
+        text: root.waiting ? qsTr("PRESS…") : (root.bound ? root.label : "—")
+        color: root.tint
+        font { pixelSize: 12; bold: true; family: Style.monospace }
     }
 }

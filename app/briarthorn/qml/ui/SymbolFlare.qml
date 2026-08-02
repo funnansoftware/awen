@@ -7,7 +7,7 @@ import "../themes"
 // heat ring. Side-agnostic: burning magnesium reads the same whoever dropped
 // it. Centre it on the plot point like Symbol.
 Item {
-    id: symbol
+    id: root
 
     // Symbol size in px before the flare's own scale; the heat ring swells
     // to roughly this footprint.
@@ -25,10 +25,10 @@ Item {
         radius: width / 2
         color: "transparent"
         border.color: Style.theme.warn
-        border.width: Math.max(1.5, symbol.width * 0.045)
+        border.width: Math.max(1.5, root.width * 0.045)
 
         SequentialAnimation {
-            running: symbol.visible
+            running: root.visible
             loops: Animation.Infinite
 
             ParallelAnimation {
@@ -58,7 +58,7 @@ Item {
     // A soft standing glow seating the core on the dark scope.
     Rectangle {
         anchors.centerIn: parent
-        width: symbol.width * 0.5
+        width: root.width * 0.5
         height: width
         radius: width / 2
         color: Style.theme.flare
@@ -69,13 +69,13 @@ Item {
     Rectangle {
         id: core
         anchors.centerIn: parent
-        width: symbol.width * 0.24
+        width: root.width * 0.24
         height: width
         radius: width / 2
         color: Style.theme.flare
 
         SequentialAnimation on opacity {
-            running: symbol.visible
+            running: root.visible
             loops: Animation.Infinite
 
             NumberAnimation {

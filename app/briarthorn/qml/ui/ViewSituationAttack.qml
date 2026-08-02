@@ -4,6 +4,8 @@
 // out near the short edge. Every option stays at its full-scope default; only
 // the geometry differs from the plain centred display.
 ViewSituation {
+    id: root
+
     // Outer ring at 0.8 of the short side, centre at 0.875 of the height.
     radiusFraction: 0.8
     verticalShift: 0.375

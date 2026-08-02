@@ -3,12 +3,7 @@ import awen.entity
 import awen.shapes
 
 Window {
-    id: window
-    width: 1280
-    height: 720
-    visible: true
-    title: "Awen"
-    color: '#ff274b6a'
+    id: root
 
     property list<entity> entities: [
         {
@@ -31,14 +26,20 @@ Window {
         }
     ]
 
+    width: 1280
+    height: 720
+    visible: true
+    title: "Awen"
+    color: '#ff274b6a'
+
     Component.onCompleted: {
         console.log("Entity:", entities);
     }
 
     Repeater {
         id: repeater
-        model: window.entities
-        delegate: Item {
+        model: root.entities
+        Item {
             id: item
             required property entity modelData
 
@@ -79,10 +80,13 @@ Window {
     ShapeGauge {
         width: 96
         height: 96
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        anchors.margins: 24
         fillColor: "#ffa100"
+
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+            margins: 24
+        }
 
         SequentialAnimation on value {
             loops: Animation.Infinite

@@ -5,6 +5,8 @@ import "../database"
 // seeker lock and the fuze state machine SystemWeapon drives. Non-null only
 // on entities that are missiles; the launcher lives on Entity.owner.
 QtObject {
+    id: root
+
     enum State {
         Flying,
         Fuzing

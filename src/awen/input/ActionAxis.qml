@@ -3,7 +3,7 @@ import QtQml
 // An action mapping an analogue source axis onto the driven axis: the raw
 // position is deadened around rest, then scaled — negative scale inverts.
 Action {
-    id: action
+    id: root
 
     // The axis listened to, awen.gamepad's Gamepad.Axis values.
     required property int axis
@@ -15,9 +15,9 @@ Action {
     property real deadzone: 0.15
 
     function axisMoved(moved: int, position: real): bool {
-        if (moved !== action.axis)
+        if (moved !== root.axis)
             return false;
-        action.value = (Math.abs(position) < action.deadzone ? 0 : position) * action.scale;
+        root.value = (Math.abs(position) < root.deadzone ? 0 : position) * root.scale;
         return true;
     }
 }

@@ -28,8 +28,9 @@ auto Gamepad::pollInterval() const -> int
 
 auto Gamepad::setPollInterval(int intervalMs) -> void
 {
-    // Clamp before comparing so the property reads back the applied value.
-    const auto interval = milliseconds{std::max(1, intervalMs)};
+    // Clamp before comparing so the property reads back the applied value. The
+    // parenthesised std::max avoids the windows.h max macro.
+    const auto interval = milliseconds{(std::max)(1, intervalMs)};
     if (interval == pollInterval_)
     {
         return;
@@ -45,7 +46,7 @@ auto Gamepad::idlePollInterval() const -> int
 
 auto Gamepad::setIdlePollInterval(int intervalMs) -> void
 {
-    const auto interval = milliseconds{std::max(1, intervalMs)};
+    const auto interval = milliseconds{(std::max)(1, intervalMs)};
     if (interval == idlePollInterval_)
     {
         return;

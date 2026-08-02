@@ -10,7 +10,7 @@ import "weapons"
 // a kind is a new file, a new Classification and a single line here — never a
 // switch to keep in step.
 QtObject {
-    id: database
+    id: root
 
     // The registration index. Order is not load-bearing.
     readonly property list<Data> registry: [
@@ -25,25 +25,25 @@ QtObject {
     ]
 
     // Classification to row, derived from the registry on first lookup.
-    readonly property var table: database.indexed(database.registry)
+    readonly property var table: root.indexed(root.registry)
 
     // The row for a classification; the unknown-contact row for anything
     // missing, so a render lookup always has something to draw.
     function dataFor(classification: int): Data {
-        const row = database.table[classification];
-        return row !== undefined ? row : database.table[Classification.Kind.Unknown];
+        const row = root.table[classification];
+        return row !== undefined ? row : root.table[Classification.Kind.Unknown];
     }
 
     // The spawnable row, or null — the type check is the spawnability check,
     // so a presentation-only row simply fails it.
     function entityDataFor(classification: int): DataEntity {
-        const row = database.table[classification];
+        const row = root.table[classification];
         return row instanceof DataEntity ? row : null;
     }
 
     // The munition row behind a launchable classification, or null.
     function weaponDataFor(classification: int): DataWeapon {
-        const row = database.table[classification];
+        const row = root.table[classification];
         return row instanceof DataWeapon ? row : null;
     }
 

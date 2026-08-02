@@ -4,7 +4,7 @@ import QtQml
 // any positive code is held, -1 for any negative one, 0 at rest or when the
 // two cancel. Subtypes route their event channel into press() and release().
 Action {
-    id: digital
+    id: root
 
     // The input codes driving the contribution up and down.
     property list<int> positive
@@ -16,37 +16,37 @@ Action {
     // A rebind drops the held state along with the old codes: press() and
     // release() both early-return on an unmapped code, so the release of a code
     // just unbound never arrives and would pin the contribution for good.
-    onPositiveChanged: digital.reset()
-    onNegativeChanged: digital.reset()
+    onPositiveChanged: root.reset()
+    onNegativeChanged: root.reset()
 
     // Rest means nothing held, not just a zero value.
     function reset() {
-        digital.held = ({});
-        digital.refresh();
+        root.held = ({});
+        root.refresh();
     }
 
     function press(code: int): bool {
-        if (!digital.mapped(code))
+        if (!root.mapped(code))
             return false;
-        digital.held[code] = true;
-        digital.refresh();
+        root.held[code] = true;
+        root.refresh();
         return true;
     }
 
     function release(code: int): bool {
-        if (!digital.mapped(code))
+        if (!root.mapped(code))
             return false;
-        digital.held[code] = false;
-        digital.refresh();
+        root.held[code] = false;
+        root.refresh();
         return true;
     }
 
     function mapped(code: int): bool {
-        return digital.positive.includes(code) || digital.negative.includes(code);
+        return root.positive.includes(code) || root.negative.includes(code);
     }
 
     function refresh() {
-        const down = codes => codes.some(code => digital.held[code] === true);
-        digital.value = (down(digital.positive) ? 1 : 0) - (down(digital.negative) ? 1 : 0);
+        const down = codes => codes.some(code => root.held[code] === true);
+        root.value = (down(root.positive) ? 1 : 0) - (down(root.negative) ? 1 : 0);
     }
 }

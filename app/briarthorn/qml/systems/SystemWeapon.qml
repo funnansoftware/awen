@@ -9,7 +9,7 @@ import "../model"
 // reaps spent rounds and killed entities. Runs after SystemMovement so fuze
 // checks see fresh poses; seeker steer lands next tick.
 System {
-    id: weapons
+    id: root
 
     // The world this engine spawns into and reaps from.
     required property World world
@@ -36,14 +36,14 @@ System {
 
     function update(dt: real) {
         const spent = [];
-        const roster = weapons.world.entities.slice();
+        const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
             if (roster[i].weapon !== null)
-                weapons.advance(roster[i], dt, spent);
+                root.advance(roster[i], dt, spent);
         }
-        weapons.consumeLaunches();
-        weapons.reap(spent);
-        weapons.ageDetonations(dt);
+        root.consumeLaunches();
+        root.reap(spent);
+        root.ageDetonations(dt);
     }
 
     // One round's tick: seek, trip the fuze on a near non-owning entity (or
@@ -53,9 +53,9 @@ System {
         w.elapsed += dt;
         if (w.state === Weapon.State.Flying) {
             if (w.def.guided)
-                weapons.seek(missile);
-            const near = w.def.guided ? w.target : weapons.nearestNonOwning(missile, w.def.fuzeRange);
-            const tripped = near !== null && near.health > 0 && weapons.dist(missile, near) <= w.def.fuzeRange;
+                root.seek(missile);
+            const near = w.def.guided ? w.target : root.nearestNonOwning(missile, w.def.fuzeRange);
+            const tripped = near !== null && near.health > 0 && root.dist(missile, near) <= w.def.fuzeRange;
             if (tripped || w.elapsed >= w.def.duration) {
                 w.state = Weapon.State.Fuzing;
                 w.fuzeTarget = tripped ? near : null;
@@ -65,7 +65,7 @@ System {
         } else {
             w.fuzeElapsed += dt;
             if (w.fuzeElapsed >= w.def.fuzeTime) {
-                weapons.detonate(missile);
+                root.detonate(missile);
                 spent.push(missile);
             }
         }
@@ -77,14 +77,14 @@ System {
     // owner drops the illumination gate (plain homing).
     function seek(missile: Entity) {
         const w = missile.weapon;
-        const best = weapons.bestReturn(missile, missile.owner, missile.side, w.def.seekerRange);
+        const best = root.bestReturn(missile, missile.owner, missile.side, w.def.seekerRange);
         w.target = best;
         if (best === null) {
             missile.commandedSteer = 0;
             return;
         }
-        const error = weapons.wrap180(weapons.bearingTo(missile, best) - missile.heading);
-        missile.commandedSteer = Math.max(-1, Math.min(1, error / weapons.cutAngle));
+        const error = root.wrap180(root.bearingTo(missile, best) - missile.heading);
+        missile.commandedSteer = Math.max(-1, Math.min(1, error / root.cutAngle));
     }
 
     // Consumes raised launch intents: a guided round refuses (keeping its
@@ -92,7 +92,7 @@ System {
     // straight off the nose. The spawned missile takes its whole flight
     // envelope from its database row and inherits the launcher's side.
     function consumeLaunches() {
-        const roster = weapons.world.entities.slice();
+        const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
             const launcher = roster[i];
             for (let j = 0; j < launcher.abilities.length; ++j) {
@@ -107,16 +107,16 @@ System {
                     continue;
                 let target = null;
                 if (row.guided) {
-                    target = weapons.bestReturn(launcher, launcher, launcher.side, row.seekerRange);
+                    target = root.bestReturn(launcher, launcher, launcher.side, row.seekerRange);
                     if (target === null)
                         continue;
                 }
-                const missile = weapons.world.spawn("MSL", row.classification, {
+                const missile = root.world.spawn("MSL", row.classification, {
                     side: launcher.side,
                     owner: launcher,
                     posX: launcher.posX,
                     posY: launcher.posY,
-                    heading: target !== null ? weapons.bearingTo(launcher, target) : launcher.heading,
+                    heading: target !== null ? root.bearingTo(launcher, target) : launcher.heading,
                     // The motor lifts the round past the airframe ceiling and
                     // it leaves the rail already there, rather than
                     // accelerating up to it — an unguided slug has no agility
@@ -125,7 +125,7 @@ System {
                     speed: row.speed,
                     commandedThrottle: 1
                 });
-                missile.weapon = weapons.weaponFactory.createObject(missile, {
+                missile.weapon = root.weaponFactory.createObject(missile, {
                     def: row,
                     target: target
                 });
@@ -140,18 +140,18 @@ System {
     // owner, briardart's self-frag protection.
     function detonate(missile: Entity) {
         const w = missile.weapon;
-        weapons.detonations = [...weapons.detonations, weapons.detonationFactory.createObject(weapons, {
+        root.detonations = [...root.detonations, root.detonationFactory.createObject(root, {
             worldX: missile.posX,
             worldY: missile.posY,
             blastRadius: w.def.blastRadius,
-            life: weapons.detonationLife,
-            maxLife: weapons.detonationLife
+            life: root.detonationLife,
+            maxLife: root.detonationLife
         })];
-        for (let i = 0; i < weapons.world.entities.length; ++i) {
-            const struck = weapons.world.entities[i];
+        for (let i = 0; i < root.world.entities.length; ++i) {
+            const struck = root.world.entities[i];
             if (struck === missile || struck === missile.owner)
                 continue;
-            if (weapons.dist(missile, struck) <= w.def.blastRadius)
+            if (root.dist(missile, struck) <= w.def.blastRadius)
                 struck.health = Math.max(0, struck.health - w.def.damage);
         }
     }
@@ -159,26 +159,26 @@ System {
     // Despawns detonated rounds and anything killed this tick; entities
     // never given hull (maxHealth 0) and the invulnerable list are exempt.
     function reap(spent: var) {
-        const roster = weapons.world.entities.slice();
+        const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
             const entity = roster[i];
             if (spent.includes(entity))
-                weapons.world.despawn(entity);
-            else if (entity.maxHealth > 0 && entity.health <= 0 && !weapons.invulnerable.includes(entity))
-                weapons.world.despawn(entity);
+                root.world.despawn(entity);
+            else if (entity.maxHealth > 0 && entity.health <= 0 && !root.invulnerable.includes(entity))
+                root.world.despawn(entity);
         }
     }
 
     function ageDetonations(dt: real) {
         let expired = false;
-        for (let i = 0; i < weapons.detonations.length; ++i) {
-            weapons.detonations[i].life -= dt;
-            if (weapons.detonations[i].life <= 0)
+        for (let i = 0; i < root.detonations.length; ++i) {
+            root.detonations[i].life -= dt;
+            if (root.detonations[i].life <= 0)
                 expired = true;
         }
         if (expired) {
-            const dead = weapons.detonations.filter(d => d.life <= 0);
-            weapons.detonations = weapons.detonations.filter(d => d.life > 0);
+            const dead = root.detonations.filter(d => d.life <= 0);
+            root.detonations = root.detonations.filter(d => d.life > 0);
             dead.forEach(d => d.destroy());
         }
     }
@@ -188,14 +188,14 @@ System {
     function bestReturn(at: Entity, illuminator: Entity, side: int, range: real): Entity {
         let best = null;
         let bestDist = 0;
-        for (let i = 0; i < weapons.world.entities.length; ++i) {
-            const contact = weapons.world.entities[i];
+        for (let i = 0; i < root.world.entities.length; ++i) {
+            const contact = root.world.entities[i];
             if (contact === at || contact === illuminator || contact.health <= 0)
                 continue;
-            if (!weapons.opposed(side, contact.side))
+            if (!root.opposed(side, contact.side))
                 continue;
-            const d = weapons.dist(at, contact);
-            if (d > range || !weapons.illuminated(illuminator, contact))
+            const d = root.dist(at, contact);
+            if (d > range || !root.illuminated(illuminator, contact))
                 continue;
             if (best === null || contact.stealth < best.stealth || (contact.stealth === best.stealth && d < bestDist)) {
                 best = contact;
@@ -210,13 +210,13 @@ System {
     function nearestNonOwning(missile: Entity, range: real): Entity {
         let best = null;
         let bestDist = range;
-        for (let i = 0; i < weapons.world.entities.length; ++i) {
-            const contact = weapons.world.entities[i];
+        for (let i = 0; i < root.world.entities.length; ++i) {
+            const contact = root.world.entities[i];
             if (contact === missile || contact === missile.owner || contact.health <= 0)
                 continue;
             if (missile.owner !== null && contact.owner === missile.owner)
                 continue;
-            const d = weapons.dist(missile, contact);
+            const d = root.dist(missile, contact);
             if (d <= bestDist) {
                 best = contact;
                 bestDist = d;
@@ -230,7 +230,7 @@ System {
     function illuminated(illuminator: Entity, contact: Entity): bool {
         if (illuminator === null)
             return true;
-        const off = weapons.wrap180(weapons.bearingTo(illuminator, contact) - illuminator.heading);
+        const off = root.wrap180(root.bearingTo(illuminator, contact) - illuminator.heading);
         return Math.abs(off) <= illuminator.radarFov / 2;
     }
 

@@ -11,13 +11,10 @@ import "../themes"
 // at the bottom, with the values seated in that open mouth. A low reading shifts
 // its ring and value to the warn colour. Reads live from the ownship entity.
 Item {
-    id: view
+    id: root
 
     // The craft whose condition this shows.
     property Entity ownship
-
-    implicitWidth: 150
-    implicitHeight: 150
 
     readonly property real shortSide: Math.min(width, height)
     readonly property real cx: width / 2
@@ -29,42 +26,45 @@ Item {
     readonly property bool hullLow: healthFrac <= 0.3
     readonly property bool fuelLow: fuelFrac <= 0.2
 
+    implicitWidth: 150
+    implicitHeight: 150
+
     // HULL — the outer dial.
     ShapeGauge {
         anchors.fill: parent
-        centerX: view.cx
-        centerY: view.cy
-        radius: view.shortSide * 0.44
-        strokeWidth: view.ringWidth
+        centerX: root.cx
+        centerY: root.cy
+        radius: root.shortSide * 0.44
+        strokeWidth: root.ringWidth
         angleStart: 225
         angleSweep: 270
-        value: view.healthFrac
+        value: root.healthFrac
         trackColor: Style.theme.gaugeTrack
-        fillColor: view.hullLow ? Style.theme.warn : Style.theme.accent
+        fillColor: root.hullLow ? Style.theme.warn : Style.theme.accent
     }
 
     // FUEL — the inner dial, concentric inside the hull ring.
     ShapeGauge {
         anchors.fill: parent
-        centerX: view.cx
-        centerY: view.cy
-        radius: view.shortSide * 0.355
-        strokeWidth: view.ringWidth
+        centerX: root.cx
+        centerY: root.cy
+        radius: root.shortSide * 0.355
+        strokeWidth: root.ringWidth
         angleStart: 225
         angleSweep: 270
-        value: view.fuelFrac
+        value: root.fuelFrac
         trackColor: Style.theme.gaugeTrack
-        fillColor: view.fuelLow ? Style.theme.warn : Style.theme.fuel
+        fillColor: root.fuelLow ? Style.theme.warn : Style.theme.fuel
     }
 
     // Ownship symbol, nose up, lifted just above centre so it clears the mouth
     // readouts below.
     Symbol {
-        x: view.cx - width / 2
-        y: view.cy - height / 2 - view.shortSide * 0.09
-        symbolSize: view.shortSide * 0.26
-        classification: view.ownship ? view.ownship.classification : Classification.Kind.AircraftFighter
-        side: view.ownship ? view.ownship.side : Side.Kind.Ownship
+        x: root.cx - width / 2
+        y: root.cy - height / 2 - root.shortSide * 0.09
+        symbolSize: root.shortSide * 0.26
+        classification: root.ownship ? root.ownship.classification : Classification.Kind.AircraftFighter
+        side: root.ownship ? root.ownship.side : Side.Kind.Ownship
         showLabel: false
     }
 
@@ -72,23 +72,21 @@ Item {
     // colour-keyed to their rings.
     Column {
         anchors.horizontalCenter: parent.horizontalCenter
-        y: view.cy + view.shortSide * 0.08
-        spacing: -view.shortSide * 0.01
+        y: root.cy + root.shortSide * 0.08
+        spacing: -root.shortSide * 0.01
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: view.ownship ? Math.round(view.ownship.health) : "--"
-            color: view.hullLow ? Style.theme.warn : Style.theme.accent
-            font.pixelSize: view.shortSide * 0.15
-            font.family: Style.monospace
-            font.bold: true
+            text: root.ownship ? Math.round(root.ownship.health) : "--"
+            color: root.hullLow ? Style.theme.warn : Style.theme.accent
+            font { pixelSize: root.shortSide * 0.15; family: Style.monospace; bold: true }
         }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: view.ownship ? Math.round(view.fuelFrac * 100) + "%" : "--"
-            color: view.fuelLow ? Style.theme.warn : Style.theme.fuel
-            font.pixelSize: view.shortSide * 0.11
+            text: root.ownship ? Math.round(root.fuelFrac * 100) + "%" : "--"
+            color: root.fuelLow ? Style.theme.warn : Style.theme.fuel
+            font.pixelSize: root.shortSide * 0.11
             font.family: Style.monospace
         }
     }

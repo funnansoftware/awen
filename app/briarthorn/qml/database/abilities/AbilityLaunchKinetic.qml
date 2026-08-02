@@ -4,6 +4,8 @@ import ".."
 
 // The kinetic rack: four dumb slugs, cheap to cycle but aimed by the pilot.
 AbilityLaunch {
+    id: root
+
     name: "kinetic"
     label: qsTr("KINETIC")
     cooldown: 2

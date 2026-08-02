@@ -3,7 +3,9 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    property var theme: Aurora {}
+    id: root
+
+    property Aurora theme: Aurora {}
 
     // The instrument typeface: the first of these the system actually has.
     // Naming Consolas alone kept windows right but left macOS and linux to

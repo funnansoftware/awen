@@ -16,6 +16,10 @@ function(awen_add_qml_module target)
         ${ARGN}
     )
 
+    # The qmllint targets lint against the generated type information, so they
+    # have to build this module first.
+    set_property(GLOBAL APPEND PROPERTY PROJECT_QML_TARGETS ${target})
+
     target_link_libraries(${target}
         PUBLIC
             Qt6::Core
@@ -67,6 +71,10 @@ function(awen_add_executable target)
         ${imports}
         ${arg_UNPARSED_ARGUMENTS}
     )
+
+    # The qmllint targets lint against the generated type information, so they
+    # have to build this app's module first.
+    set_property(GLOBAL APPEND PROPERTY PROJECT_QML_TARGETS ${target})
 
     # No QT_QML_DEBUG here: with the debug server on, the engine bypasses the
     # compiled units and demands the optional qtquick2plugin the deploy step does

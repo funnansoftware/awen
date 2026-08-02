@@ -17,7 +17,7 @@ import "../themes"
 // the window instead of falling sideways into the scene's handler. Main owns
 // opening and closing it, and focus follows open on both sides declaratively.
 Item {
-    id: page
+    id: root
 
     // The table being edited and the flown craft's live loadout: the rows are
     // exactly the abilities this airframe carries, so there are no dead ones.
@@ -39,37 +39,37 @@ Item {
 
     signal closed
 
-    visible: page.open
-    focus: page.open
+    visible: root.open
+    focus: root.open
 
     onOpenChanged: {
-        page.capturing = "";
-        page.cursor = 0;
-        page.resetArmed = false;
-        page.keymap.displaced = "";
+        root.capturing = "";
+        root.cursor = 0;
+        root.resetArmed = false;
+        root.keymap.displaced = "";
     }
 
     // The ability at a row, or empty past the end or on a slot with no
     // definition.
     function abilityAt(index: int): string {
-        if (index < 0 || index >= page.loadout.length)
+        if (index < 0 || index >= root.loadout.length)
             return "";
-        const def = page.loadout[index].def;
+        const def = root.loadout[index].def;
         return def ? def.name : "";
     }
 
     function move(delta: int) {
-        if (page.loadout.length > 0)
-            page.cursor = (page.cursor + delta + page.loadout.length) % page.loadout.length;
+        if (root.loadout.length > 0)
+            root.cursor = (root.cursor + delta + root.loadout.length) % root.loadout.length;
     }
 
     function capture(name: string, pad: bool) {
         if (name === "")
             return;
-        page.capturing = name;
-        page.capturingPad = pad;
-        page.resetArmed = false;
-        page.keymap.displaced = "";
+        root.capturing = name;
+        root.capturingPad = pad;
+        root.resetArmed = false;
+        root.keymap.displaced = "";
     }
 
     // The capture gate, in front of everything else: while a row is waiting, the
@@ -78,54 +78,54 @@ Item {
     // so a mis-press onto a flight key binds nothing. Returns whether the event
     // was taken.
     function captured(pad: bool, code: int): bool {
-        if (page.capturing === "")
+        if (root.capturing === "")
             return false;
         if (pad ? code === Gamepad.Button.East : code === Qt.Key_Escape) {
-            page.capturing = "";
+            root.capturing = "";
             return true;
         }
-        if (pad !== page.capturingPad)
+        if (pad !== root.capturingPad)
             return true;
-        if (page.keymap.bind(page.capturing, pad, code))
-            page.capturing = "";
+        if (root.keymap.bind(root.capturing, pad, code))
+            root.capturing = "";
         return true;
     }
 
     // Two presses, because it throws away every rebind and there is no undo.
     function resetAll() {
-        if (page.resetArmed)
-            page.keymap.reset();
-        page.resetArmed = !page.resetArmed;
+        if (root.resetArmed)
+            root.keymap.reset();
+        root.resetArmed = !root.resetArmed;
     }
 
     function clearRow() {
-        const name = page.abilityAt(page.cursor);
-        page.keymap.unbind(name, false);
-        page.keymap.unbind(name, true);
+        const name = root.abilityAt(root.cursor);
+        root.keymap.unbind(name, false);
+        root.keymap.unbind(name, true);
     }
 
     Keys.onPressed: event => {
         event.accepted = true;
-        if (event.isAutoRepeat || page.captured(false, event.key))
+        if (event.isAutoRepeat || root.captured(false, event.key))
             return;
         switch (event.key) {
         case Qt.Key_Up:
-            page.move(-1);
+            root.move(-1);
             break;
         case Qt.Key_Down:
-            page.move(1);
+            root.move(1);
             break;
         case Qt.Key_Return:
         case Qt.Key_Enter:
-            page.capture(page.abilityAt(page.cursor), false);
+            root.capture(root.abilityAt(root.cursor), false);
             break;
         case Qt.Key_Delete:
         case Qt.Key_Backspace:
-            page.clearRow();
+            root.clearRow();
             break;
         case Qt.Key_Escape:
         case Qt.Key_Back:
-            page.closed();
+            root.closed();
             break;
         default:
             break;
@@ -136,27 +136,27 @@ Item {
     // The pad's whole vocabulary here. Controller events ignore focus entirely,
     // so Main hands them over explicitly while the page is up.
     function padPressed(code: int) {
-        if (page.captured(true, code))
+        if (root.captured(true, code))
             return;
         switch (code) {
         case Gamepad.Button.DpadUp:
-            page.move(-1);
+            root.move(-1);
             break;
         case Gamepad.Button.DpadDown:
-            page.move(1);
+            root.move(1);
             break;
         case Gamepad.Button.South:
-            page.capture(page.abilityAt(page.cursor), true);
+            root.capture(root.abilityAt(root.cursor), true);
             break;
         case Gamepad.Button.West:
-            page.clearRow();
+            root.clearRow();
             break;
         case Gamepad.Button.North:
-            page.resetAll();
+            root.resetAll();
             break;
         case Gamepad.Button.East:
         case Gamepad.Button.Start:
-            page.closed();
+            root.closed();
             break;
         default:
             break;
@@ -177,53 +177,51 @@ Item {
     Text {
         id: heading
 
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: 28
         text: qsTr("CONTROLS")
         color: Style.theme.textHeading
-        font.pixelSize: 18
-        font.bold: true
-        font.letterSpacing: 2
+        anchors { left: parent.left; top: parent.top; margins: 28 }
+        font { pixelSize: 18; bold: true; letterSpacing: 2 }
     }
 
     // Said plainly rather than pretended: in a browser refusing storage, or a
     // build with no application identity, rebinds last the session only.
     Text {
-        anchors.left: heading.right
-        anchors.leftMargin: 16
-        anchors.baseline: heading.baseline
-        visible: !page.keymap.available
+        visible: !root.keymap.available
         text: qsTr("this session only — controls cannot be saved here")
         color: Style.theme.warn
         font.pixelSize: 12
+        anchors { left: heading.right; leftMargin: 16; baseline: heading.baseline }
     }
 
     Rectangle {
         id: rule
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: heading.bottom
-        anchors.leftMargin: 28
-        anchors.rightMargin: 28
-        anchors.topMargin: 10
         height: 1
         color: Style.theme.frameInner
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: heading.bottom
+            leftMargin: 28
+            rightMargin: 28
+            topMargin: 10
+        }
     }
 
     Flickable {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: rule.bottom
-        anchors.bottom: footer.top
-        anchors.leftMargin: 28
-        anchors.rightMargin: 28
-        anchors.topMargin: 16
-        anchors.bottomMargin: 16
         clip: true
         contentHeight: rows.implicitHeight
         boundsBehavior: Flickable.StopAtBounds
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: rule.bottom
+            bottom: footer.top
+            leftMargin: 28
+            rightMargin: 28
+            topMargin: 16
+            bottomMargin: 16
+        }
 
         Column {
             id: rows
@@ -232,7 +230,7 @@ Item {
             spacing: 4
 
             Repeater {
-                model: page.loadout
+                model: root.loadout
 
                 BindingRow {
                     required property AbilitySlot modelData
@@ -240,8 +238,8 @@ Item {
 
                     width: rows.width
                     slot: modelData
-                    selected: page.cursor === index
-                    onPicked: page.cursor = index
+                    selected: root.cursor === index
+                    onPicked: root.cursor = index
                 }
             }
         }
@@ -250,24 +248,26 @@ Item {
     Column {
         id: footer
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: 28
         spacing: 10
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            margins: 28
+        }
 
         Row {
             spacing: 24
 
             Choice {
-                text: page.resetArmed ? qsTr("PRESS AGAIN TO CONFIRM") : qsTr("RESET ALL")
-                alarming: page.resetArmed
-                onTapped: page.resetAll()
+                text: root.resetArmed ? qsTr("PRESS AGAIN TO CONFIRM") : qsTr("RESET ALL")
+                alarming: root.resetArmed
+                onTapped: root.resetAll()
             }
 
             Choice {
                 text: qsTr("DONE")
-                onTapped: page.closed()
+                onTapped: root.closed()
             }
         }
 
@@ -285,10 +285,9 @@ Item {
 
         required property AbilitySlot slot
         property bool selected: false
+        readonly property string ability: row.slot.def ? row.slot.def.name : ""
 
         signal picked
-
-        readonly property string ability: row.slot.def ? row.slot.def.name : ""
 
         implicitHeight: 40
         radius: Style.theme.panelRadius
@@ -302,33 +301,27 @@ Item {
         }
 
         Text {
-            anchors.left: parent.left
-            anchors.leftMargin: 12
-            anchors.verticalCenter: parent.verticalCenter
             text: row.slot.def ? row.slot.def.label : ""
             color: row.selected ? Style.theme.textBright : Style.theme.textPrimary
-            font.pixelSize: 14
-            font.bold: true
-            font.letterSpacing: 1
+            anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+            font { pixelSize: 14; bold: true; letterSpacing: 1 }
         }
 
         Row {
-            anchors.right: parent.right
-            anchors.rightMargin: 12
-            anchors.verticalCenter: parent.verticalCenter
             spacing: 6
+            anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
 
             Cap {
                 ability: row.ability
                 pad: false
-                label: page.keymap.keyLabel(page.keymap.keyFor(row.ability))
+                label: root.keymap.keyLabel(root.keymap.keyFor(row.ability))
                 onPicked: row.picked()
             }
 
             Cap {
                 ability: row.ability
                 pad: true
-                label: page.keymap.buttonLabel(page.keymap.buttonFor(row.ability))
+                label: root.keymap.buttonLabel(root.keymap.buttonFor(row.ability))
                 onPicked: row.picked()
             }
         }
@@ -344,14 +337,14 @@ Item {
 
         signal picked
 
-        waiting: cap.ability !== "" && page.capturing === cap.ability && page.capturingPad === cap.pad
-        displaced: cap.ability !== "" && page.keymap.displaced === cap.ability && page.keymap.displacedPad === cap.pad
+        waiting: cap.ability !== "" && root.capturing === cap.ability && root.capturingPad === cap.pad
+        displaced: cap.ability !== "" && root.keymap.displaced === cap.ability && root.keymap.displacedPad === cap.pad
 
         MouseArea {
             anchors.fill: parent
             onClicked: {
                 cap.picked();
-                page.capture(cap.ability, cap.pad);
+                root.capture(cap.ability, cap.pad);
             }
         }
     }
@@ -365,9 +358,7 @@ Item {
         signal tapped
 
         color: choice.alarming ? Style.theme.warn : Style.theme.accent
-        font.pixelSize: 13
-        font.bold: true
-        font.letterSpacing: 1
+        font { pixelSize: 13; bold: true; letterSpacing: 1 }
 
         MouseArea {
             anchors.fill: parent

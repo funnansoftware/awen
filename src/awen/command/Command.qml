@@ -6,7 +6,7 @@ import QtQml
 // equivalent on the bus — emitters just add standing bindings, snapshot
 // discipline and coalescing.
 QtObject {
-    id: command
+    id: root
 
     // The queue this verb posts to.
     required property CommandQueue queue
@@ -29,7 +29,7 @@ QtObject {
 
     // Snapshots the payload, merges per-post overrides on top, and posts.
     function post(overrides: var) {
-        if (command.enabled)
-            command.queue.post(command.name, Object.assign(command.payload(), overrides || {}), command.coalesce ? command : null);
+        if (root.enabled)
+            root.queue.post(root.name, Object.assign(root.payload(), overrides || {}), root.coalesce ? root : null);
     }
 }

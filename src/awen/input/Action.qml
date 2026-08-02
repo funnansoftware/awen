@@ -5,7 +5,7 @@ import QtQml
 // the handlers for the channel the action listens on; each returns whether
 // the event was consumed.
 QtObject {
-    id: action
+    id: root
 
     // The axis this action drives; named control because ActionAxis uses
     // axis for the source axis code.
@@ -14,12 +14,12 @@ QtObject {
     // This action's contribution to the axis.
     property real value: 0
 
-    onValueChanged: action.control.contribute(action, action.value)
+    onValueChanged: root.control.contribute(root, root.value)
 
     // Returns the action to rest; Actions.reset() fans this out on focus
     // loss, where release events are never delivered and state would stick.
     function reset() {
-        action.value = 0;
+        root.value = 0;
     }
 
     function keyPressed(key: int): bool {

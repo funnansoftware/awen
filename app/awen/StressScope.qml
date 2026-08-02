@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import awen.shapes
 
@@ -7,7 +9,6 @@ import awen.shapes
 // under load before the port commits to it.
 Rectangle {
     id: root
-    color: "#101418"
 
     readonly property int contactCount: 30
     readonly property int trailCount: 20
@@ -21,7 +22,9 @@ Rectangle {
     // Frame statistics over a rolling window.
     property real frameAvgMs: 0
     property real frameP95Ms: 0
-    property var samples: []
+    property list<real> samples: []
+
+    color: "#101418"
 
     FrameAnimation {
         running: root.visible
@@ -212,11 +215,14 @@ Rectangle {
     }
 
     Text {
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.margins: 16
         color: "white"
         font.pixelSize: 13
         text: "frame avg " + root.frameAvgMs.toFixed(2) + " ms   p95 " + root.frameP95Ms.toFixed(2) + " ms   (S closes)"
+
+        anchors {
+            top: parent.top
+            left: parent.left
+            margins: 16
+        }
     }
 }

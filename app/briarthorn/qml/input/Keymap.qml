@@ -10,7 +10,7 @@ import "../database"
 // already flies on. Every live binding reads back through here, so one
 // assignment to bindings re-pushes the whole set onto the live actions.
 QtObject {
-    id: keymap
+    id: root
 
     // The on-disk copy: one JSON string under the input category. Declared
     // before bindings, whose initialiser reads it — that order is load-bearing.
@@ -28,7 +28,7 @@ QtObject {
     // unbound. Loaded in the initialiser and not at completion: an object held
     // in a property completes after the file that holds it, so a deferred load
     // leaves the whole first turn on defaults.
-    property var bindings: keymap.load()
+    property var bindings: root.load()
 
     // The ability whose binding the last bind() took away, and on which device.
     // The settings page marks that cap, so a steal is never silent.
@@ -80,10 +80,10 @@ QtObject {
     // Keys a binding may never take: the way in and out of the page, its own
     // traversal keys, and the modifiers — a digital action has no modifier
     // concept and could only fold one as an ordinary key.
-    readonly property var blockedKeys: [Qt.Key_Escape, Qt.Key_Back, Qt.Key_Return, Qt.Key_Enter, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Delete, Qt.Key_Backspace, Qt.Key_Shift, Qt.Key_Control, Qt.Key_Meta, Qt.Key_Alt, Qt.Key_AltGr, Qt.Key_CapsLock]
+    readonly property list<int> blockedKeys: [Qt.Key_Escape, Qt.Key_Back, Qt.Key_Return, Qt.Key_Enter, Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Delete, Qt.Key_Backspace, Qt.Key_Shift, Qt.Key_Control, Qt.Key_Meta, Qt.Key_Alt, Qt.Key_AltGr, Qt.Key_CapsLock]
 
     // Buttons a binding may never take: the pad's way in and out of the page.
-    readonly property var blockedButtons: [Gamepad.Button.Start, Gamepad.Button.East]
+    readonly property list<int> blockedButtons: [Gamepad.Button.Start, Gamepad.Button.East]
 
     // Controller buttons name their position; the faces and shoulders read
     // better as what is printed on the pad in the player's hands.
@@ -97,36 +97,36 @@ QtObject {
         })
 
     function keyFor(name: string): int {
-        const pair = keymap.bindings[name];
+        const pair = root.bindings[name];
         return pair !== undefined ? pair.key : -1;
     }
 
     function buttonFor(name: string): int {
-        const pair = keymap.bindings[name];
+        const pair = root.bindings[name];
         return pair !== undefined ? pair.button : -1;
     }
 
     // The code lists the actions bind to: empty when unbound, so an unbound
     // ability maps nothing rather than matching a sentinel code.
     function keyCodes(name: string): var {
-        const code = keymap.keyFor(name);
+        const code = root.keyFor(name);
         return code > 0 ? [code] : [];
     }
 
     function buttonCodes(name: string): var {
-        const code = keymap.buttonFor(name);
+        const code = root.buttonFor(name);
         return code >= 0 ? [code] : [];
     }
 
     // Whether a control is spoken for by a fixed map or by the page itself,
     // and so cannot be captured.
     function reserved(pad: bool, code: int): bool {
-        if ((pad ? keymap.blockedButtons : keymap.blockedKeys).includes(code))
+        if ((pad ? root.blockedButtons : root.blockedKeys).includes(code))
             return true;
         const channel = pad ? "pad" : "key";
-        const fixed = [keymap.range];
-        for (const axis in keymap.flight)
-            fixed.push(keymap.flight[axis]);
+        const fixed = [root.range];
+        for (const axis in root.flight)
+            fixed.push(root.flight[axis]);
         for (let i = 0; i < fixed.length; ++i) {
             const map = fixed[i][channel];
             if (map.positive.includes(code) || map.negative.includes(code))
@@ -139,12 +139,14 @@ QtObject {
     // it loses it, so one press can never post two intents. Returns whether the
     // control was taken, and remembers which ability paid for it. Key code 0 is
     // refused with the negatives — no keyboard produces it, so a binding on it
-    // would be dead but still live to a synthesised event.
+    // would be dead but still live to a synthesised event. Button 0 is South,
+    // a face button the loadout ships bindings on, so the pad floor is 0.
     function bind(name: string, pad: bool, code: int): bool {
-        if (name === "" || code <= 0 || keymap.reserved(pad, code))
+        const floor = pad ? 0 : 1;
+        if (name === "" || code < floor || root.reserved(pad, code))
             return false;
         const channel = pad ? "button" : "key";
-        const next = keymap.copy(keymap.bindings);
+        const next = root.copy(root.bindings);
         let taken = "";
         for (const other in next) {
             if (other !== name && next[other][channel] === code) {
@@ -158,33 +160,33 @@ QtObject {
                 button: -1
             };
         next[name][channel] = code;
-        keymap.displaced = taken;
-        keymap.displacedPad = pad;
-        keymap.apply(next);
+        root.displaced = taken;
+        root.displacedPad = pad;
+        root.apply(next);
         return true;
     }
 
     // Leaves an ability with nothing on one device.
     function unbind(name: string, pad: bool) {
-        if (name === "" || keymap.bindings[name] === undefined)
+        if (name === "" || root.bindings[name] === undefined)
             return;
-        const next = keymap.copy(keymap.bindings);
+        const next = root.copy(root.bindings);
         next[name][pad ? "button" : "key"] = -1;
-        keymap.displaced = "";
-        keymap.apply(next);
+        root.displaced = "";
+        root.apply(next);
     }
 
     // Returns every ability to the controls its definition ships with.
     function reset() {
-        keymap.displaced = "";
-        keymap.apply(keymap.defaults());
+        root.displaced = "";
+        root.apply(root.defaults());
     }
 
     // Publishes a new table and stores it. The whole object is replaced, not
     // edited, so every binding reading keyCodes()/buttonCodes() re-evaluates.
     function apply(next: var) {
-        keymap.bindings = next;
-        keymap.save();
+        root.bindings = next;
+        root.save();
     }
 
     // What the game ships with: every ability on the controls its own
@@ -203,25 +205,25 @@ QtObject {
     // Persists only what differs from the shipped table, written through at
     // once: a web build's tab can close without ever running a destructor.
     function save() {
-        const shipped = keymap.defaults();
+        const shipped = root.defaults();
         const diff = {};
-        for (const name in keymap.bindings) {
-            const pair = keymap.bindings[name];
+        for (const name in root.bindings) {
+            const pair = root.bindings[name];
             const base = shipped[name];
             if (base === undefined || pair.key !== base.key || pair.button !== base.button)
                 diff[name] = [pair.key, pair.button];
         }
-        keymap.store.setValue("abilities", JSON.stringify(diff));
+        root.store.setValue("abilities", JSON.stringify(diff));
     }
 
     // The shipped table with the saved differences overlaid row by row, so one
     // bad row costs that row and not the whole keymap. Returns rather than
     // assigns, so it can seed bindings from its own initialiser.
     function load(): var {
-        const table = keymap.defaults();
+        const table = root.defaults();
         let saved = null;
         try {
-            saved = JSON.parse(keymap.store.value("abilities", "{}"));
+            saved = JSON.parse(root.store.value("abilities", "{}"));
         } catch (error) {
             console.warn("Keymap: unreadable saved controls, keeping the shipped table —", error);
             return table;
@@ -249,7 +251,7 @@ QtObject {
             return "";
         if (code >= 0x21 && code <= 0x7e)
             return String.fromCharCode(code);
-        const name = keymap.enumName(Qt.Key, code, "Key_");
+        const name = root.enumName(Qt.Key, code, "Key_");
         if (name !== "")
             return name;
         // A layout key outside Qt::Key arrives as its own code point; anything
@@ -260,10 +262,10 @@ QtObject {
     function buttonLabel(code: int): string {
         if (code < 0)
             return "";
-        const marked = keymap.padNames[code];
+        const marked = root.padNames[code];
         if (marked !== undefined)
             return marked;
-        const name = keymap.enumName(Gamepad.Button, code, "");
+        const name = root.enumName(Gamepad.Button, code, "");
         return name !== "" ? name : qsTr("BTN %1").arg(code);
     }
 
