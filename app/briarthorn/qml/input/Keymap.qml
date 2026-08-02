@@ -139,9 +139,11 @@ QtObject {
     // it loses it, so one press can never post two intents. Returns whether the
     // control was taken, and remembers which ability paid for it. Key code 0 is
     // refused with the negatives — no keyboard produces it, so a binding on it
-    // would be dead but still live to a synthesised event.
+    // would be dead but still live to a synthesised event. Button 0 is South,
+    // a face button the loadout ships bindings on, so the pad floor is 0.
     function bind(name: string, pad: bool, code: int): bool {
-        if (name === "" || code <= 0 || root.reserved(pad, code))
+        const floor = pad ? 0 : 1;
+        if (name === "" || code < floor || root.reserved(pad, code))
             return false;
         const channel = pad ? "button" : "key";
         const next = root.copy(root.bindings);
