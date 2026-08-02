@@ -198,6 +198,14 @@ Window {
             onValueChanged: post()
         }
 
+        // The touch rack's invocations. One emitter serves every button — the
+        // ability rides as a per-post override, so the rack needs no command
+        // object of its own and posts exactly the record a key press posts.
+        CommandAbility {
+            id: touched
+            queue: bus
+        }
+
         // The input handlers only route events into the action map; only mapped
         // keys are consumed. The page key is handled ahead of the map: it has
         // no axis and no rest state, and the way out of the game must never be
@@ -343,10 +351,13 @@ Window {
 
         // The control hints: the fixed flight keys, then one chip per ability
         // the craft carries, captioned with whatever it is bound to right now.
+        // A touch device has no controls to caption and flies from the two
+        // corner controls instead, so the line gives way to the rack there.
         ViewHints {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 24
+            visible: !TouchScreen.available
             keymap: root.keymap
             loadout: game.ownship.abilities
         }
@@ -372,6 +383,22 @@ Window {
                 axisSteer.invoke(0);
                 axisThrottle.invoke(0);
             }
+        }
+
+        // The ability rack, bottom-right: one round button per carried ability
+        // on a quarter arc swept between the two edges, under the right thumb
+        // as the stick is under the left. It posts the same ability record the
+        // key and pad bindings post, so touch adds no second invocation path.
+        TouchAbilities {
+            radius: Math.min(root.width, root.height) * 0.28
+            visible: TouchScreen.available && !settings.open
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: 24
+            loadout: game.ownship.abilities
+            onInvoked: ability => touched.post({
+                ability: ability
+            })
         }
 
         // The corner minimap, top-right — mirroring the round condition gauge in
