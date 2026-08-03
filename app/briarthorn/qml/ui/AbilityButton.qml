@@ -147,9 +147,8 @@ Item {
     // Buttons are ignored outright: a touchscreen point this handler is already
     // tracking is also delivered as a synthetic left-button press, which
     // de-activates the handler and re-activates it under the one finger — and
-    // the invocation rides that rising edge, so a single tap would fire twice.
-    // A cooling ability swallows the second one, which is exactly what makes
-    // this cheap to miss; a flare off no cooldown spends two decoys.
+    // the invocation rides that rising edge, so a single tap would fire twice
+    // and a flare off no cooldown would spend two decoys.
     PointHandler {
         id: handler
 
