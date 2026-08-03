@@ -15,5 +15,6 @@ Text {
 
     text: root.device.pad ? qsTr("LEFT STICK fly · D-PAD range · START controls") : qsTr("W thrust · A/D turn · WHEEL range · ESC controls")
     color: Style.theme.textMuted
+    elide: Text.ElideRight // the caller caps width where the line would collide
     font { pixelSize: 12; family: Style.monospace }
 }

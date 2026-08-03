@@ -78,6 +78,11 @@ Window {
         // ever attaches, so there is no edge left for it to catch.
         readonly property bool padConnected: Gamepad.devices.length > 0
 
+        // The one side both round corner instruments (condition gauge, minimap)
+        // draw at, floored where the readouts inside them would shrink
+        // illegible — a single property, so the pair stays a pair structurally.
+        readonly property real instrumentSide: Math.max(110, Math.min(root.width, root.height) * 0.22)
+
         anchors.fill: parent
         focus: !settings.open // the window's keys go here unless the page has them
 
@@ -383,14 +388,10 @@ Window {
         }
 
         // Ownship condition readout, top-left: a round dual-arc gauge (hull +
-        // fuel) sized to the minimap opposite, so the two round instruments read
-        // as a matched, compact pair. Dropped below the top band. The floor is
-        // what stops shrinking before the readouts inside do — the gauge sizes
-        // its own numbers off its short side, so a window small enough to take
-        // the instrument under it takes the numbers with it. The minimap carries
-        // the same floor to keep the pair a pair.
+        // fuel) on the shared instrument side, so it and the minimap opposite
+        // read as a matched, compact pair. Dropped below the top band.
         ViewStatus {
-            width: Math.max(110, Math.min(root.width, root.height) * 0.22)
+            width: scene.instrumentSide
             height: width
             ownship: game.ownship
 
@@ -403,19 +404,20 @@ Window {
         }
 
         // The ability rack, bottom-right: one square button per carried
-        // ability, each capped with the key or the pad button that fires it. It
-        // posts the same ability record the key and pad bindings post, so it
-        // adds no second invocation path. A thumb landing on one hands the HUD
-        // back to the touch controls.
-        //
-        // Docked in the corner rather than centred, and deliberately: the
-        // scope's centre column carries ownship, its acquisition pulse, the
-        // decoys it sheds astern and the sector this scenario's pursuer
-        // converges through, and a centred rack sits on all four at once. The
-        // buttons are captions and clocks — a key or a pad button is what
-        // actually fires an ability — so the rack is what gives way.
+        // ability, capped with the key or pad button that fires it and posting
+        // the same ability record those bindings post — no second invocation
+        // path. A thumb landing on one hands the HUD back to the touch
+        // controls. Docked in the corner rather than centred: the scope's
+        // centre column carries ownship, its pulse, the decoys astern and the
+        // pursuer's sector, and the rack is captions and clocks, so it is what
+        // gives way.
         ViewAbilities {
             id: abilities
+
+            // How far ownship's acquisition pulse draws past the scope centre
+            // (ViewSituation's pulse ring); the rack reaches in from its margin
+            // no further than the pulse's edge.
+            readonly property real pulseReach: 48
 
             visible: !root.device.touch && !settings.open
             // Smaller than a touch target: nothing here is ever pressed by a
@@ -423,10 +425,9 @@ Window {
             // instead. Sized so the rack clears ownship's own bearing line as
             // well as its column on any window taller than about 720.
             buttonSize: Math.max(44, Math.min(root.width, root.height) * 0.07)
-            // The rack may reach in from the margin as far as ownship's pulse
-            // and no further, so a craft carrying six abilities shrinks its
-            // buttons rather than growing across the scope centre.
-            maximumWidth: root.width / 2 - 48 - 20
+            // A craft carrying six abilities shrinks its buttons rather than
+            // growing across the scope centre.
+            maximumWidth: root.width / 2 - abilities.pulseReach - abilities.anchors.margins
             keymap: root.keymap
             loadout: game.ownship.abilities
             device: root.device
@@ -450,6 +451,10 @@ Window {
         ViewHints {
             visible: abilities.visible
             device: root.device
+            // Centred, but never under the rack: capped so the line's right
+            // edge stays clear of abilities' left and elides on a window too
+            // narrow to hold both.
+            width: Math.max(0, Math.min(implicitWidth, 2 * (abilities.x - 16) - root.width))
 
             anchors {
                 horizontalCenter: parent.horizontalCenter
@@ -520,7 +525,7 @@ Window {
         ViewSituation {
             id: minimap
 
-            width: Math.max(110, Math.min(root.width, root.height) * 0.22)
+            width: scene.instrumentSide
             height: width
 
             projection: projection
@@ -576,6 +581,7 @@ Window {
         anchors.fill: parent
         keymap: root.keymap
         loadout: game.ownship.abilities
+        device: root.device
         onClosed: root.closeSettings()
     }
 

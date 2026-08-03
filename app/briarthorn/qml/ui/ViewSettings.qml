@@ -24,6 +24,10 @@ Item {
     required property Keymap keymap
     required property list<AbilitySlot> loadout
 
+    // Which device the player is driving with; the page's keys report in, as
+    // the pad route already does, so a keyboard rebind swaps the HUD's caps.
+    required property ActiveDevice device
+
     // Whether the page is up. Main drives this; focus and the pause follow it.
     property bool open: false
 
@@ -51,6 +55,9 @@ Item {
 
     Keys.onPressed: event => {
         event.accepted = true;
+        // Any key here is keyboard flying, reported ahead of the dispatch the
+        // way Main reports the pad ahead of padPressed.
+        root.device.kind = ActiveDevice.Keyboard;
         if (event.isAutoRepeat || root.captured(false, event.key))
             return;
         switch (event.key) {
