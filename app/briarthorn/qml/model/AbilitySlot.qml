@@ -21,6 +21,11 @@ QtObject {
 
     readonly property bool ready: cooldownRemaining <= 0 && charges !== 0
 
+    // The cooldown still to run as a fraction of this ability's own — 1 the
+    // moment it pops, 0 once ready — so a long reload and a short one both
+    // wind a readiness dial over its full sweep.
+    readonly property real cooling: def && def.cooldown > 0 ? cooldownRemaining / def.cooldown : 0
+
     function activate() {
         if (root.ready)
             root.pending = true;

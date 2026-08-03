@@ -26,11 +26,8 @@ QtObject {
     readonly property string ability: root.def ? root.def.name : ""
 
     readonly property Axis control: Axis {
-        id: trigger
-
         minimum: 0
-        onValueChanged: if (trigger.value > 0.5)
-            root.invoke.post()
+        onStepped: root.invoke.post()
     }
 
     readonly property ActionKey keys: ActionKey {

@@ -32,6 +32,13 @@ namespace
         EXPECT_TRUE(QMetaObject::invokeMethod(&axis, function, Q_ARG(double, contribution)));
     }
 
+    /// @brief Injects a discrete step; step() takes an int, so the double
+    /// helper's argument would never match.
+    auto step(QObject& axis, int direction) -> void
+    {
+        EXPECT_TRUE(QMetaObject::invokeMethod(&axis, "step", Q_ARG(int, direction)));
+    }
+
     // Two distinct source objects prove contributions fold per source; the
     // change counter proves valueChanged fires once per actual move.
     constexpr auto Harness = R"(
@@ -42,7 +49,13 @@ Axis {
     id: root
 
     property int changes
+    property int steps
+    property int lastStep
     onValueChanged: root.changes += 1
+    onStepped: direction => {
+        root.steps += 1;
+        root.lastStep = direction;
+    }
 
     property QtObject sourceA: QtObject {}
     property QtObject sourceB: QtObject {}
@@ -150,6 +163,71 @@ TEST(Axis, ReEnableRefoldsToLiveInputs)
 
     axis->setProperty("enabled", true);
     EXPECT_DOUBLE_EQ(axis->property("value").toDouble(), 0.0);
+}
+
+TEST(Axis, StepsOncePerEngagement)
+{
+    auto engine = QQmlEngine{};
+    const auto axis = load(engine, Harness);
+    ASSERT_NE(axis, nullptr);
+
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 1);
+    EXPECT_EQ(axis->property("lastStep").toInt(), 1);
+
+    // Wobble on the engaged side stays one step; only rest re-arms it.
+    call(*axis, "pushA", 0.6);
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 1);
+
+    // Rest is the whole band, not just zero: dipping inside it re-arms.
+    call(*axis, "pushA", 0.4);
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 2);
+
+    call(*axis, "pushA", 0.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 2);
+
+    call(*axis, "pushA", -1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 3);
+    EXPECT_EQ(axis->property("lastStep").toInt(), -1);
+}
+
+TEST(Axis, StepInjectsWithoutMovingTheFold)
+{
+    auto engine = QQmlEngine{};
+    const auto axis = load(engine, Harness);
+    ASSERT_NE(axis, nullptr);
+
+    step(*axis, 1);
+    EXPECT_EQ(axis->property("steps").toInt(), 1);
+    EXPECT_EQ(axis->property("lastStep").toInt(), 1);
+    EXPECT_DOUBLE_EQ(axis->property("value").toDouble(), 0.0);
+
+    // Injection ignores where the fold sits: a held direction must not block
+    // steps arriving from another source.
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 2);
+    step(*axis, -1);
+    EXPECT_EQ(axis->property("steps").toInt(), 3);
+    EXPECT_EQ(axis->property("lastStep").toInt(), -1);
+}
+
+TEST(Axis, DisabledSwallowsStepsUntilReEnabled)
+{
+    auto engine = QQmlEngine{};
+    const auto axis = load(engine, Harness);
+    ASSERT_NE(axis, nullptr);
+
+    axis->setProperty("enabled", false);
+    step(*axis, 1);
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 0);
+
+    // Re-enabling folds the recorded engagement in: that move is real, so it
+    // steps once.
+    axis->setProperty("enabled", true);
+    EXPECT_EQ(axis->property("steps").toInt(), 1);
 }
 
 TEST(Axis, ClampsIntoCustomRange)

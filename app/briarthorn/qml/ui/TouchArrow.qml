@@ -4,7 +4,7 @@ import "../themes"
 
 // One round touch step control: a disc carrying a triangle, for a control that
 // steps a setting rather than invokes something. It answers on press as
-// TouchButton does, so touch matches the rising edge a key or a pad button
+// AbilityButton does, so touch matches the rising edge a key or a pad button
 // fires on; unlike an ability it has nothing to run out of and no clock to
 // wind, so the rim is a plain frame.
 Item {

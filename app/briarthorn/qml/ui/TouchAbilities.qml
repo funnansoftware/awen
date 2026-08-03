@@ -7,11 +7,9 @@ import "../model"
 // carries, laid along a quarter circle swept from the bottom edge round to the
 // right edge, so a thumb pivoting in that corner reaches every one of them
 // without the hand leaving the display. The scope's range pair sits at that
-// pivot, the one spot the thumb never travels to reach. The stick's
-// counterpart in the opposite corner, and like it, only a touch device shows
-// it. Nothing here names an ability — the rack is the loadout, so a craft
-// carrying a new one grows a button for it and a rack of one still lands under
-// the thumb.
+// pivot, the one spot the thumb never travels to reach. Nothing here names an
+// ability — the rack is the loadout, so a craft carrying a new one grows a
+// button for it and a rack of one still lands under the thumb.
 Item {
     id: root
 
@@ -84,9 +82,7 @@ Item {
             label: control.modelData.def ? control.modelData.def.label : ""
             charges: control.modelData.charges
             ready: control.modelData.ready
-            // The cooldown as a fraction of this ability's own, so a long
-            // reload and a short one both wind the bar over its full sweep.
-            cooling: control.modelData.def && control.modelData.def.cooldown > 0 ? control.modelData.cooldownRemaining / control.modelData.def.cooldown : 0
+            cooling: control.modelData.cooling
 
             // A slot carrying no definition binds nothing and fires nothing —
             // a loadout typo must not reach the bus.

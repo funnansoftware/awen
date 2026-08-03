@@ -3,15 +3,15 @@
 #include "GamepadBackend.h"
 #include "GamepadTranslate.h"
 
-#include <algorithm>
-#include <unordered_map>
-
 #include <QGuiApplication>
 #include <QList>
 #include <QQmlEngine>
 #include <QString>
 #include <QTimer>
+
+#include <algorithm>
 #include <chrono>
+#include <unordered_map>
 
 #include <SDL3/SDL.h>
 
