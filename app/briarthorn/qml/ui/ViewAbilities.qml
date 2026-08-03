@@ -69,9 +69,7 @@ Row {
             label: button.modelData.def ? button.modelData.def.label : ""
             charges: button.modelData.charges
             ready: button.modelData.ready
-            // The cooldown as a fraction of this ability's own, so a long
-            // reload and a short one both wind the bar over its full sweep.
-            cooling: button.modelData.def && button.modelData.def.cooldown > 0 ? button.modelData.cooldownRemaining / button.modelData.def.cooldown : 0
+            cooling: button.modelData.cooling
 
             // The cap follows the device in the player's hands: the pad's own
             // button while a controller is driving, the key otherwise.

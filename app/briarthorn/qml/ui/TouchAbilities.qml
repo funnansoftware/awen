@@ -82,9 +82,7 @@ Item {
             label: control.modelData.def ? control.modelData.def.label : ""
             charges: control.modelData.charges
             ready: control.modelData.ready
-            // The cooldown as a fraction of this ability's own, so a long
-            // reload and a short one both wind the bar over its full sweep.
-            cooling: control.modelData.def && control.modelData.def.cooldown > 0 ? control.modelData.cooldownRemaining / control.modelData.def.cooldown : 0
+            cooling: control.modelData.cooling
 
             // A slot carrying no definition binds nothing and fires nothing —
             // a loadout typo must not reach the bus.
