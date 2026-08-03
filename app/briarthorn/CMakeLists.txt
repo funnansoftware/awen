@@ -41,6 +41,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/weapons/DataMissileGuided.qml
         qml/database/weapons/DataMissileKinetic.qml
         qml/input/AbilityInput.qml
+        qml/input/ActiveDevice.qml
         qml/input/Keymap.qml
         qml/model/AbilitySlot.qml
         qml/model/Detonation.qml
@@ -63,6 +64,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemThreat.qml
         qml/systems/SystemWeapon.qml
         qml/themes/Aurora.qml
+        qml/ui/AbilityButton.qml
         qml/ui/ControlCap.qml
         qml/ui/Joystick.qml
         qml/ui/RangeRing.qml
@@ -70,7 +72,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/SymbolFlare.qml
         qml/ui/TouchAbilities.qml
         qml/ui/TouchArrow.qml
-        qml/ui/TouchButton.qml
+        qml/ui/ViewAbilities.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
         qml/ui/ViewSettings.qml

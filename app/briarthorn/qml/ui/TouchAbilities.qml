@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../model"
 
-// The touch ability rack: one round button per ability the flown craft
+// The touch ability rack: one square button per ability the flown craft
 // carries, laid along a quarter circle swept from the bottom edge round to the
 // right edge, so a thumb pivoting in that corner reaches every one of them
 // without the hand leaving the display. The scope's range pair sits at that
@@ -28,7 +28,7 @@ Item {
     // button sits halfway round it instead.
     readonly property real step: root.count > 1 ? 90 / (root.count - 1) : 0
 
-    // Button diameter: a thumb-sized target, shrunk to keep neighbours off each
+    // Button side: a thumb-sized target, shrunk to keep neighbours off each
     // other once the arc carries enough of them to crowd.
     readonly property real buttonSize: {
         const spread = root.radius * root.step * Math.PI / 180;
@@ -63,7 +63,7 @@ Item {
     Repeater {
         model: root.loadout
 
-        TouchButton {
+        AbilityButton {
             id: control
 
             required property int index
@@ -78,11 +78,14 @@ Item {
             x: root.pivotX - Math.cos(control.bearing) * root.radius - width / 2
             y: root.pivotY - Math.sin(control.bearing) * root.radius - height / 2
 
+            // A thumb on the button is the control; there is nothing to caption
+            // it with, so the rack's buttons carry no cap at all.
+            showControl: false
             label: control.modelData.def ? control.modelData.def.label : ""
             charges: control.modelData.charges
             ready: control.modelData.ready
             // The cooldown as a fraction of this ability's own, so a long
-            // reload and a short one both wind the rim over their full sweep.
+            // reload and a short one both wind the bar over its full sweep.
             cooling: control.modelData.def && control.modelData.def.cooldown > 0 ? control.modelData.cooldownRemaining / control.modelData.def.cooldown : 0
 
             // A slot carrying no definition binds nothing and fires nothing —

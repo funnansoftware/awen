@@ -1,60 +1,19 @@
-pragma ComponentBehavior: Bound
-
 import QtQuick
 import "../input"
-import "../model"
 import "../themes"
 
-// The control hint line: the fixed flight keys, then one chip per ability the
-// flown craft carries, captioned with whatever that ability is bound to right
-// now. Nothing here names an ability, so a new one appears the moment a loadout
-// carries it and follows every rebind.
-Row {
+// The flight hint line: the fixed controls the craft is flown on, phrased for
+// whichever device the player is driving with. It names no ability — the row of
+// ability buttons beneath it carries those, captioned with their own live
+// bindings — so nothing here follows a rebind.
+Text {
     id: root
 
-    // The keymap the captions read, and the flown craft's live loadout.
-    required property Keymap keymap
-    required property list<AbilitySlot> loadout
+    // Which device the player is on; the pad and the keyboard fly the same
+    // craft on entirely different controls.
+    required property ActiveDevice device
 
-    spacing: 14
-
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: qsTr("W thrust · A/D turn · WHEEL range")
-        color: Style.theme.textMuted
-        font.pixelSize: 13
-    }
-
-    Repeater {
-        model: root.loadout
-
-        Row {
-            id: chip
-
-            required property AbilitySlot modelData
-
-            readonly property string ability: chip.modelData.def ? chip.modelData.def.name : ""
-
-            spacing: 5
-
-            ControlCap {
-                anchors.verticalCenter: parent.verticalCenter
-                label: root.keymap.keyLabel(root.keymap.keyFor(chip.ability))
-            }
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: chip.modelData.def ? chip.modelData.def.label : ""
-                color: Style.theme.textLabel
-                font { pixelSize: 13; bold: true; letterSpacing: 1 }
-            }
-        }
-    }
-
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: qsTr("ESC controls")
-        color: Style.theme.textMuted
-        font.pixelSize: 13
-    }
+    text: root.device.pad ? qsTr("LEFT STICK fly · D-PAD range · START controls") : qsTr("W thrust · A/D turn · WHEEL range · ESC controls")
+    color: Style.theme.textMuted
+    font { pixelSize: 12; family: Style.monospace }
 }

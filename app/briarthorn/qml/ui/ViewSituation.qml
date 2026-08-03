@@ -200,8 +200,7 @@ Item {
         visible: root.showNorth
         text: "N"
         color: Style.theme.textBright
-        font.bold: true
-        font.pixelSize: root.northFontSize
+        font { bold: true; pixelSize: root.northFontSize; family: Style.monospace }
         x: root.centerX + Math.sin(northRad) * seatRadius - width / 2
         y: root.centerY - Math.cos(northRad) * seatRadius - height / 2
     }

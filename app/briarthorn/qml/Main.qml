@@ -38,6 +38,11 @@ Window {
     // this table and every ability binding re-pushes off it.
     readonly property Keymap keymap: Keymap {}
 
+    // What the player is flying with right now. Every input route below reports
+    // into it, and the HUD swaps its controls and their captions off it: the
+    // thumb rack and stick, key caps, or the pad's own button glyphs.
+    readonly property ActiveDevice device: ActiveDevice {}
+
     width: 1280
     height: 720
     visible: true
@@ -87,6 +92,9 @@ Window {
         Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
+            // Any key at all hands the HUD back to the keyboard, bound or not:
+            // a player reaching for keys wants the key caps, not the pad's.
+            root.device.kind = ActiveDevice.Keyboard;
             if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
                 root.openSettings();
                 event.accepted = true;
@@ -102,10 +110,12 @@ Window {
         // Controller events ignore focus entirely, so handing the page the
         // keyboard is not enough — the pad route is switched here instead.
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
+            root.device.moved(value);
             if (!settings.open)
                 actions.axisMoved(axis, value);
         }
         Gamepad.onButtonPressed: (deviceId, button) => {
+            root.device.kind = ActiveDevice.Gamepad;
             if (settings.open)
                 settings.padPressed(button);
             else if (button === Gamepad.Button.Start)
@@ -258,6 +268,9 @@ Window {
 
             enabled: !settings.open
             onWheel: event => {
+                // The mouse belongs to the desktop set, so a scroll counts as
+                // keyboard play for the HUD's captions.
+                root.device.kind = ActiveDevice.Keyboard;
                 if (wheel.banked * event.angleDelta.y < 0)
                     wheel.banked = 0;
                 wheel.banked += event.angleDelta.y;
@@ -368,9 +381,13 @@ Window {
 
         // Ownship condition readout, top-left: a round dual-arc gauge (hull +
         // fuel) sized to the minimap opposite, so the two round instruments read
-        // as a matched, compact pair. Dropped below the top band.
+        // as a matched, compact pair. Dropped below the top band. The floor is
+        // what stops shrinking before the readouts inside do — the gauge sizes
+        // its own numbers off its short side, so a window small enough to take
+        // the instrument under it takes the numbers with it. The minimap carries
+        // the same floor to keep the pair a pair.
         ViewStatus {
-            width: Math.min(root.width, root.height) * 0.22
+            width: Math.max(110, Math.min(root.width, root.height) * 0.22)
             height: width
             ownship: game.ownship
 
@@ -382,19 +399,59 @@ Window {
             }
         }
 
-        // The control hints: the fixed flight keys, then one chip per ability
-        // the craft carries, captioned with whatever it is bound to right now.
-        // A touch device has no controls to caption and flies from the two
-        // corner controls instead, so the line gives way to the rack there.
-        ViewHints {
-            visible: !TouchScreen.available
+        // The ability rack, bottom-right: one square button per carried
+        // ability, each capped with the key or the pad button that fires it. It
+        // posts the same ability record the key and pad bindings post, so it
+        // adds no second invocation path. A thumb landing on one hands the HUD
+        // back to the touch controls.
+        //
+        // Docked in the corner rather than centred, and deliberately: the
+        // scope's centre column carries ownship, its acquisition pulse, the
+        // decoys it sheds astern and the sector this scenario's pursuer
+        // converges through, and a centred rack sits on all four at once. The
+        // buttons are captions and clocks — a key or a pad button is what
+        // actually fires an ability — so the rack is what gives way.
+        ViewAbilities {
+            id: abilities
+
+            visible: !root.device.touch && !settings.open
+            // Smaller than a touch target: nothing here is ever pressed by a
+            // thumb, because a touchscreen press hands the HUD to the arc rack
+            // instead. Sized so the rack clears ownship's own bearing line as
+            // well as its column on any window taller than about 720.
+            buttonSize: Math.max(44, Math.min(root.width, root.height) * 0.07)
+            // The rack may reach in from the margin as far as ownship's pulse
+            // and no further, so a craft carrying six abilities shrinks its
+            // buttons rather than growing across the scope centre.
+            maximumWidth: root.width / 2 - 48 - 20
             keymap: root.keymap
             loadout: game.ownship.abilities
+            device: root.device
+            onInvoked: ability => touched.post({ ability: ability })
+            onTouched: root.device.kind = ActiveDevice.Touch
+
+            anchors {
+                right: parent.right
+                bottom: parent.bottom
+                margins: 20
+            }
+        }
+
+        // The flight hints, along the bottom edge beside the rack: the fixed
+        // controls the craft flies on, phrased for the device in the player's
+        // hands. Centred on the window rather than hung off the rack — it
+        // captions the flight controls, not the abilities — and seated at the
+        // very bottom, which is what keeps it off the ownship symbol on a tall
+        // display. A touch device flies from the two corner controls instead
+        // and has nothing to caption, so the line gives way with the rack.
+        ViewHints {
+            visible: abilities.visible
+            device: root.device
 
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: parent.bottom
-                bottomMargin: 24
+                bottomMargin: 20
             }
         }
 
@@ -406,16 +463,20 @@ Window {
 
             implicitWidth: root.width * 0.125
             // Touch play only: the on-screen stick shows on phones, tablets and
-            // touch browsers, and stays hidden where keys and a gamepad already
-            // drive the axes.
-            visible: TouchScreen.available && !settings.open
+            // touch browsers, and gives way the moment keys or a gamepad take
+            // over — including on a laptop that has both.
+            visible: TouchScreen.available && root.device.touch && !settings.open
             onValueXChanged: axisSteer.invoke(valueX)
             // The stick has no reverse, so a downward pull must not subtract
             // from a throttle another source (keys, pad) is holding up.
             onValueYChanged: axisThrottle.invoke(Math.max(0, valueY))
-            onActiveChanged: if (!active) {
-                axisSteer.invoke(0);
-                axisThrottle.invoke(0);
+            onActiveChanged: {
+                if (stick.active)
+                    root.device.kind = ActiveDevice.Touch;
+                else {
+                    axisSteer.invoke(0);
+                    axisThrottle.invoke(0);
+                }
             }
 
             anchors {
@@ -425,13 +486,13 @@ Window {
             }
         }
 
-        // The ability rack, bottom-right: one round button per carried ability
-        // on a quarter arc swept between the two edges, under the right thumb
-        // as the stick is under the left. It posts the same ability record the
-        // key and pad bindings post, so touch adds no second invocation path.
+        // The touch ability rack, bottom-right: one square button per carried
+        // ability on a quarter arc swept between the two edges, under the right
+        // thumb as the stick is under the left. It posts the same ability record
+        // the key and pad bindings post, so touch adds no second invocation path.
         TouchAbilities {
             radius: Math.min(root.width, root.height) * 0.28
-            visible: TouchScreen.available && !settings.open
+            visible: TouchScreen.available && root.device.touch && !settings.open
             loadout: game.ownship.abilities
             onInvoked: ability => touched.post({ ability: ability })
             // The range pair at the rack's pivot drives the projection direct:
@@ -455,7 +516,7 @@ Window {
         ViewSituation {
             id: minimap
 
-            width: Math.min(root.width, root.height) * 0.22
+            width: Math.max(110, Math.min(root.width, root.height) * 0.22)
             height: width
 
             projection: projection
@@ -487,8 +548,8 @@ Window {
         // when a controller is connected, so the gamepad path is visible.
         Text {
             text: qsTr("controller connected")
-            color: "#66bfff"
-            font.pixelSize: 13
+            color: Style.theme.textLabel
+            font { pixelSize: 12; family: Style.monospace }
             visible: scene.padConnected
 
             anchors {

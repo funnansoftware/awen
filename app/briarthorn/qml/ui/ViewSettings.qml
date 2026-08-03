@@ -304,7 +304,7 @@ Item {
             text: row.slot.def ? row.slot.def.label : ""
             color: row.selected ? Style.theme.textBright : Style.theme.textPrimary
             anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
-            font { pixelSize: 14; bold: true; letterSpacing: 1 }
+            font { pixelSize: 14; bold: true; letterSpacing: Style.theme.capsTracking }
         }
 
         Row {
@@ -313,7 +313,6 @@ Item {
 
             Cap {
                 ability: row.ability
-                pad: false
                 label: root.keymap.keyLabel(root.keymap.keyFor(row.ability))
                 onPicked: row.picked()
             }
@@ -321,6 +320,7 @@ Item {
             Cap {
                 ability: row.ability
                 pad: true
+                code: root.keymap.buttonFor(row.ability)
                 label: root.keymap.buttonLabel(root.keymap.buttonFor(row.ability))
                 onPicked: row.picked()
             }
@@ -328,12 +328,12 @@ Item {
     }
 
     // One rebindable control: what is bound now, and a tap to capture the next
-    // control pressed onto it.
+    // control pressed onto it. The device it belongs to is the cap's own pad
+    // flag, which is what decides how it draws as well as what it captures.
     component Cap: ControlCap {
         id: cap
 
         required property string ability
-        required property bool pad
 
         signal picked
 
@@ -358,7 +358,7 @@ Item {
         signal tapped
 
         color: choice.alarming ? Style.theme.warn : Style.theme.accent
-        font { pixelSize: 13; bold: true; letterSpacing: 1 }
+        font { pixelSize: 13; bold: true; letterSpacing: Style.theme.capsTracking }
 
         MouseArea {
             anchors.fill: parent
