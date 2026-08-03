@@ -3,9 +3,11 @@
 #include "GamepadBackend.h"
 #include "GamepadTranslate.h"
 
+#include <algorithm>
 #include <unordered_map>
 
 #include <QGuiApplication>
+#include <QList>
 #include <QQmlEngine>
 #include <QString>
 #include <QTimer>
@@ -83,8 +85,10 @@ namespace
             timer_->start(pollInterval_);
             // Drop to the idle heartbeat promptly when the app deactivates.
             connect(qApp, &QGuiApplication::applicationStateChanged, this, [this] { updatePollRate(); });
-            // Drain once now to open any controller already attached at startup.
-            poll();
+            // Deliberately no drain here: SDL_Init has already queued an ADDED
+            // event for every controller present at startup, and this runs from
+            // the first attach, before QML binds that item's handlers — draining
+            // now would announce them to nobody. The first tick does it instead.
         }
 
         ~GamepadSource() override
@@ -121,6 +125,22 @@ namespace
         {
             idlePollInterval_ = interval;
             updatePollRate();
+        }
+
+        /// @brief The ids of the gamepads open right now, ascending — what a
+        /// Gamepad attaching later seeds its devices property from.
+        [[nodiscard]] auto devices() const -> QList<int>
+        {
+            auto ids = QList<int>{};
+            ids.reserve(static_cast<qsizetype>(gamepads_.size()));
+            for (const auto& entry : gamepads_)
+            {
+                ids.append(static_cast<int>(entry.first));
+            }
+            // The map iterates in no set order; sort so the property reads the
+            // same list every time and only really changes on a hotplug.
+            std::sort(ids.begin(), ids.end());
+            return ids;
         }
 
     signals:
@@ -253,14 +273,30 @@ auto awen::attachGamepad(Gamepad* gamepad, QObject* attachee) -> void
         return;
     }
 
-    QObject::connect(source, &GamepadSource::connected, gamepad, &Gamepad::connected);
-    QObject::connect(source, &GamepadSource::disconnected, gamepad, &Gamepad::disconnected);
+    // The device set updates before the edge, so a connected handler already sees
+    // the new controller in devices.
+    QObject::connect(source, &GamepadSource::connected, gamepad,
+                     [gamepad, source](int deviceId)
+                     {
+                         gamepad->setDevices(source->devices());
+                         emit gamepad->connected(deviceId);
+                     });
+    QObject::connect(source, &GamepadSource::disconnected, gamepad,
+                     [gamepad, source](int deviceId)
+                     {
+                         gamepad->setDevices(source->devices());
+                         emit gamepad->disconnected(deviceId);
+                     });
     QObject::connect(source, &GamepadSource::buttonPressed, gamepad,
                      [gamepad](int deviceId, int button) { emit gamepad->buttonPressed(deviceId, static_cast<Gamepad::Button>(button)); });
     QObject::connect(source, &GamepadSource::buttonReleased, gamepad,
                      [gamepad](int deviceId, int button) { emit gamepad->buttonReleased(deviceId, static_cast<Gamepad::Button>(button)); });
     QObject::connect(source, &GamepadSource::axisChanged, gamepad, [gamepad](int deviceId, int axis, double value)
                      { emit gamepad->axisChanged(deviceId, static_cast<Gamepad::Axis>(axis), value); });
+
+    // A controller opened before this instance existed has no edge left to fire,
+    // so hand over the set the source already holds.
+    gamepad->setDevices(source->devices());
 
     // Cadence writes pass through to the shared source (engine-wide, last write
     // wins). Wired before QML can assign, so no initial push is needed.

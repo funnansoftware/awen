@@ -54,3 +54,18 @@ auto Gamepad::setIdlePollInterval(int intervalMs) -> void
     idlePollInterval_ = interval;
     emit idlePollIntervalChanged();
 }
+
+auto Gamepad::devices() const -> QList<int>
+{
+    return devices_;
+}
+
+auto Gamepad::setDevices(const QList<int>& devices) -> void
+{
+    if (devices == devices_)
+    {
+        return;
+    }
+    devices_ = devices;
+    emit devicesChanged();
+}
