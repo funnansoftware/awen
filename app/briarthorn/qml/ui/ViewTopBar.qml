@@ -38,8 +38,8 @@ Rectangle {
     // The build version, right-aligned and dim.
     Text {
         text: root.version
-        color: "#66ffffff"
-        font.pixelSize: 12
+        color: Style.theme.textMuted
+        font { pixelSize: 12; family: Style.monospace }
         anchors { right: parent.right; rightMargin: 16; verticalCenter: parent.verticalCenter }
     }
 
@@ -57,7 +57,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             text: parent.label
             color: Style.theme.textLabel
-            font { pixelSize: 10; bold: true; letterSpacing: 1 }
+            font { pixelSize: 10; bold: true; letterSpacing: Style.theme.capsTracking; family: Style.monospace }
         }
 
         Text {
@@ -72,7 +72,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             text: parent.unit
             color: Style.theme.textLabel
-            font { pixelSize: 10; bold: true; letterSpacing: 1 }
+            font { pixelSize: 10; bold: true; letterSpacing: Style.theme.capsTracking; family: Style.monospace }
         }
     }
 

@@ -79,14 +79,14 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.ownship ? Math.round(root.ownship.health) : "--"
             color: root.hullLow ? Style.theme.warn : Style.theme.accent
-            font { pixelSize: root.shortSide * 0.15; family: Style.monospace; bold: true }
+            font { pixelSize: Math.max(11, root.shortSide * 0.15); family: Style.monospace; bold: true }
         }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.ownship ? Math.round(root.fuelFrac * 100) + "%" : "--"
             color: root.fuelLow ? Style.theme.warn : Style.theme.fuel
-            font.pixelSize: root.shortSide * 0.11
+            font.pixelSize: Math.max(9, root.shortSide * 0.11)
             font.family: Style.monospace
         }
     }

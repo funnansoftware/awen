@@ -47,7 +47,10 @@ ShapeRing {
                 visible: !root.inGap(bearing + ticks.angleOffset)
                 text: Math.round(bearing) === 0 ? "N" : Math.round(bearing)
                 color: Style.theme.textPrimary
-                font.pixelSize: Math.max(10, root.radius * 0.02)
+                font {
+                    pixelSize: Math.max(10, root.radius * 0.02)
+                    family: Style.monospace
+                }
                 scale: Math.round(bearing) === 0 ? 1.5 : 1
 
                 x: anchor.x - width / 2
@@ -61,7 +64,11 @@ ShapeRing {
     Text {
         color: Style.theme.textPrimary
         text: Math.round(parent.range)
-        font.weight: Font.Bold
+        font {
+            pixelSize: 12
+            weight: Font.Bold
+            family: Style.monospace
+        }
 
         x: parent.gapCenter.x - width / 2
         y: parent.gapCenter.y - height / 2

@@ -62,12 +62,18 @@ Item {
             visible: root.showLabel
             text: root.label !== "" ? root.label : root.def.label
             color: Style.theme.textLabel
-            font.pixelSize: 10
+            // Sized off the mark it captions, not fixed: one Symbol serves the
+            // attack scope, the minimap and the condition gauge, and a constant
+            // here reads as a different label on each.
+            font {
+                pixelSize: Math.max(8, root.symbolSize * 0.37)
+                family: Style.monospace
+            }
 
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: parent.bottom
-                topMargin: 2
+                topMargin: Math.max(2, root.symbolSize * 0.07)
             }
         }
     }

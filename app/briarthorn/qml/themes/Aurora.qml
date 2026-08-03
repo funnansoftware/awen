@@ -10,7 +10,9 @@ QtObject {
     property color accentBright: "#FF7DF9FF"
     property color frameInner: "#FF0E3A44"
     property color gaugeTrack: "#1A66E6FF"
-    property int frameWidth: 2
+    // Tracking on the bold uppercase chrome — labels, units and the page's
+    // own actions. One role, so one number rather than one per caption.
+    property real capsTracking: 1
     property int panelRadius: 2
     property color textPrimary: "#FFCFF7FF"
     property color textHeading: "#FF74D5E8"
