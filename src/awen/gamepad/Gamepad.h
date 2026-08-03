@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QtQml/qqmlregistration.h>
+#include <QList>
 #include <QObject>
 
 #include <chrono>
@@ -38,6 +39,12 @@ namespace awen
         /// @brief Milliseconds between polls while no controller is connected or
         /// the app is inactive; clamped and engine-wide like pollInterval.
         Q_PROPERTY(int idlePollInterval READ idlePollInterval WRITE setIdlePollInterval NOTIFY idlePollIntervalChanged)
+
+        /// @brief The ids of the controllers connected right now, ascending. An
+        /// item that attaches after a controller was opened has already missed
+        /// that controller's connected edge, so bind state to this rather than
+        /// accumulate it from the edges.
+        Q_PROPERTY(QList<int> devices READ devices NOTIFY devicesChanged)
 
     public:
         /// @brief A gamepad button, matching SDL's SDL_GamepadButton values.
@@ -105,9 +112,18 @@ namespace awen
         [[nodiscard]] auto idlePollInterval() const -> int;
         auto setIdlePollInterval(int intervalMs) -> void;
 
+        [[nodiscard]] auto devices() const -> QList<int>;
+
+        /// @brief Mirror the backend's set of open controllers onto this instance;
+        /// called by attachGamepad to seed it and on every hotplug to keep it in
+        /// step. Not reachable from QML, where devices is read-only.
+        /// @param devices The ids of the controllers now connected, ascending.
+        auto setDevices(const QList<int>& devices) -> void;
+
     signals:
         /// @brief A controller was plugged in / unplugged. @p deviceId identifies
-        /// it in the axis and button signals.
+        /// it in the axis and button signals. These are edges only: what is
+        /// connected right now is the devices property.
         void connected(int deviceId);
         void disconnected(int deviceId);
 
@@ -124,9 +140,11 @@ namespace awen
 
         void pollIntervalChanged();
         void idlePollIntervalChanged();
+        void devicesChanged();
 
     private:
         std::chrono::milliseconds pollInterval_{DefaultPollInterval};         ///< See pollInterval.
         std::chrono::milliseconds idlePollInterval_{DefaultIdlePollInterval}; ///< See idlePollInterval.
+        QList<int> devices_;                                                  ///< See devices.
     };
 }

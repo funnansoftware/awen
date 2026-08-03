@@ -68,7 +68,10 @@ Window {
     Item {
         id: scene
 
-        property bool padConnected: false
+        // Read off the live device set rather than accumulated from the connect
+        // edge: a controller plugged in before launch is opened before this item
+        // ever attaches, so there is no edge left for it to catch.
+        readonly property bool padConnected: Gamepad.devices.length > 0
 
         anchors.fill: parent
         focus: !settings.open // the window's keys go here unless the page has them
@@ -96,8 +99,6 @@ Window {
                 event.accepted = actions.keyReleased(event.key);
         }
 
-        Gamepad.onConnected: deviceId => scene.padConnected = true
-        Gamepad.onDisconnected: deviceId => scene.padConnected = false
         // Controller events ignore focus entirely, so handing the page the
         // keyboard is not enough — the pad route is switched here instead.
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
