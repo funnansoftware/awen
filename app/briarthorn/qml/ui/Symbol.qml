@@ -29,7 +29,7 @@ Item {
 
     readonly property Data def: Database.dataFor(root.classification)
 
-    width: symbolSize * def.symbolScale
+    width: root.symbolSize * root.def.symbolScale
     height: width
 
     ShapePolygon {

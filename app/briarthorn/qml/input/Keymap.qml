@@ -138,9 +138,9 @@ QtObject {
     // Binds one control to one ability, exclusively: whatever other ability held
     // it loses it, so one press can never post two intents. Returns whether the
     // control was taken, and remembers which ability paid for it. Key code 0 is
-    // refused with the negatives — no keyboard produces it, so a binding on it
-    // would be dead but still live to a synthesised event. Button 0 is South,
-    // a face button the loadout ships bindings on, so the pad floor is 0.
+    // refused with the negatives — no keyboard produces it, only synthesised
+    // events — but button 0 is South, a face button the loadout ships bindings
+    // on, so the pad floor alone is 0.
     function bind(name: string, pad: bool, code: int): bool {
         const floor = pad ? 0 : 1;
         if (name === "" || code < floor || root.reserved(pad, code))

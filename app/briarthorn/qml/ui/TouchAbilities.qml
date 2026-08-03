@@ -7,11 +7,9 @@ import "../model"
 // carries, laid along a quarter circle swept from the bottom edge round to the
 // right edge, so a thumb pivoting in that corner reaches every one of them
 // without the hand leaving the display. The scope's range pair sits at that
-// pivot, the one spot the thumb never travels to reach. The stick's
-// counterpart in the opposite corner, and like it, only a touch device shows
-// it. Nothing here names an ability — the rack is the loadout, so a craft
-// carrying a new one grows a button for it and a rack of one still lands under
-// the thumb.
+// pivot, the one spot the thumb never travels to reach. Nothing here names an
+// ability — the rack is the loadout, so a craft carrying a new one grows a
+// button for it and a rack of one still lands under the thumb.
 Item {
     id: root
 

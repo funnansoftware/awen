@@ -52,8 +52,8 @@ Item {
             id: mark
             required property Track modelData
 
-            readonly property real azimuthRad: modelData.azimuth * Math.PI / 180
-            readonly property real trueRange: modelData.range * root.pxPerMeter
+            readonly property real azimuthRad: mark.modelData.azimuth * Math.PI / 180
+            readonly property real trueRange: mark.modelData.range * root.pxPerMeter
 
             // Beyond the scale, and so clamped: the symbol steps out to its
             // seat past the clamp radius rather than plotting where it truly
@@ -79,8 +79,8 @@ Item {
                 }
             }
 
-            x: root.centerX + Math.sin(azimuthRad) * screenRange - width / 2
-            y: root.centerY - Math.cos(azimuthRad) * screenRange - height / 2
+            x: root.centerX + Math.sin(mark.azimuthRad) * mark.screenRange - width / 2
+            y: root.centerY - Math.cos(mark.azimuthRad) * mark.screenRange - height / 2
 
             // A contact classified as a countermeasure plots as a burning
             // flare, no faction symbol or label — briardart skips the symbol

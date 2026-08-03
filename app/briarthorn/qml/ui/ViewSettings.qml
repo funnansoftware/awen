@@ -49,61 +49,6 @@ Item {
         root.keymap.displaced = "";
     }
 
-    // The ability at a row, or empty past the end or on a slot with no
-    // definition.
-    function abilityAt(index: int): string {
-        if (index < 0 || index >= root.loadout.length)
-            return "";
-        const def = root.loadout[index].def;
-        return def ? def.name : "";
-    }
-
-    function move(delta: int) {
-        if (root.loadout.length > 0)
-            root.cursor = (root.cursor + delta + root.loadout.length) % root.loadout.length;
-    }
-
-    function capture(name: string, pad: bool) {
-        if (name === "")
-            return;
-        root.capturing = name;
-        root.capturingPad = pad;
-        root.resetArmed = false;
-        root.keymap.displaced = "";
-    }
-
-    // The capture gate, in front of everything else: while a row is waiting, the
-    // control the player presses becomes its binding and never does its usual
-    // job. A control the keymap refuses is swallowed and the row keeps waiting,
-    // so a mis-press onto a flight key binds nothing. Returns whether the event
-    // was taken.
-    function captured(pad: bool, code: int): bool {
-        if (root.capturing === "")
-            return false;
-        if (pad ? code === Gamepad.Button.East : code === Qt.Key_Escape) {
-            root.capturing = "";
-            return true;
-        }
-        if (pad !== root.capturingPad)
-            return true;
-        if (root.keymap.bind(root.capturing, pad, code))
-            root.capturing = "";
-        return true;
-    }
-
-    // Two presses, because it throws away every rebind and there is no undo.
-    function resetAll() {
-        if (root.resetArmed)
-            root.keymap.reset();
-        root.resetArmed = !root.resetArmed;
-    }
-
-    function clearRow() {
-        const name = root.abilityAt(root.cursor);
-        root.keymap.unbind(name, false);
-        root.keymap.unbind(name, true);
-    }
-
     Keys.onPressed: event => {
         event.accepted = true;
         if (event.isAutoRepeat || root.captured(false, event.key))
@@ -132,36 +77,6 @@ Item {
         }
     }
     Keys.onReleased: event => event.accepted = true
-
-    // The pad's whole vocabulary here. Controller events ignore focus entirely,
-    // so Main hands them over explicitly while the page is up.
-    function padPressed(code: int) {
-        if (root.captured(true, code))
-            return;
-        switch (code) {
-        case Gamepad.Button.DpadUp:
-            root.move(-1);
-            break;
-        case Gamepad.Button.DpadDown:
-            root.move(1);
-            break;
-        case Gamepad.Button.South:
-            root.capture(root.abilityAt(root.cursor), true);
-            break;
-        case Gamepad.Button.West:
-            root.clearRow();
-            break;
-        case Gamepad.Button.North:
-            root.resetAll();
-            break;
-        case Gamepad.Button.East:
-        case Gamepad.Button.Start:
-            root.closed();
-            break;
-        default:
-            break;
-        }
-    }
 
     // Opaque, and swallowing every pointer event: the on-screen stick sits
     // underneath, and a bare Item does not stop its handler grabbing a touch.
@@ -363,6 +278,91 @@ Item {
         MouseArea {
             anchors.fill: parent
             onClicked: choice.tapped()
+        }
+    }
+
+    // The ability at a row, or empty past the end or on a slot with no
+    // definition.
+    function abilityAt(index: int): string {
+        if (index < 0 || index >= root.loadout.length)
+            return "";
+        const def = root.loadout[index].def;
+        return def ? def.name : "";
+    }
+
+    function move(delta: int) {
+        if (root.loadout.length > 0)
+            root.cursor = (root.cursor + delta + root.loadout.length) % root.loadout.length;
+    }
+
+    function capture(name: string, pad: bool) {
+        if (name === "")
+            return;
+        root.capturing = name;
+        root.capturingPad = pad;
+        root.resetArmed = false;
+        root.keymap.displaced = "";
+    }
+
+    // The capture gate, in front of everything else: while a row is waiting, the
+    // control the player presses becomes its binding and never does its usual
+    // job. A control the keymap refuses is swallowed and the row keeps waiting,
+    // so a mis-press onto a flight key binds nothing. Returns whether the event
+    // was taken.
+    function captured(pad: bool, code: int): bool {
+        if (root.capturing === "")
+            return false;
+        if (pad ? code === Gamepad.Button.East : code === Qt.Key_Escape) {
+            root.capturing = "";
+            return true;
+        }
+        if (pad !== root.capturingPad)
+            return true;
+        if (root.keymap.bind(root.capturing, pad, code))
+            root.capturing = "";
+        return true;
+    }
+
+    // Two presses, because it throws away every rebind and there is no undo.
+    function resetAll() {
+        if (root.resetArmed)
+            root.keymap.reset();
+        root.resetArmed = !root.resetArmed;
+    }
+
+    function clearRow() {
+        const name = root.abilityAt(root.cursor);
+        root.keymap.unbind(name, false);
+        root.keymap.unbind(name, true);
+    }
+
+    // The pad's whole vocabulary here. Controller events ignore focus entirely,
+    // so Main hands them over explicitly while the page is up.
+    function padPressed(code: int) {
+        if (root.captured(true, code))
+            return;
+        switch (code) {
+        case Gamepad.Button.DpadUp:
+            root.move(-1);
+            break;
+        case Gamepad.Button.DpadDown:
+            root.move(1);
+            break;
+        case Gamepad.Button.South:
+            root.capture(root.abilityAt(root.cursor), true);
+            break;
+        case Gamepad.Button.West:
+            root.clearRow();
+            break;
+        case Gamepad.Button.North:
+            root.resetAll();
+            break;
+        case Gamepad.Button.East:
+        case Gamepad.Button.Start:
+            root.closed();
+            break;
+        default:
+            break;
         }
     }
 }
