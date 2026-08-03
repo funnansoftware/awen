@@ -114,12 +114,6 @@ namespace awen
 
         [[nodiscard]] auto devices() const -> QList<int>;
 
-        /// @brief Mirror the backend's set of open controllers onto this instance;
-        /// called by attachGamepad to seed it and on every hotplug to keep it in
-        /// step. Not reachable from QML, where devices is read-only.
-        /// @param devices The ids of the controllers now connected, ascending.
-        auto setDevices(const QList<int>& devices) -> void;
-
     signals:
         /// @brief A controller was plugged in / unplugged. @p deviceId identifies
         /// it in the axis and button signals. These are edges only: what is
@@ -143,6 +137,14 @@ namespace awen
         void devicesChanged();
 
     private:
+        /// @brief Mirror the backend's set of open controllers onto this instance;
+        /// called by attachGamepad to seed it and on every hotplug to keep it in
+        /// step. Private with attachGamepad as the one friend, so the mirror has
+        /// exactly one writer and the compiler holds that boundary.
+        /// @param devices The ids of the controllers now connected, ascending.
+        auto setDevices(const QList<int>& devices) -> void;
+        friend auto attachGamepad(Gamepad* gamepad, QObject* attachee) -> void;
+
         std::chrono::milliseconds pollInterval_{DefaultPollInterval};         ///< See pollInterval.
         std::chrono::milliseconds idlePollInterval_{DefaultIdlePollInterval}; ///< See idlePollInterval.
         QList<int> devices_;                                                  ///< See devices.
