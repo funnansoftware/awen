@@ -180,11 +180,16 @@ TEST(Axis, StepsOncePerEngagement)
     call(*axis, "pushA", 1.0);
     EXPECT_EQ(axis->property("steps").toInt(), 1);
 
+    // Rest is the whole band, not just zero: dipping inside it re-arms.
+    call(*axis, "pushA", 0.4);
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 2);
+
     call(*axis, "pushA", 0.0);
-    EXPECT_EQ(axis->property("steps").toInt(), 1);
+    EXPECT_EQ(axis->property("steps").toInt(), 2);
 
     call(*axis, "pushA", -1.0);
-    EXPECT_EQ(axis->property("steps").toInt(), 2);
+    EXPECT_EQ(axis->property("steps").toInt(), 3);
     EXPECT_EQ(axis->property("lastStep").toInt(), -1);
 }
 
@@ -198,6 +203,14 @@ TEST(Axis, StepInjectsWithoutMovingTheFold)
     EXPECT_EQ(axis->property("steps").toInt(), 1);
     EXPECT_EQ(axis->property("lastStep").toInt(), 1);
     EXPECT_DOUBLE_EQ(axis->property("value").toDouble(), 0.0);
+
+    // Injection ignores where the fold sits: a held direction must not block
+    // steps arriving from another source.
+    call(*axis, "pushA", 1.0);
+    EXPECT_EQ(axis->property("steps").toInt(), 2);
+    step(*axis, -1);
+    EXPECT_EQ(axis->property("steps").toInt(), 3);
+    EXPECT_EQ(axis->property("lastStep").toInt(), -1);
 }
 
 TEST(Axis, DisabledSwallowsStepsUntilReEnabled)
