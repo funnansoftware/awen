@@ -9,6 +9,9 @@
 #     property; this file must be included after the subdirectories that
 #     register them, because linting resolves the in-project imports out of
 #     their generated .qmltypes.
+#   * Lintable QML lives under app/ or src/: the file list is a glob over those
+#     roots, so a module registered from anywhere else builds before lint but
+#     is never linted.
 #
 # Usage:
 #   cmake --build --preset <preset> --target qmllint
@@ -16,9 +19,11 @@
 #
 # Like qmlpreview, qmllint is not exported as an imported target, so it has to
 # be found on disk: a prebuilt kit keeps it in bin/, vcpkg relocates the Qt
-# tools to tools/Qt6/bin, and a cross build (wasm, android) has the host tools
-# under QT_HOST_PATH rather than in the target kit. Include after
-# find_package(Qt6), which is what defines QT6_INSTALL_PREFIX.
+# tools to tools/Qt6/bin, and a prebuilt-kit cross build (wasm, android) has
+# the host tools under QT_HOST_PATH rather than in the target kit. A vcpkg
+# cross build sets no QT_HOST_PATH, so its lint targets skip — linting runs on
+# the desktop presets. Include after find_package(Qt6), which is what defines
+# QT6_INSTALL_PREFIX.
 find_program(QMLLINT_EXECUTABLE
     NAMES qmllint
     HINTS
