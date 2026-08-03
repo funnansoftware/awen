@@ -47,4 +47,23 @@ Store {
             }
         }
     }
+
+    // Returns the player's craft to its opening state — pose, condition and
+    // every rack — so a game entered from the menu always starts clean.
+    function reset() {
+        root.ownship.posX = 0;
+        root.ownship.posY = 0;
+        root.ownship.heading = 0;
+        root.ownship.speed = 0;
+        root.ownship.commandedSteer = 0;
+        root.ownship.commandedThrottle = 0;
+        root.ownship.health = root.ownship.maxHealth;
+        root.ownship.fuel = root.ownship.maxFuel;
+        const slots = root.ownship.abilities;
+        for (let i = 0; i < slots.length; ++i) {
+            slots[i].cooldownRemaining = 0;
+            slots[i].pending = false;
+            slots[i].charges = slots[i].def ? slots[i].def.charges : -1;
+        }
+    }
 }

@@ -36,9 +36,15 @@ Item {
         angle: root.viewRotation
     }
 
+    // The fuzing missiles alone: delegates are Shapes, so modelling every
+    // entity would rebuild them all on each spawn — and the roster churns
+    // constantly once missiles and decoys fly. The state reads inside the
+    // filter keep it live, so a fuze tripping re-evaluates the list.
+    readonly property list<Entity> fuzing: entities.filter(e => e.weapon !== null && e.weapon.state === Weapon.State.Fuzing)
+
     // The fuzing lines.
     Repeater {
-        model: root.entities
+        model: root.fuzing
 
         ShapeLink {
             required property Entity modelData

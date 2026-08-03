@@ -15,6 +15,10 @@ Scenario {
     // The world the bandit's defensive scan reads.
     required property World world
 
+    // The half-size flare pod's load, named so reset() restores what the
+    // declaration armed.
+    readonly property int flareCharges: 6
+
     // The same fighter airframe the player flies, rated down a little so the
     // duel is winnable, and carrying a lighter loadout than the stock rack.
     readonly property Entity bandit: Entity {
@@ -33,12 +37,31 @@ Scenario {
             },
             AbilitySlot {
                 def: Abilities.defFor("flare")
-                charges: 6
+                charges: root.flareCharges
             }
         ]
     }
 
     entities: [root.bandit]
+
+    // Returns the bandit to its opening state — pose, condition and both
+    // racks — so a duel entered from the menu always starts the same fight.
+    function reset() {
+        root.bandit.posX = 0;
+        root.bandit.posY = -65000;
+        root.bandit.heading = 180;
+        root.bandit.speed = 0;
+        root.bandit.commandedSteer = 0;
+        root.bandit.commandedThrottle = 0;
+        root.bandit.health = root.bandit.maxHealth;
+        root.bandit.fuel = root.bandit.maxFuel;
+        root.bandit.abilities[0].charges = root.bandit.abilities[0].def.charges;
+        root.bandit.abilities[1].charges = root.flareCharges;
+        for (let i = 0; i < root.bandit.abilities.length; ++i) {
+            root.bandit.abilities[i].cooldownRemaining = 0;
+            root.bandit.abilities[i].pending = false;
+        }
+    }
 
     SystemPursuit {
         entity: root.bandit

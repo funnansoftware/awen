@@ -19,6 +19,7 @@ awen_add_qml_module(awen-shapes
         ShapeSector.qml
         ShapeSparkline.qml
         ShapeTicks.qml
+        ShapeTrail.qml
 )
 
 # Tests run natively only; the web and android presets set BUILD_TESTING=OFF.

@@ -43,6 +43,11 @@ Window {
     // thumb rack and stick, key caps, or the pad's own button glyphs.
     readonly property ActiveDevice device: ActiveDevice {}
 
+    // The launch screen versus the duel: while up, the menu scenario plays
+    // its hands-off demo behind the overlay, the HUD stands down and every
+    // input route feeds the menu cursor instead of the game.
+    property bool inMenu: true
+
     width: 1280
     height: 720
     visible: true
@@ -57,10 +62,11 @@ Window {
     onActiveChanged: if (!active)
         root.dropInput()
 
+    // Only ownship enrolls at startup: the menu demo spawns its own waves,
+    // and the duel's entities join when startDuel() enrolls them.
     Component.onCompleted: {
         root.world.add(game.ownship);
-        for (let i = 0; i < scenario.entities.length; ++i)
-            root.world.add(scenario.entities[i]);
+        root.startMenu();
     }
 
     // The one display projection both scopes share: ranging in or out moves the
@@ -100,6 +106,12 @@ Window {
             // Any key at all hands the HUD back to the keyboard, bound or not:
             // a player reaching for keys wants the key caps, not the pad's.
             root.device.kind = ActiveDevice.Keyboard;
+            // The launch screen takes the keys ahead of the action map, so a
+            // menu key can never fly the demo craft.
+            if (root.inMenu) {
+                event.accepted = menu.keyPressed(event.key);
+                return;
+            }
             if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
                 root.openSettings();
                 event.accepted = true;
@@ -108,7 +120,7 @@ Window {
             event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
-            if (!event.isAutoRepeat)
+            if (!event.isAutoRepeat && !root.inMenu)
                 event.accepted = actions.keyReleased(event.key);
         }
 
@@ -116,20 +128,26 @@ Window {
         // keyboard is not enough — the pad route is switched here instead.
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
             root.device.moved(value);
-            if (!settings.open)
+            if (settings.open)
+                return;
+            if (root.inMenu)
+                menu.axisMoved(axis, value);
+            else
                 actions.axisMoved(axis, value);
         }
         Gamepad.onButtonPressed: (deviceId, button) => {
             root.device.kind = ActiveDevice.Gamepad;
             if (settings.open)
                 settings.padPressed(button);
+            else if (root.inMenu)
+                menu.padPressed(button);
             else if (button === Gamepad.Button.Start)
                 root.openSettings();
             else
                 actions.buttonPressed(button);
         }
         Gamepad.onButtonReleased: (deviceId, button) => {
-            if (!settings.open)
+            if (!settings.open && !root.inMenu)
                 actions.buttonReleased(button);
         }
 
@@ -274,7 +292,7 @@ Window {
 
             property real banked: 0
 
-            enabled: !settings.open
+            enabled: !settings.open && !root.inMenu
             onWheel: event => {
                 // The mouse belongs to the desktop set, so a scroll counts as
                 // keyboard play for the HUD's captions.
@@ -298,6 +316,7 @@ Window {
         // systems (AI steering and trigger discipline), age ability clocks,
         // integrate poses, then resolve weapons, countermeasures and the
         // radar sweep — detection last, so tracks see the tick's outcome.
+        // The two scenarios share one slot in the run, gated on the mode.
         Systems {
             // The page stops the duel rather than letting it run on behind the
             // player. dropInput() posts the zeroed axes before this flips, and
@@ -313,8 +332,16 @@ Window {
                 queue: bus
             }
 
+            ScenarioMenu {
+                id: demo
+                enabled: root.inMenu
+                ownship: game.ownship
+                world: root.world
+            }
+
             ScenarioDuel {
                 id: scenario
+                enabled: !root.inMenu
                 ownship: game.ownship
                 world: root.world
             }
@@ -353,6 +380,7 @@ Window {
         ViewTopBar {
             id: topBar
 
+            visible: !root.inMenu
             credits: game.credits
             version: "v" + BuildInfo.version
 
@@ -370,6 +398,7 @@ Window {
         // plotting along the top edge clears the bar, and clips so nothing ever
         // renders up into it.
         ViewSituationAttack {
+            visible: !root.inMenu
             clip: true
             projection: projection
             observer: game.ownship
@@ -377,6 +406,7 @@ Window {
             entities: root.entities
             detonations: weapons.detonations
             symbolSize: height * 0.04
+            trailsRunning: !settings.open && !root.inMenu
 
             anchors {
                 left: parent.left
@@ -391,6 +421,7 @@ Window {
         // fuel) on the shared instrument side, so it and the minimap opposite
         // read as a matched, compact pair. Dropped below the top band.
         ViewStatus {
+            visible: !root.inMenu
             width: scene.instrumentSide
             height: width
             ownship: game.ownship
@@ -419,7 +450,7 @@ Window {
             // no further than the pulse's edge.
             readonly property real pulseReach: 48
 
-            visible: !root.device.touch && !settings.open
+            visible: !root.device.touch && !settings.open && !root.inMenu
             // Smaller than a touch target: nothing here is ever pressed by a
             // thumb, because a touchscreen press hands the HUD to the arc rack
             // instead. Sized so the rack clears ownship's own bearing line as
@@ -473,7 +504,7 @@ Window {
             // Touch play only: the on-screen stick shows on phones, tablets and
             // touch browsers, and gives way the moment keys or a gamepad take
             // over — including on a laptop that has both.
-            visible: TouchScreen.available && root.device.touch && !settings.open
+            visible: TouchScreen.available && root.device.touch && !settings.open && !root.inMenu
             onValueXChanged: axisSteer.invoke(valueX)
             // The stick has no reverse, so a downward pull must not subtract
             // from a throttle another source (keys, pad) is holding up.
@@ -500,7 +531,7 @@ Window {
         // the key and pad bindings post, so touch adds no second invocation path.
         TouchAbilities {
             radius: Math.min(root.width, root.height) * 0.28
-            visible: TouchScreen.available && root.device.touch && !settings.open
+            visible: TouchScreen.available && root.device.touch && !settings.open && !root.inMenu
             loadout: game.ownship.abilities
             onInvoked: ability => touched.post({ ability: ability })
             // The range pair at the rack's pivot steps the shared range axis,
@@ -525,6 +556,7 @@ Window {
         ViewSituation {
             id: minimap
 
+            visible: !root.inMenu
             width: scene.instrumentSide
             height: width
 
@@ -544,6 +576,7 @@ Window {
             showOwnshipPulse: false
             showTrackLabels: false
             showEngagements: false
+            showTrails: false
 
             anchors {
                 right: parent.right
@@ -559,7 +592,7 @@ Window {
             text: qsTr("controller connected")
             color: Style.theme.textLabel
             font { pixelSize: 12; family: Style.monospace }
-            visible: scene.padConnected
+            visible: scene.padConnected && !root.inMenu
 
             anchors {
                 right: parent.right
@@ -567,6 +600,37 @@ Window {
                 top: minimap.bottom
                 topMargin: 6
             }
+        }
+
+        // The launch screen's backdrop: the same live situation display, its
+        // picture pushed right and down (briardart's menu-demo geometry) so
+        // the demo dogfight plays clear of the title band and the action rail.
+        ViewSituation {
+            visible: root.inMenu
+            projection: projection
+            observer: game.ownship
+            tracks: detection.tracks
+            entities: root.entities
+            detonations: weapons.detonations
+            radiusFraction: 0.64
+            verticalShift: 0.18
+            horizontalShift: 0.25
+            symbolSize: height * 0.04
+            trailsRunning: root.inMenu && !settings.open
+
+            anchors.fill: parent
+        }
+
+        // The launch screen itself, transparent over the demo scope.
+        ViewMenu {
+            id: menu
+
+            visible: root.inMenu
+            onDuel: root.startDuel()
+            onControls: root.openSettings()
+            onExitGame: Qt.quit()
+
+            anchors.fill: parent
         }
     }
 
@@ -592,6 +656,32 @@ Window {
         actions.reset();
         axisSteer.invoke(0);
         axisThrottle.invoke(0);
+    }
+
+    // The launch screen: the demo scenario populates the world itself, on the
+    // tightest range step so the close fight fills the picture.
+    function startMenu() {
+        root.dropInput();
+        projection.step = 0;
+        root.inMenu = true;
+    }
+
+    // New game: clear the demo's leavings out of the world, restore both
+    // craft to their openings and enroll the duel on the game range step.
+    function startDuel() {
+        demo.reset();
+        const roster = root.world.entities.slice();
+        for (let i = 0; i < roster.length; ++i) {
+            if (roster[i] !== game.ownship)
+                root.world.despawn(roster[i]);
+        }
+        game.reset();
+        scenario.reset();
+        for (let i = 0; i < scenario.entities.length; ++i)
+            root.world.add(scenario.entities[i]);
+        projection.step = 2;
+        root.inMenu = false;
+        root.dropInput();
     }
 
     // Held input is released while the bus is still running, so the zeroed steer
