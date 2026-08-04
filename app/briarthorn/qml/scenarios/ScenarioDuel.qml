@@ -1,3 +1,4 @@
+import QtQml
 import "../database"
 import "../model"
 import "../systems"
@@ -15,52 +16,42 @@ Scenario {
     // The world the bandit's defensive scan reads.
     required property World world
 
-    // The half-size flare pod's load, named so reset() restores what the
-    // declaration armed.
-    readonly property int flareCharges: 6
-
-    // The same fighter airframe the player flies, rated down a little so the
-    // duel is winnable, and carrying a lighter loadout than the stock rack.
-    readonly property Entity bandit: Entity {
+    // The downrated airframe, so the duel is winnable, with its rack's flare
+    // pod halved on top — a full pod outlasts the player's patience.
+    component DuelBandit: Entity {
         callsign: "BANDIT 1"
-        classification: Classification.Kind.AircraftFighter
+        classification: Classification.Kind.AircraftFighterLight
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
-        kinetic: 4.5 // 450 m/s against the player's 500
-        maneuver: 4 // 9.6 deg/s against the player's 12
 
-        // Guided rounds and a half-size flare pod; no kinetic rack at all.
         abilities: [
             AbilitySlot {
                 def: Abilities.defFor("guided")
             },
             AbilitySlot {
                 def: Abilities.defFor("flare")
-                charges: root.flareCharges
+                charges: 6
             }
         ]
     }
 
+    // The live bandit. reset() owns the swap.
+    property Entity bandit: DuelBandit {}
+
+    readonly property Component banditFactory: Component {
+        DuelBandit {}
+    }
+
     entities: [root.bandit]
 
-    // Returns the bandit to its opening state — pose, condition and both
-    // racks — so a duel entered from the menu always starts the same fight.
+    // Replaces the bandit with a factory-fresh one — QML's constructor — so a
+    // duel entered from the menu always opens the same fight, with nothing to
+    // restore field by field. The caller re-enrolls the scenario's entities.
     function reset() {
-        root.bandit.posX = 0;
-        root.bandit.posY = -65000;
-        root.bandit.heading = 180;
-        root.bandit.speed = 0;
-        root.bandit.commandedSteer = 0;
-        root.bandit.commandedThrottle = 0;
-        root.bandit.health = root.bandit.maxHealth;
-        root.bandit.fuel = root.bandit.maxFuel;
-        root.bandit.abilities[0].charges = root.bandit.abilities[0].def.charges;
-        root.bandit.abilities[1].charges = root.flareCharges;
-        for (let i = 0; i < root.bandit.abilities.length; ++i) {
-            root.bandit.abilities[i].cooldownRemaining = 0;
-            root.bandit.abilities[i].pending = false;
-        }
+        const spent = root.bandit;
+        root.bandit = root.banditFactory.createObject(root) as Entity;
+        spent.destroy();
     }
 
     SystemPursuit {
@@ -76,5 +67,11 @@ Scenario {
     SystemThreat {
         entity: root.bandit
         world: root.world
+    }
+
+    // The player's tank drains only while a duel is on: the menu demo simply
+    // carries no fuel system, so it needs no top-up either.
+    SystemFuel {
+        entity: root.ownship
     }
 }

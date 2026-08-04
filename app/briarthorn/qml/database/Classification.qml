@@ -13,6 +13,7 @@ QtObject {
         MissileGuided,
         MissileKinetic,
         Decoy,
+        AircraftFighterLight,
         Count
     }
 }

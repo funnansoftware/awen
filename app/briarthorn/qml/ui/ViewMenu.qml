@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import awen.gamepad
 import awen.input
+import "../input"
 import "../themes"
 
 // The launch screen, laid transparent over the live demo scope so the real
@@ -17,6 +18,10 @@ Item {
     signal duel
     signal controls
     signal exitGame
+
+    // Which device the player is driving with; the menu's keys report in, as
+    // the controls page's do.
+    required property ActiveDevice device
 
     // The pad/keyboard cursor over the actions. Mouse hover is independent,
     // so the highlight only appears once the player actually navigates.
@@ -70,24 +75,32 @@ Item {
         onStepped: direction => root.cursor.move(direction)
     }
 
-    // The keyboard vocabulary; unclaimed keys fall through to the window.
-    function keyPressed(key: int): bool {
-        switch (key) {
+    // The keyboard vocabulary, on the menu's own focus — the Qt way round:
+    // Main gives the launch screen focus while it is up, and a key declined
+    // here bubbles on to the scene, which ignores it in menu mode.
+    Keys.onPressed: event => {
+        if (event.isAutoRepeat) {
+            event.accepted = false;
+            return;
+        }
+        root.device.kind = ActiveDevice.Keyboard;
+        switch (event.key) {
         case Qt.Key_Up:
         case Qt.Key_W:
             root.cursor.move(-1);
-            return true;
+            break;
         case Qt.Key_Down:
         case Qt.Key_S:
             root.cursor.move(1);
-            return true;
+            break;
         case Qt.Key_Return:
         case Qt.Key_Enter:
         case Qt.Key_Space:
             root.cursor.activate();
-            return true;
+            break;
         default:
-            return false;
+            event.accepted = false;
+            break;
         }
     }
 
@@ -285,7 +298,10 @@ Item {
 
         readonly property bool active: mouse.containsMouse || (root.cursor.engaged && root.cursor.index === button.index)
 
-        height: caption.implicitHeight + 26 * button.scaleFactor
+        // Breathing room above and below the caption, per side.
+        readonly property real captionPadding: 13
+
+        height: caption.implicitHeight + 2 * button.captionPadding * button.scaleFactor
         opacity: 0
 
         transform: Translate {

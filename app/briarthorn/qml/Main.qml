@@ -90,7 +90,10 @@ Window {
         readonly property real instrumentSide: Math.max(110, Math.min(root.width, root.height) * 0.22)
 
         anchors.fill: parent
-        focus: !settings.open // the window's keys go here unless the page has them
+        // The window's keys go here unless the controls page or the launch
+        // screen has them — each declares its own focus, and the bindings
+        // trade it as those states flip.
+        focus: !settings.open && !root.inMenu
 
         // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
         // the browser refreshes gamepad state once per frame, so poll at 16ms there.
@@ -103,15 +106,13 @@ Window {
         Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
+            // Keys the focused launch screen declined bubble up here; they
+            // have no game meaning while the menu is up.
+            if (root.inMenu)
+                return;
             // Any key at all hands the HUD back to the keyboard, bound or not:
             // a player reaching for keys wants the key caps, not the pad's.
             root.device.kind = ActiveDevice.Keyboard;
-            // The launch screen takes the keys ahead of the action map, so a
-            // menu key can never fly the demo craft.
-            if (root.inMenu) {
-                event.accepted = menu.keyPressed(event.key);
-                return;
-            }
             if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
                 root.openSettings();
                 event.accepted = true;
@@ -352,10 +353,6 @@ Window {
 
             SystemMovement {
                 entities: root.entities
-            }
-
-            SystemFuel {
-                entity: game.ownship
             }
 
             SystemWeapon {
@@ -621,17 +618,22 @@ Window {
             anchors.fill: parent
         }
 
-        // The launch screen itself, transparent over the demo scope.
+        // The launch screen itself, transparent over the demo scope. It holds
+        // the keys while up — its own handlers drive the cursor — and hands
+        // them to the controls page when that stacks on top.
         ViewMenu {
             id: menu
 
             visible: root.inMenu
+            focus: root.inMenu && !settings.open
+            device: root.device
             onDuel: root.startDuel()
             onControls: root.openSettings()
             onExitGame: Qt.quit()
 
             anchors.fill: parent
         }
+
     }
 
     // The controls page, a sibling of the scene rather than a child: it paints
@@ -666,17 +668,17 @@ Window {
         root.inMenu = true;
     }
 
-    // New game: clear the demo's leavings out of the world, restore both
-    // craft to their openings and enroll the duel on the game range step.
+    // New game: rebuild both craft factory-fresh, sweep the whole world —
+    // the demo's leavings and the spent craft alike — and enroll the new
+    // pair on the game range step.
     function startDuel() {
         demo.reset();
-        const roster = root.world.entities.slice();
-        for (let i = 0; i < roster.length; ++i) {
-            if (roster[i] !== game.ownship)
-                root.world.despawn(roster[i]);
-        }
         game.reset();
         scenario.reset();
+        const roster = root.world.entities.slice();
+        for (let i = 0; i < roster.length; ++i)
+            root.world.despawn(roster[i]);
+        root.world.add(game.ownship);
         for (let i = 0; i < scenario.entities.length; ++i)
             root.world.add(scenario.entities[i]);
         projection.step = 2;

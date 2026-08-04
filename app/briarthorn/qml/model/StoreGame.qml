@@ -1,3 +1,4 @@
+import QtQml
 import awen.command
 import "../commands"
 import "../database"
@@ -17,10 +18,18 @@ Store {
     // condition and the invocable loadout all come from that row — flown with
     // a narrower radar cone than the airframe's own, so the player has to
     // point at what they want to see.
-    readonly property Entity ownship: Entity {
+    component PlayerCraft: Entity {
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Ownship
         radarFov: 60
+    }
+
+    // The live craft. reset() owns the swap; everything else binds through
+    // this property, so a fresh craft propagates everywhere on its own.
+    property Entity ownship: PlayerCraft {}
+
+    readonly property Component craftFactory: Component {
+        PlayerCraft {}
     }
 
     CommandHandler {
@@ -48,22 +57,13 @@ Store {
         }
     }
 
-    // Returns the player's craft to its opening state — pose, condition and
-    // every rack — so a game entered from the menu always starts clean.
+    // Replaces the player's craft with a factory-fresh one — QML's
+    // constructor — so a game entered from the menu always starts clean and
+    // no field-by-field restore drifts as Entity grows. The caller re-enrolls
+    // the new craft; the world never holds the old one past its purge.
     function reset() {
-        root.ownship.posX = 0;
-        root.ownship.posY = 0;
-        root.ownship.heading = 0;
-        root.ownship.speed = 0;
-        root.ownship.commandedSteer = 0;
-        root.ownship.commandedThrottle = 0;
-        root.ownship.health = root.ownship.maxHealth;
-        root.ownship.fuel = root.ownship.maxFuel;
-        const slots = root.ownship.abilities;
-        for (let i = 0; i < slots.length; ++i) {
-            slots[i].cooldownRemaining = 0;
-            slots[i].pending = false;
-            slots[i].charges = slots[i].def ? slots[i].def.charges : -1;
-        }
+        const spent = root.ownship;
+        root.ownship = root.craftFactory.createObject(root) as Entity;
+        spent.destroy();
     }
 }

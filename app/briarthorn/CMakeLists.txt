@@ -5,6 +5,7 @@ set(QML_SINGLETONS
     qml/database/Abilities.qml
     qml/database/Database.qml
     qml/database/GameRules.qml
+    qml/model/Geo.qml
     qml/themes/Style.qml
 )
 
@@ -36,6 +37,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/abilities/AbilityLaunchGuided.qml
         qml/database/abilities/AbilityLaunchKinetic.qml
         qml/database/entities/DataAircraftFighter.qml
+        qml/database/entities/DataAircraftFighterLight.qml
         qml/database/entities/DataDecoy.qml
         qml/database/entities/DataUnknown.qml
         qml/database/weapons/DataMissileGuided.qml

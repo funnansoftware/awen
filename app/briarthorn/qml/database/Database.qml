@@ -18,6 +18,7 @@ QtObject {
         DataUnknown {},
         // Spawnable craft.
         DataAircraftFighter {},
+        DataAircraftFighterLight {},
         DataDecoy {},
         // Munitions.
         DataMissileGuided {},

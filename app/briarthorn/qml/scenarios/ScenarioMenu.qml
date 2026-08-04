@@ -140,11 +140,12 @@ Scenario {
         engage.target = threat;
     }
 
-    // The demo must never end: hull and tank stay topped and the racks
-    // reload, so blasts still land and flares still pop but nothing runs dry.
+    // The demo must never end: the hull stays topped (SystemWeapon must keep
+    // running — blasts and reaping are the show — so hits do land) and the
+    // racks reload. Fuel needs nothing: the duel scenario owns SystemFuel, so
+    // in menu mode no system drains the tank at all.
     function sustain() {
         root.ownship.health = root.ownship.maxHealth;
-        root.ownship.fuel = root.ownship.maxFuel;
         const slots = root.ownship.abilities;
         for (let i = 0; i < slots.length; ++i) {
             if (slots[i].def && slots[i].def.charges > 0)
@@ -169,16 +170,18 @@ Scenario {
         root.hostileRounds = hostile;
     }
 
-    // The living wave members: hostile fighters, not their in-flight rounds.
+    // The living wave members — the kind spawnWave() makes, so the director
+    // sees exactly its own bandits: not their in-flight rounds, and not the
+    // flares they pop (hostile-sided, but never fighters).
     function foes(): var {
-        return root.world.entities.filter(e => e.side === Side.Kind.Hostile && e.weapon === null && e.classification === Classification.Kind.AircraftFighter);
+        return root.world.entities.filter(e => e.side === Side.Kind.Hostile && e.weapon === null && e.classification === Classification.Kind.AircraftFighterLight);
     }
 
     function nearest(foes: var): Entity {
         let best = foes[0];
-        let bestDistance = root.distanceTo(best);
+        let bestDistance = Geo.distance(root.ownship, best);
         for (let i = 1; i < foes.length; ++i) {
-            const d = root.distanceTo(foes[i]);
+            const d = Geo.distance(root.ownship, foes[i]);
             if (d < bestDistance) {
                 best = foes[i];
                 bestDistance = d;
@@ -187,26 +190,18 @@ Scenario {
         return best;
     }
 
-    function distanceTo(foe: Entity): real {
-        return Math.hypot(foe.posX - root.ownship.posX, foe.posY - root.ownship.posY);
-    }
-
-    // Spawns a fresh wave fanned out ahead of ownship's nose, each member
-    // rated down like the duel bandit and flown by its own appended brain.
+    // Spawns a fresh wave fanned out ahead of ownship's nose — downrated
+    // airframes off the database, each flown by its own appended brain.
     function spawnWave() {
         const heading = root.ownship.heading;
-        const aheadRad = heading * Math.PI / 180;
-        const acrossRad = (heading + 90) * Math.PI / 180;
         for (let i = 0; i < root.waveSize; ++i) {
             const lateral = (i - (root.waveSize - 1) / 2) * root.spawnSpread;
-            const bandit = root.world.spawn("FOE", Classification.Kind.AircraftFighter, {
+            const bandit = root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
                 side: Side.Kind.Hostile,
-                posX: root.ownship.posX + Math.sin(aheadRad) * root.spawnAhead + Math.sin(acrossRad) * lateral,
-                posY: root.ownship.posY - Math.cos(aheadRad) * root.spawnAhead - Math.cos(acrossRad) * lateral,
+                posX: root.ownship.posX + Geo.offsetX(heading, root.spawnAhead) + Geo.offsetX(heading + 90, lateral),
+                posY: root.ownship.posY + Geo.offsetY(heading, root.spawnAhead) + Geo.offsetY(heading + 90, lateral),
                 heading: (heading + 180) % 360,
-                speed: 320,
-                kinetic: 4.5, // 450 m/s against the demo craft's 500
-                maneuver: 4 // 9.6 deg/s against its 12
+                speed: 320
             });
             const brain = root.brainFactory.createObject(root, {
                 entity: bandit,

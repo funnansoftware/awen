@@ -25,12 +25,9 @@ System {
             root.entity.commandedSteer = 0;
             return;
         }
-        const dx = root.target.posX - root.entity.posX;
-        const dy = root.target.posY - root.entity.posY;
-        const excess = Math.max(-1, Math.min(1, (Math.hypot(dx, dy) - root.standoff) / (root.standoff / 2)));
-        const bearing = Math.atan2(dx, -dy) * 180 / Math.PI;
-        const desired = bearing + 90 * (1 - excess);
-        const error = (((desired - root.entity.heading) % 360) + 540) % 360 - 180;
+        const excess = Math.max(-1, Math.min(1, (Geo.distance(root.entity, root.target) - root.standoff) / (root.standoff / 2)));
+        const desired = Geo.bearing(root.entity, root.target) + 90 * (1 - excess);
+        const error = Geo.wrap180(desired - root.entity.heading);
         root.entity.commandedSteer = Math.max(-1, Math.min(1, error / root.cutAngle));
     }
 }
