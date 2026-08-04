@@ -1,17 +1,13 @@
-pragma ComponentBehavior: Bound
-
-import QtQml
 import awen.entity
 import "../database"
 import "../model"
-import "../systems"
 
 // The main-menu demo: a hands-off, endlessly-looping dogfight in the real
-// world, read through the live scope. Ownship orbits the nearest hostile
-// under SystemEvade, returns fire off its guided rack and pops flares by
-// reflex, while armed waves spawn ahead, bore in and shoot back; a wiped
-// wave respawns after a beat, so the menu shows continuous combat with no
-// input. The whole show restarts on a clock — briardart rebuilt its demo
+// world, read through the live scope. Everything flies on entity aspects the
+// shared systems process — ownship orbits and returns fire through the
+// targets the director points, waves spawn already declaring pursuit, trigger
+// discipline and flare reflex — so the scenario owns one director and no
+// systems. The whole show restarts on a clock: briardart rebuilt its demo
 // session on every menu entry, and an unbounded run would carry ownship
 // arbitrarily far from the origin. Ports briardart's MenuDemoController.
 Scenario {
@@ -37,81 +33,30 @@ Scenario {
     property real showTimer: 0
 
     // The most rounds one side may hold in the air: the demo reads as a
-    // sparring match, not a missile barrage, so each side's engage system
-    // stands down until its salvo thins. direct() recounts each tick.
+    // sparring match, not a missile barrage, so each side's shooters stand
+    // down behind their engageHold flags until their salvo thins.
     readonly property int missileCap: 2
     property int ownshipRounds: 0
     property int hostileRounds: 0
 
+    // Seconds a bandit's opening shot waits per wave slot, so a fresh wave —
+    // spawned inside the envelope with every timer at zero — never fires as
+    // one volley straight through the lagging round count.
+    readonly property real stagger: 5
+
+    // How the demo craft fights: launches paced a beat apart.
+    readonly property real demoHoldoff: 6
+
     // Seconds the sky has been clear, toward the next wave.
     property real clearTimer: 0
 
-    // Each live bandit's brain, keyed by its entity; spawnWave() appends them
-    // to the run and prune() drops them with their craft.
-    property var brains: new Map()
-
-    // One wave member's behaviour: chase the player, shoot inside the
-    // envelope, pop flares at inbound rounds — the duel bandit's rig.
-    // stagger delays the opening shot: the wave spawns inside the envelope
-    // with every timer at zero, and the round count the cap reads lags a
-    // tick, so unstaggered members all fire together straight through it.
-    component BanditBrain: SystemGroup {
-        id: brain
-
-        required property Entity entity
-        required property real stagger
-
-        SystemPursuit {
-            entity: brain.entity
-            target: root.ownship
-        }
-
-        SystemEngage {
-            entity: brain.entity
-            target: root.ownship
-            timer: brain.stagger
-            // Slower than the duel bandit — three shooters share one salvo
-            // allowance — and stood down entirely while the side's rounds
-            // in the air sit at the cap.
-            holdoff: 12
-            enabled: root.hostileRounds < root.missileCap
-        }
-
-        SystemThreat {
-            entity: brain.entity
-            world: root.world
-        }
-    }
-
-    readonly property Component brainFactory: Component {
-        BanditBrain {}
-    }
-
-    // Wave direction, ahead of everything else in the run: sustain ownship,
-    // point its systems at the nearest fighter, keep the wave populated and
-    // prune brains whose craft was reaped.
+    // Wave direction, the scenario's one running part: sustain ownship,
+    // point its aspects at the nearest fighter, hold each side's shooters at
+    // the salvo cap and keep the wave populated.
     System {
         function update(dt: real) {
             root.direct(dt);
         }
-    }
-
-    SystemEvade {
-        id: evade
-        entity: root.ownship
-    }
-
-    SystemEngage {
-        id: engage
-        entity: root.ownship
-        target: null
-        holdoff: 6
-        enabled: root.ownshipRounds < root.missileCap
-    }
-
-    SystemThreat {
-        entity: root.ownship
-        world: root.world
     }
 
     function direct(dt: real) {
@@ -121,12 +66,19 @@ Scenario {
             return;
         }
         root.sustain();
-        root.prune();
         root.countRounds();
         const foes = root.foes();
+        root.ownship.engageHold = root.ownshipRounds >= root.missileCap;
+        const hostileHold = root.hostileRounds >= root.missileCap;
+        for (let i = 0; i < foes.length; ++i)
+            foes[i].engageHold = hostileHold;
         if (foes.length === 0) {
-            evade.target = null;
-            engage.target = null;
+            root.ownship.evadeTarget = null;
+            root.ownship.engageTarget = null;
+            // With no aspect steering it, ownship flies straight and level
+            // toward the next engagement.
+            root.ownship.commandedSteer = 0;
+            root.ownship.commandedThrottle = 1;
             root.clearTimer += dt;
             if (root.clearTimer >= root.respawnDelay) {
                 root.clearTimer = 0;
@@ -136,14 +88,13 @@ Scenario {
         }
         root.clearTimer = 0;
         const threat = root.nearest(foes);
-        evade.target = threat;
-        engage.target = threat;
+        root.ownship.evadeTarget = threat;
+        root.ownship.engageTarget = threat;
     }
 
     // The demo must never end: the hull stays topped (SystemWeapon must keep
     // running — blasts and reaping are the show — so hits do land) and the
-    // racks reload. Fuel needs nothing: the duel scenario owns SystemFuel, so
-    // in menu mode no system drains the tank at all.
+    // racks reload. Fuel needs nothing: burnsFuel is cleared on the craft.
     function sustain() {
         root.ownship.health = root.ownship.maxHealth;
         const slots = root.ownship.abilities;
@@ -153,7 +104,7 @@ Scenario {
         }
     }
 
-    // Tallies each side's rounds in the air for the engage gates above.
+    // Tallies each side's rounds in the air for the engageHold gates above.
     function countRounds() {
         let own = 0;
         let hostile = 0;
@@ -191,56 +142,45 @@ Scenario {
     }
 
     // Spawns a fresh wave fanned out ahead of ownship's nose — downrated
-    // airframes off the database, each flown by its own appended brain.
+    // airframes off the database, each declaring its whole behaviour at
+    // birth: chase the player, shoot on a slow cadence from a staggered
+    // start, flare at inbound rounds.
     function spawnWave() {
         const heading = root.ownship.heading;
         for (let i = 0; i < root.waveSize; ++i) {
             const lateral = (i - (root.waveSize - 1) / 2) * root.spawnSpread;
-            const bandit = root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
+            root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
                 side: Side.Kind.Hostile,
                 posX: root.ownship.posX + Geo.offsetX(heading, root.spawnAhead) + Geo.offsetX(heading + 90, lateral),
                 posY: root.ownship.posY + Geo.offsetY(heading, root.spawnAhead) + Geo.offsetY(heading + 90, lateral),
                 heading: (heading + 180) % 360,
-                speed: 320
+                speed: 320,
+                pursuitTarget: root.ownship,
+                engageTarget: root.ownship,
+                // Slower than the duel bandit: three shooters share one
+                // salvo allowance.
+                engageHoldoff: 12,
+                engageTimer: i * root.stagger,
+                threatReflex: true
             });
-            const brain = root.brainFactory.createObject(root, {
-                entity: bandit,
-                stagger: i * 5
-            });
-            root.brains.set(bandit, brain);
-            root.systems.push(brain);
         }
     }
 
-    // Brains whose bandit has been reaped leave the run with their craft.
-    function prune() {
-        for (const [bandit, brain] of root.brains) {
-            if (!root.world.entities.includes(bandit)) {
-                root.systems = root.systems.filter(s => s !== brain);
-                root.brains.delete(bandit);
-                brain.destroy();
-            }
-        }
-    }
-
-    // Ends the show: unhooks ownship's demo targets and drops every brain —
-    // the world purge on leaving the menu despawns the bandits themselves.
+    // Ends the show: strips the demo aspects off the player's craft — the
+    // wave bandits despawn with the world purge on leaving the menu.
     function reset() {
-        evade.target = null;
-        engage.target = null;
+        root.ownship.evadeTarget = null;
+        root.ownship.engageTarget = null;
+        root.ownship.engageHold = false;
         root.clearTimer = 0;
         root.showTimer = 0;
-        for (const brain of root.brains.values()) {
-            root.systems = root.systems.filter(s => s !== brain);
-            brain.destroy();
-        }
-        root.brains.clear();
     }
 
     // Reopens the show from the top: sweep everything but ownship out of the
-    // world, seat ownship back at the origin and let the wave clock spawn the
-    // next engagement — in menu mode every other entity is demo-spawned, so
-    // the sweep owns exactly what the demo made.
+    // world, seat ownship back at the origin armed for the demo — reflexive
+    // flares, a paced trigger, no fuel burn — and let the wave clock spawn
+    // the next engagement. In menu mode every other entity is demo-spawned,
+    // so the sweep owns exactly what the demo made.
     function restart() {
         const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
@@ -251,6 +191,10 @@ Scenario {
         root.ownship.posY = 0;
         root.ownship.heading = 0;
         root.ownship.speed = 0;
+        root.ownship.burnsFuel = false;
+        root.ownship.threatReflex = true;
+        root.ownship.engageHoldoff = root.demoHoldoff;
+        root.ownship.engageTimer = 0;
         root.reset();
     }
 }

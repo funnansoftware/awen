@@ -2,45 +2,57 @@ import awen.entity
 import "../database"
 import "../model"
 
-// Defensive reflex: pops the entity's flare once a hostile missile homing
-// on it closes inside threatRange, with a holdoff so consecutive pops give
-// each decoy a chance to steal the lock before the next one burns.
+// Defensive reflex: every entity carrying the threatReflex flag pops its
+// flare once a hostile missile homing on it closes inside threatRange, with
+// a per-entity holdoff so consecutive pops give each decoy a chance to
+// steal the lock before the next one burns.
 System {
     id: root
 
-    // The defended entity and the world scanned for inbound rounds.
-    required property Entity entity
-    required property World world
+    // The world's roster — both the defended entities and the sky scanned
+    // for the rounds homing on them.
+    property list<Entity> entities
 
     // Metres at which an inbound homing round triggers a pop.
     property real threatRange: 9000
 
-    // Minimum seconds between pops.
+    // Minimum seconds between one entity's pops.
     property real holdoff: 1.5
 
-    property real timer: 0
-
     function update(dt: real) {
-        root.timer = Math.max(0, root.timer - dt);
-        if (root.timer > 0)
-            return;
-        for (let i = 0; i < root.world.entities.length; ++i) {
-            const missile = root.world.entities[i];
-            if (missile.weapon === null || missile.weapon.target !== root.entity)
+        for (let i = 0; i < root.entities.length; ++i) {
+            const entity = root.entities[i];
+            if (!entity.threatReflex)
                 continue;
-            const dx = missile.posX - root.entity.posX;
-            const dy = missile.posY - root.entity.posY;
-            if (Math.hypot(dx, dy) > root.threatRange)
+            entity.threatTimer = Math.max(0, entity.threatTimer - dt);
+            if (entity.threatTimer > 0)
                 continue;
-            for (let j = 0; j < root.entity.abilities.length; ++j) {
-                const slot = root.entity.abilities[j];
-                if (slot.def instanceof AbilityCountermeasure && slot.ready) {
-                    slot.activate();
-                    root.timer = root.holdoff;
-                    return;
-                }
+            if (root.inboundOn(entity))
+                root.pop(entity);
+        }
+    }
+
+    // Whether any homing round targeting the entity has closed inside range.
+    function inboundOn(entity: Entity): bool {
+        for (let i = 0; i < root.entities.length; ++i) {
+            const missile = root.entities[i];
+            if (missile.weapon === null || missile.weapon.target !== entity)
+                continue;
+            if (Geo.distance(missile, entity) <= root.threatRange)
+                return true;
+        }
+        return false;
+    }
+
+    // Burns one flare off the first ready countermeasure slot.
+    function pop(entity: Entity) {
+        for (let i = 0; i < entity.abilities.length; ++i) {
+            const slot = entity.abilities[i];
+            if (slot.def instanceof AbilityCountermeasure && slot.ready) {
+                slot.activate();
+                entity.threatTimer = root.holdoff;
+                return;
             }
-            return;
         }
     }
 }

@@ -63,6 +63,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemEngage.qml
         qml/systems/SystemEvade.qml
         qml/systems/SystemFuel.qml
+        qml/systems/SystemMission.qml
         qml/systems/SystemMovement.qml
         qml/systems/SystemPursuit.qml
         qml/systems/SystemThreat.qml
@@ -71,15 +72,19 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/AbilityButton.qml
         qml/ui/ControlCap.qml
         qml/ui/Joystick.qml
+        qml/ui/MenuButton.qml
+        qml/ui/MenuPage.qml
         qml/ui/RangeRing.qml
         qml/ui/Symbol.qml
         qml/ui/SymbolFlare.qml
         qml/ui/TouchAbilities.qml
         qml/ui/TouchArrow.qml
         qml/ui/ViewAbilities.qml
+        qml/ui/ViewEnd.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
         qml/ui/ViewMenu.qml
+        qml/ui/ViewPause.qml
         qml/ui/ViewSettings.qml
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml

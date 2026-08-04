@@ -226,8 +226,15 @@ Item {
             model: root.entries
 
             MenuButton {
+                required property var modelData
+
                 width: root.buttonWidth
                 scaleFactor: root.uiScale
+                label: modelData.label
+                primary: modelData.primary
+                selected: root.cursor.engaged && root.cursor.index === index
+                revealed: root.visible
+                onInvoked: modelData.act()
             }
         }
     }
@@ -281,103 +288,16 @@ Item {
                 model: root.entries
 
                 MenuButton {
+                    required property var modelData
+
                     width: cardColumn.width
+                    label: modelData.label
+                    primary: modelData.primary
+                    selected: root.cursor.engaged && root.cursor.index === index
+                    revealed: root.visible
+                    onInvoked: modelData.act()
                 }
             }
-        }
-    }
-
-    // One themed action: lit by hover or the engaged cursor, accent-bordered
-    // when primary, sliding in on a stagger as the menu shows.
-    component MenuButton: Item {
-        id: button
-
-        required property var modelData
-        required property int index
-        property real scaleFactor: 1
-
-        readonly property bool active: mouse.containsMouse || (root.cursor.engaged && root.cursor.index === button.index)
-
-        // Breathing room above and below the caption, per side.
-        readonly property real captionPadding: 13
-
-        height: caption.implicitHeight + 2 * button.captionPadding * button.scaleFactor
-        opacity: 0
-
-        transform: Translate {
-            id: slide
-            x: -24
-        }
-
-        SequentialAnimation {
-            running: root.visible
-
-            PropertyAction {
-                target: button
-                property: "opacity"
-                value: 0
-            }
-            PropertyAction {
-                target: slide
-                property: "x"
-                value: -24
-            }
-            PauseAnimation {
-                duration: 150 + button.index * 90
-            }
-            ParallelAnimation {
-                NumberAnimation {
-                    target: button
-                    property: "opacity"
-                    to: 1
-                    duration: 350
-                    easing.type: Easing.OutCubic
-                }
-                NumberAnimation {
-                    target: slide
-                    property: "x"
-                    to: 0
-                    duration: 350
-                    easing.type: Easing.OutCubic
-                }
-            }
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            radius: Style.theme.panelRadius
-            color: button.active ? Qt.alpha(Style.theme.accent, 0.2) : Style.theme.instrumentBackground
-            border.width: button.modelData.primary ? 2 : 1.5
-            border.color: button.active ? Style.theme.accentBright : (button.modelData.primary ? Style.theme.accent : Style.theme.frameInner)
-
-            Behavior on color {
-                ColorAnimation {
-                    duration: 120
-                }
-            }
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 120
-                }
-            }
-        }
-
-        Text {
-            id: caption
-
-            text: button.modelData.label
-            color: button.modelData.primary ? Style.theme.textBright : Style.theme.textPrimary
-            anchors.centerIn: parent
-            font { pixelSize: 14 * button.scaleFactor; bold: true; letterSpacing: 2 * button.scaleFactor; family: Style.monospace }
-        }
-
-        MouseArea {
-            id: mouse
-
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: button.modelData.act()
         }
     }
 }

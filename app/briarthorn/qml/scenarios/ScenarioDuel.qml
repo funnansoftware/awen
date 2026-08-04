@@ -1,20 +1,21 @@
+// The bandit's declaration reaches the file root's ownship; bound component
+// behaviour is what makes that resolve statically.
+pragma ComponentBehavior: Bound
+
 import QtQml
 import "../database"
 import "../model"
-import "../systems"
 
 // The 1v1 duel: one hostile fighter boring in from the north, spawned just
-// past sensor range so it opens as an Unknown contact. The bandit shoots
-// back — guided rounds inside its engage envelope — and pops flares when a
-// missile homes in on it.
+// past sensor range so it opens as an Unknown contact. Pure initial
+// conditions — the bandit's declaration carries its behaviour aspects
+// (pursue the player, shoot inside the envelope, flare at inbound rounds)
+// and the shared systems do the rest; this scenario loads nothing of its own.
 Scenario {
     id: root
 
     // The player's craft, for the bandit to pursue; the game store owns it.
     required property Entity ownship
-
-    // The world the bandit's defensive scan reads.
-    required property World world
 
     // The downrated airframe, so the duel is winnable, with its rack's flare
     // pod halved on top — a full pod outlasts the player's patience.
@@ -24,6 +25,9 @@ Scenario {
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
+        pursuitTarget: root.ownship
+        engageTarget: root.ownship
+        threatReflex: true
 
         abilities: [
             AbilitySlot {
@@ -52,26 +56,5 @@ Scenario {
         const spent = root.bandit;
         root.bandit = root.banditFactory.createObject(root) as Entity;
         spent.destroy();
-    }
-
-    SystemPursuit {
-        entity: root.bandit
-        target: root.ownship
-    }
-
-    SystemEngage {
-        entity: root.bandit
-        target: root.ownship
-    }
-
-    SystemThreat {
-        entity: root.bandit
-        world: root.world
-    }
-
-    // The player's tank drains only while a duel is on: the menu demo simply
-    // carries no fuel system, so it needs no top-up either.
-    SystemFuel {
-        entity: root.ownship
     }
 }
