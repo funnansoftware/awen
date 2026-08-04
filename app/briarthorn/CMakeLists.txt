@@ -5,6 +5,7 @@ set(QML_SINGLETONS
     qml/database/Abilities.qml
     qml/database/Database.qml
     qml/database/GameRules.qml
+    qml/model/Geo.qml
     qml/themes/Style.qml
 )
 
@@ -36,6 +37,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/abilities/AbilityLaunchGuided.qml
         qml/database/abilities/AbilityLaunchKinetic.qml
         qml/database/entities/DataAircraftFighter.qml
+        qml/database/entities/DataAircraftFighterLight.qml
         qml/database/entities/DataDecoy.qml
         qml/database/entities/DataUnknown.qml
         qml/database/weapons/DataMissileGuided.qml
@@ -54,10 +56,12 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/World.qml
         qml/scenarios/Scenario.qml
         qml/scenarios/ScenarioDuel.qml
+        qml/scenarios/ScenarioMenu.qml
         qml/systems/SystemAbility.qml
         qml/systems/SystemCountermeasure.qml
         qml/systems/SystemDetection.qml
         qml/systems/SystemEngage.qml
+        qml/systems/SystemEvade.qml
         qml/systems/SystemFuel.qml
         qml/systems/SystemMovement.qml
         qml/systems/SystemPursuit.qml
@@ -75,12 +79,14 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewAbilities.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
+        qml/ui/ViewMenu.qml
         qml/ui/ViewSettings.qml
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml
         qml/ui/ViewStatus.qml
         qml/ui/ViewTopBar.qml
         qml/ui/ViewTracks.qml
+        qml/ui/ViewTrails.qml
         ${QML_SINGLETONS}
     AWEN_MODULES
         buildinfo

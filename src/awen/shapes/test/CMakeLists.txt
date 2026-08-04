@@ -9,6 +9,7 @@ add_executable(awen-shapes-test
     ShapeRing.test.cpp
     ShapeSparkline.test.cpp
     ShapeTicks.test.cpp
+    ShapeTrail.test.cpp
 )
 
 # The tests import awen.shapes through the QML engine, so the module is a

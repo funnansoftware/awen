@@ -4,6 +4,7 @@ add_executable(awen-input-test
     main.cpp
     Actions.test.cpp
     Axis.test.cpp
+    Selector.test.cpp
 )
 
 # The tests import awen.input through the QML engine, so the module is a

@@ -1,3 +1,4 @@
+import QtQml
 import awen.command
 import "../commands"
 import "../database"
@@ -17,10 +18,18 @@ Store {
     // condition and the invocable loadout all come from that row — flown with
     // a narrower radar cone than the airframe's own, so the player has to
     // point at what they want to see.
-    readonly property Entity ownship: Entity {
+    component PlayerCraft: Entity {
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Ownship
         radarFov: 60
+    }
+
+    // The live craft. reset() owns the swap; everything else binds through
+    // this property, so a fresh craft propagates everywhere on its own.
+    property Entity ownship: PlayerCraft {}
+
+    readonly property Component craftFactory: Component {
+        PlayerCraft {}
     }
 
     CommandHandler {
@@ -46,5 +55,15 @@ Store {
                 }
             }
         }
+    }
+
+    // Replaces the player's craft with a factory-fresh one — QML's
+    // constructor — so a game entered from the menu always starts clean and
+    // no field-by-field restore drifts as Entity grows. The caller re-enrolls
+    // the new craft; the world never holds the old one past its purge.
+    function reset() {
+        const spent = root.ownship;
+        root.ownship = root.craftFactory.createObject(root) as Entity;
+        spent.destroy();
     }
 }

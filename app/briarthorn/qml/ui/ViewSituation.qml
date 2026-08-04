@@ -57,12 +57,17 @@ Item {
     property bool showInnerRing: true
     property bool showTicks: true
     property bool showRadarCone: true
+    property bool showTrails: true
     property bool showEngagements: true
     property bool showOwnship: true
     property bool showOwnshipPulse: true
     property bool showTrackLabels: true
     property bool showNorth: false
     property bool closedRings: false
+
+    // Whether the wake layer's sampling clock runs; bind it to the sim so a
+    // paused game freezes its trails rather than contracting them.
+    property bool trailsRunning: true
 
     // The range-label gap arc length, in px; 0 (closedRings) draws closed rings.
     readonly property real ringGapLength: closedRings ? 0 : Math.max(28, outerRadius * 0.1)
@@ -144,6 +149,22 @@ Item {
         angleSpan: root.observer ? root.observer.radarFov : 0
         radius: root.observer ? Math.min(root.observer.detectionRange * root.pxPerMeter, root.outerRadius) : 0
         fillColor: Style.theme.gaugeTrack
+    }
+
+    // The motion wakes, under the marks they trail: each object's recent
+    // world track as fading dots, ownship's about the centre and each
+    // contact's about its plotted mark.
+    ViewTrails {
+        anchors.fill: parent
+        visible: root.showTrails
+        observer: root.observer
+        tracks: root.tracks
+        centerX: root.centerX
+        centerY: root.centerY
+        pxPerMeter: root.pxPerMeter
+        viewRotation: root.viewRotation
+        running: root.showTrails && root.trailsRunning
+        clampRadius: root.gutterClamp ? root.outerRadius : 0
     }
 
     // The track picture: every contact at its azimuth and range, the whole

@@ -13,6 +13,7 @@ awen_add_qml_module(awen-input
         ActionKey.qml
         Actions.qml
         Axis.qml
+        Selector.qml
     SOURCES
         TouchScreen.h
         TouchScreen.cpp
