@@ -48,6 +48,14 @@ Window {
     // input route feeds the menu cursor instead of the game.
     property bool inMenu: true
 
+    // The pause menu, duel only: the sim freezes behind it and the input
+    // routes feed its cursor, exactly as the launch screen's.
+    property bool paused: false
+
+    // Whether the duel has been decided: the sim freezes on the deciding
+    // frame and the end screen takes the input until the player moves on.
+    readonly property bool ended: !root.inMenu && scenario.mission.status !== SystemMission.Status.Ongoing
+
     width: 1280
     height: 720
     visible: true
@@ -90,10 +98,10 @@ Window {
         readonly property real instrumentSide: Math.max(110, Math.min(root.width, root.height) * 0.22)
 
         anchors.fill: parent
-        // The window's keys go here unless the controls page or the launch
-        // screen has them — each declares its own focus, and the bindings
-        // trade it as those states flip.
-        focus: !settings.open && !root.inMenu
+        // The window's keys go here unless the controls page or one of the
+        // overlay menus has them — each declares its own focus, and the
+        // bindings trade it as those states flip.
+        focus: !settings.open && !root.inMenu && !root.paused && !root.ended
 
         // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
         // the browser refreshes gamepad state once per frame, so poll at 16ms there.
@@ -106,22 +114,22 @@ Window {
         Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
-            // Keys the focused launch screen declined bubble up here; they
-            // have no game meaning while the menu is up.
-            if (root.inMenu)
+            // Keys a focused overlay menu declined bubble up here; they have
+            // no game meaning while one is up.
+            if (root.inMenu || root.paused || root.ended)
                 return;
             // Any key at all hands the HUD back to the keyboard, bound or not:
             // a player reaching for keys wants the key caps, not the pad's.
             root.device.kind = ActiveDevice.Keyboard;
             if (event.key === Qt.Key_Escape || event.key === Qt.Key_Back) {
-                root.openSettings();
+                root.openPause();
                 event.accepted = true;
                 return;
             }
             event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
-            if (!event.isAutoRepeat && !root.inMenu)
+            if (!event.isAutoRepeat && !root.inMenu && !root.paused && !root.ended)
                 event.accepted = actions.keyReleased(event.key);
         }
 
@@ -133,6 +141,10 @@ Window {
                 return;
             if (root.inMenu)
                 menu.axisMoved(axis, value);
+            else if (root.ended)
+                endPage.axisMoved(axis, value);
+            else if (root.paused)
+                pausePage.axisMoved(axis, value);
             else
                 actions.axisMoved(axis, value);
         }
@@ -142,13 +154,17 @@ Window {
                 settings.padPressed(button);
             else if (root.inMenu)
                 menu.padPressed(button);
+            else if (root.ended)
+                endPage.padPressed(button);
+            else if (root.paused)
+                pausePage.padPressed(button);
             else if (button === Gamepad.Button.Start)
-                root.openSettings();
+                root.openPause();
             else
                 actions.buttonPressed(button);
         }
         Gamepad.onButtonReleased: (deviceId, button) => {
-            if (!settings.open && !root.inMenu)
+            if (!settings.open && !root.inMenu && !root.paused && !root.ended)
                 actions.buttonReleased(button);
         }
 
@@ -293,7 +309,7 @@ Window {
 
             property real banked: 0
 
-            enabled: !settings.open && !root.inMenu
+            enabled: !settings.open && !root.inMenu && !root.paused && !root.ended
             onWheel: event => {
                 // The mouse belongs to the desktop set, so a scroll counts as
                 // keyboard play for the HUD's captions.
@@ -319,10 +335,11 @@ Window {
         // radar sweep — detection last, so tracks see the tick's outcome.
         // The two scenarios share one slot in the run, gated on the mode.
         Systems {
-            // The page stops the duel rather than letting it run on behind the
-            // player. dropInput() posts the zeroed axes before this flips, and
+            // The controls page, the pause menu and a decided duel all stop
+            // the sim rather than letting it run on behind the player.
+            // dropInput() posts the zeroed axes before these flip, and
             // nothing clears the queue, so they publish on resume.
-            running: !settings.open
+            running: !settings.open && !root.paused && !root.ended
 
             CommandQueue {
                 id: bus
@@ -403,7 +420,7 @@ Window {
             entities: root.entities
             detonations: weapons.detonations
             symbolSize: height * 0.04
-            trailsRunning: !settings.open && !root.inMenu
+            trailsRunning: !settings.open && !root.inMenu && !root.paused && !root.ended
 
             anchors {
                 left: parent.left
@@ -634,6 +651,36 @@ Window {
             anchors.fill: parent
         }
 
+        // The pause menu, over the frozen scope and HUD; the controls page
+        // stacks on top of it and hands the keys back on close.
+        ViewPause {
+            id: pausePage
+
+            visible: root.paused
+            focus: root.paused && !settings.open
+            device: root.device
+            onResumed: root.resumeDuel()
+            onControls: root.openSettings()
+            onToMenu: root.startMenu()
+            onExitGame: Qt.quit()
+
+            anchors.fill: parent
+        }
+
+        // The duel's result, over the deciding frame.
+        ViewEnd {
+            id: endPage
+
+            visible: root.ended
+            focus: root.ended
+            device: root.device
+            mission: scenario.mission
+            onFlyAgain: root.startDuel()
+            onToMenu: root.startMenu()
+            onExitGame: Qt.quit()
+
+            anchors.fill: parent
+        }
     }
 
     // The controls page, a sibling of the scene rather than a child: it paints
@@ -661,11 +708,27 @@ Window {
     }
 
     // The launch screen: the demo scenario populates the world itself, on the
-    // tightest range step so the close fight fills the picture.
+    // tightest range step so the close fight fills the picture. Arriving from
+    // a paused or decided duel, the demo's own restart sweeps the fight's
+    // leavings and reseats ownship for the show.
     function startMenu() {
         root.dropInput();
+        root.paused = false;
+        demo.restart();
         projection.step = 0;
         root.inMenu = true;
+    }
+
+    // Escape or Start mid-duel: freeze the sim behind the pause menu. Held
+    // input is dropped while the bus still runs, exactly as the page does.
+    function openPause() {
+        root.dropInput();
+        root.paused = true;
+    }
+
+    function resumeDuel() {
+        root.paused = false;
+        root.dropInput();
     }
 
     // New game: rebuild both craft factory-fresh, sweep the whole world —

@@ -39,6 +39,9 @@ Scenario {
     // The live bandit. reset() owns the swap.
     property Entity bandit: DuelBandit {}
 
+    // The latched duel outcome the end screen reads; reset() rearms it.
+    readonly property SystemMission mission: missionSystem
+
     readonly property Component banditFactory: Component {
         DuelBandit {}
     }
@@ -52,6 +55,7 @@ Scenario {
         const spent = root.bandit;
         root.bandit = root.banditFactory.createObject(root) as Entity;
         spent.destroy();
+        missionSystem.reset();
     }
 
     SystemPursuit {
@@ -73,5 +77,13 @@ Scenario {
     // carries no fuel system, so it needs no top-up either.
     SystemFuel {
         entity: root.ownship
+    }
+
+    // The outcome judge, latching victory or defeat off the pair's hulls; it
+    // reads last tick's blast results, one frame the end screen never shows.
+    SystemMission {
+        id: missionSystem
+        player: root.ownship
+        target: root.bandit
     }
 }
