@@ -40,6 +40,36 @@ QtObject {
     property real commandedThrottle: 0
     property real commandedSteer: 0
 
+    // Behaviour aspects: every system runs against the whole world and
+    // processes the entities carrying its aspect, so a scenario arms
+    // behaviour by setting fields at spawn — never by loading systems of its
+    // own. A null target or a cleared flag simply opts the entity out.
+
+    // SystemPursuit chases this at full throttle.
+    property Entity pursuitTarget: null
+
+    // SystemEvade orbits this, holding off at the standoff distance (m).
+    property Entity evadeTarget: null
+    property real evadeStandoff: 12000
+
+    // SystemEngage shoots at this inside the envelope. holdoff (s) paces the
+    // launches; the timer is its run-down state, seedable to stagger a
+    // wave's opening shots; engageHold stands the shooter down while true —
+    // a director's salvo cap.
+    property Entity engageTarget: null
+    property real engageHoldoff: 6
+    property real engageTimer: 0
+    property bool engageHold: false
+
+    // SystemThreat pops this entity's flares at inbound homing rounds; the
+    // timer spaces the pops so each decoy gets its chance to seduce.
+    property bool threatReflex: false
+    property real threatTimer: 0
+
+    // SystemFuel drains the tank; the launch screen's demo craft clears this
+    // so an endless showing never runs dry.
+    property bool burnsFuel: true
+
     // The six stats, as the dimensionless 0..10 ratings GameRules prices (see
     // Stats). Never a game quantity — assigning one here re-derives every
     // capability below with it.

@@ -4,7 +4,7 @@ import "../model"
 // The win/lose engine: latches the duel's outcome from live model state —
 // defeat when the player's hull is gone, victory when the target's is. Once
 // terminal it holds, so a mutual kill the same tick cannot flip a result,
-// and the scenario reads the latch to freeze the game behind the end screen.
+// and the shell reads the latch to freeze the game behind the end screen.
 // Fuel starvation is deliberately not a loss yet: the current fuel economy
 // drains a full-throttle tank before the merge, so that condition waits on
 // the fuel tuning pass. Ports briardart's SystemMission.

@@ -2,16 +2,16 @@ import awen.entity
 import "../database"
 import "../model"
 
-// AI trigger discipline: invokes the entity's named launch ability when its
-// target is alive, inside the radar cone and within engageRange — with a
-// holdoff between invocations on top of the ability's own cooldown, so the
-// magazine is not dumped in one pass.
+// AI trigger discipline: every entity carrying an engageTarget invokes its
+// named launch ability when that target is alive, inside the radar cone and
+// within engageRange — paced by the entity's own holdoff on top of the
+// ability's cooldown, so no magazine is dumped in one pass. An entity held
+// by its engageHold flag stands down entirely, its pacing frozen with it.
 System {
     id: root
 
-    // The shooter and what it shoots at.
-    required property Entity entity
-    required property Entity target
+    // The world's roster; entities without the aspect are passed over.
+    property list<Entity> entities
 
     // The launch ability invoked, by registry name, and the round it spawns;
     // the cast is null for a name that is not a launch at all.
@@ -23,28 +23,30 @@ System {
     // physically fly, so the envelope tracks the weapon's own tuning.
     property real engageRange: root.round ? root.round.reach : 0
 
-    // Minimum seconds between invocations.
-    property real holdoff: 6
-
-    property real timer: 0
-
     function update(dt: real) {
-        root.timer = Math.max(0, root.timer - dt);
-        if (root.timer > 0 || root.target === null || root.target.health <= 0)
-            return;
-        const dx = root.target.posX - root.entity.posX;
-        const dy = root.target.posY - root.entity.posY;
-        if (Math.hypot(dx, dy) > root.engageRange)
-            return;
-        const bearing = Math.atan2(dx, -dy) * 180 / Math.PI;
-        const off = (((bearing - root.entity.heading) % 360) + 540) % 360 - 180;
-        if (Math.abs(off) > root.entity.radarFov / 2)
-            return;
-        for (let i = 0; i < root.entity.abilities.length; ++i) {
-            const slot = root.entity.abilities[i];
+        for (let i = 0; i < root.entities.length; ++i) {
+            const entity = root.entities[i];
+            if (entity.engageTarget === null || entity.engageHold)
+                continue;
+            entity.engageTimer = Math.max(0, entity.engageTimer - dt);
+            if (entity.engageTimer > 0 || entity.engageTarget.health <= 0)
+                continue;
+            if (Geo.distance(entity, entity.engageTarget) > root.engageRange)
+                continue;
+            const off = Geo.wrap180(Geo.bearing(entity, entity.engageTarget) - entity.heading);
+            if (Math.abs(off) > entity.radarFov / 2)
+                continue;
+            root.fire(entity);
+        }
+    }
+
+    // Raises the named launch on its ready slot, winding the pacing back up.
+    function fire(entity: Entity) {
+        for (let i = 0; i < entity.abilities.length; ++i) {
+            const slot = entity.abilities[i];
             if (slot.def.name === root.ability && slot.ready) {
                 slot.activate();
-                root.timer = root.holdoff;
+                entity.engageTimer = entity.engageHoldoff;
                 return;
             }
         }

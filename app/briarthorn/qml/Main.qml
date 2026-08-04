@@ -54,7 +54,7 @@ Window {
 
     // Whether the duel has been decided: the sim freezes on the deciding
     // frame and the end screen takes the input until the player moves on.
-    readonly property bool ended: !root.inMenu && scenario.mission.status !== SystemMission.Status.Ongoing
+    readonly property bool ended: !root.inMenu && mission.status !== SystemMission.Status.Ongoing
 
     width: 1280
     height: 720
@@ -329,11 +329,13 @@ Window {
         }
 
         // Run order is the lifetimes and the data flow: publish the batch,
-        // consume player intent into the game store, run the scenario's own
-        // systems (AI steering and trigger discipline), age ability clocks,
-        // integrate poses, then resolve weapons, countermeasures and the
-        // radar sweep — detection last, so tracks see the tick's outcome.
-        // The two scenarios share one slot in the run, gated on the mode.
+        // consume player intent into the game store, let the scenarios set
+        // conditions, judge the duel, then run the one set of shared systems
+        // — behaviour by entity aspect, ability clocks, fuel, poses, weapons,
+        // countermeasures and the radar sweep, detection last so tracks see
+        // the tick's outcome. Every system runs in every mode and processes
+        // exactly the entities carrying its aspect; the scenarios only shape
+        // the world and never load systems of their own.
         Systems {
             // The controls page, the pause menu and a decided duel all stop
             // the sim rather than letting it run on behind the player.
@@ -361,11 +363,38 @@ Window {
                 id: scenario
                 enabled: !root.inMenu
                 ownship: game.ownship
-                world: root.world
+            }
+
+            // The duel's judge, always on: in menu mode both hulls it reads
+            // sit topped or out of the fight, so the latch never trips.
+            SystemMission {
+                id: mission
+                player: game.ownship
+                target: scenario.bandit
+            }
+
+            SystemPursuit {
+                entities: root.entities
+            }
+
+            SystemEvade {
+                entities: root.entities
+            }
+
+            SystemEngage {
+                entities: root.entities
+            }
+
+            SystemThreat {
+                entities: root.entities
             }
 
             SystemAbility {
                 world: root.world
+            }
+
+            SystemFuel {
+                entities: root.entities
             }
 
             SystemMovement {
@@ -674,7 +703,7 @@ Window {
             visible: root.ended
             focus: root.ended
             device: root.device
-            mission: scenario.mission
+            mission: mission
             onFlyAgain: root.startDuel()
             onToMenu: root.startMenu()
             onExitGame: Qt.quit()
@@ -738,6 +767,7 @@ Window {
         demo.reset();
         game.reset();
         scenario.reset();
+        mission.reset();
         const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i)
             root.world.despawn(roster[i]);
