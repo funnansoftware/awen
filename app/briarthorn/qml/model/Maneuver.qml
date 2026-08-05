@@ -8,14 +8,33 @@ import QtQml
 QtObject {
     id: root
 
-    // The craft this maneuver flies relative to; null stands it down.
+    // The craft this maneuver flies relative to; null stands it down unless
+    // a point is anchored below.
     property Entity target: null
 
+    // A fixed world point flown when no target is set — a waypoint, patrol
+    // station or avoid area. Scenario- and director-armed only: a
+    // personality disengages its stances by nulling target, so its
+    // maneuvers must stay anchor-free.
+    property real anchorX: 0
+    property real anchorY: 0
+    property bool anchored: false
+
     // Whether this maneuver wants the stick this tick.
-    property bool engaged: root.target !== null
+    property bool engaged: root.target !== null || root.anchored
 
     // Bearing error, in degrees, at which steer reaches full deflection.
     readonly property real cutAngle: 30
+
+    // Where the maneuver flies relative to: the target when one is set, the
+    // anchored point otherwise.
+    function focusX(): real {
+        return root.target !== null ? root.target.posX : root.anchorX;
+    }
+
+    function focusY(): real {
+        return root.target !== null ? root.target.posY : root.anchorY;
+    }
 
     // Flies the entity for one tick: onto the desired heading at full throttle.
     function fly(entity: Entity, dt: real) {
