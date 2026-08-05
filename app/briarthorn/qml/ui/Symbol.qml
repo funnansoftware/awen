@@ -1,14 +1,16 @@
 import QtQuick
+import QtQuick.Shapes
 import awen.shapes
 import "../database"
 import "../model"
 import "../themes"
 
-// A scope symbol: the classification's outline polygon coloured by side,
-// nose turned to noseAngle, with a screen-upright label below. Centre it on
-// the plot point; an empty label falls back to the classification's. Inside
-// a rotated view, bind viewRotation to the container's rotation so the
-// label counter-rotates and stays upright.
+// A scope symbol: the classification's outline polygon stroked in its side's
+// colour over a window-background fill, nose turned to noseAngle, with a
+// screen-upright label below. Centre it on the plot point; an empty label
+// falls back to the classification's. Inside a rotated view, bind
+// viewRotation to the container's rotation so the label counter-rotates and
+// stays upright.
 Item {
     id: root
 
@@ -27,7 +29,26 @@ Item {
     // Symbol size in px, before the classification's symbolScale.
     property real symbolSize: 36
 
+    // Outline stroke width in px; starts at the range rings' weight so marks
+    // and rings share one line weight on the scope.
+    property real strokeWidth: 2
+
     readonly property Data def: Database.dataFor(root.classification)
+
+    readonly property color sideColor: {
+        switch (root.side) {
+        case Side.Kind.Ownship:
+            return Style.theme.factionOwnship;
+        case Side.Kind.Friendly:
+            return Style.theme.factionFriendly;
+        case Side.Kind.Neutral:
+            return Style.theme.factionNeutral;
+        case Side.Kind.Hostile:
+            return Style.theme.factionHostile;
+        default:
+            return Style.theme.factionUnknown;
+        }
+    }
 
     width: root.symbolSize * root.def.symbolScale
     height: width
@@ -36,20 +57,13 @@ Item {
         anchors.fill: parent
         rotation: root.noseAngle
         points: root.def.outline
-        fillColor: {
-            switch (root.side) {
-            case Side.Kind.Ownship:
-                return Style.theme.factionOwnship;
-            case Side.Kind.Friendly:
-                return Style.theme.factionFriendly;
-            case Side.Kind.Neutral:
-                return Style.theme.factionNeutral;
-            case Side.Kind.Hostile:
-                return Style.theme.factionHostile;
-            default:
-                return Style.theme.factionUnknown;
-            }
-        }
+        fillColor: Style.theme.windowBackground
+        strokeColor: root.sideColor
+        strokeWidth: root.strokeWidth
+        // Round joins: the missiles' acute noses exceed the default miter
+        // limit and would chop flat, and the fighter's tips would spike past
+        // the item bounds the views seat marks by.
+        joinStyle: ShapePath.RoundJoin
     }
 
     // Counter-rotating frame: cancels the view rotation so the label reads
