@@ -121,7 +121,7 @@ the database imports nothing back.
   metres. `SystemPersonality` attaches the live `PersonalityState` and owns
   `maneuvers`, `engageHold` and `engageHoldoff` on its entities; scenarios
   point `engageTarget` and the personality decides how to fight it, so a
-  director-run entity (the menu demo's spawns) stays personality-free.
+  director-run entity (the menu demo's ownship) stays personality-free.
 - **Ability input is generated, never written.** Adding an ability is four
   edits: the def under `database/abilities/` (carrying its own `defaultKey` and
   `defaultButton`), a line in the `Abilities` registry, a line in

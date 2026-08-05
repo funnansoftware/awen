@@ -738,15 +738,16 @@ Window {
         axisThrottle.invoke(0);
     }
 
-    // The launch screen: the demo scenario populates the world itself, on the
-    // tightest range step so the close fight fills the picture. Arriving from
-    // a paused or decided duel, the demo's own restart sweeps the fight's
-    // leavings and reseats ownship for the show.
+    // The launch screen: the demo scenario populates the world itself, one
+    // range step out from the tightest so the temperaments' fighting
+    // envelopes stay on the picture. Arriving from a paused or decided duel,
+    // the demo's own restart sweeps the fight's leavings and reseats ownship
+    // for the show.
     function startMenu() {
         root.dropInput();
         root.paused = false;
         demo.restart();
-        projection.step = 0;
+        projection.step = 1;
         root.inMenu = true;
     }
 

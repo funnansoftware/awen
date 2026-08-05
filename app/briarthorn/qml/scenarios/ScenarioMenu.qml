@@ -6,8 +6,8 @@ import "../model"
 // The main-menu demo: a hands-off, endlessly-looping dogfight in the real
 // world, read through the live scope. Everything flies on entity aspects the
 // shared systems process — ownship orbits and returns fire through the
-// targets the director points, waves spawn already declaring pursuit, trigger
-// discipline and flare reflex — so the scenario owns one director and no
+// targets the director points, and each wave slot spawns flying its own
+// temperament against the player — so the scenario owns one director and no
 // systems. The whole show restarts on a clock: briardart rebuilt its demo
 // session on every menu entry, and an unbounded run would carry ownship
 // arbitrarily far from the origin. Ports briardart's MenuDemoController.
@@ -33,36 +33,41 @@ Scenario {
     readonly property real showLength: 30
     property real showTimer: 0
 
-    // The most rounds one side may hold in the air: the demo reads as a
-    // sparring match, not a missile barrage, so each side's shooters stand
-    // down behind their engageHold flags until their salvo thins.
+    // The most rounds ownship may hold in the air: its half of the sparring
+    // match stays paced behind its engageHold flag, while the bandits'
+    // trigger discipline belongs to their personalities.
     readonly property int missileCap: 2
     property int ownshipRounds: 0
-    property int hostileRounds: 0
 
     // Seconds a bandit's opening shot waits per wave slot, so a fresh wave —
-    // spawned inside the envelope with every timer at zero — never fires as
-    // one volley straight through the lagging round count.
+    // spawned inside the envelope with every timer at zero — never opens as
+    // one volley.
     readonly property real stagger: 5
+
+    // One temperament per wave slot, so a single showing demonstrates the
+    // range: the leader presses in, the second cycles its firing band, the
+    // third snipes from distance and bails under fire.
+    readonly property list<string> temperaments: [Names.personality.aggressive, Names.personality.tactical, Names.personality.fearful]
 
     // How the demo craft fights: launches paced a beat apart.
     readonly property real demoHoldoff: 6
 
-    // Ownship's demo behaviour, armed by restart(): orbit the threat the
+    // Ownship's demo behaviour, armed by restart(): orbit the quarry the
     // director points at standoff. Scenario-owned, so it outlives the craft
     // swaps and strips cleanly on reset().
     readonly property ManeuverEvade evade: ManeuverEvade {}
 
-    // What a wave bandit flies: pursuit of ownship, one instance per spawn.
-    readonly property Component pursueFactory: Component {
-        ManeuverPursue {}
-    }
+    // The wave member ownship hunts, picked at random when a wave arrives or
+    // its quarry falls — so each showing pairs the demo craft against a
+    // different temperament rather than whoever drifts nearest.
+    property Entity quarry: null
+
 
     // Seconds the sky has been clear, toward the next wave.
     property real clearTimer: 0
 
     // Wave direction, the scenario's one running part: sustain ownship,
-    // point its aspects at the nearest fighter, hold each side's shooters at
+    // point its aspects at the randomly drawn quarry, hold its shooting at
     // the salvo cap and keep the wave populated.
     System {
         function update(dt: real) {
@@ -80,10 +85,8 @@ Scenario {
         root.countRounds();
         const foes = root.foes();
         root.ownship.engageHold = root.ownshipRounds >= root.missileCap;
-        const hostileHold = root.hostileRounds >= root.missileCap;
-        for (let i = 0; i < foes.length; ++i)
-            foes[i].engageHold = hostileHold;
         if (foes.length === 0) {
+            root.quarry = null;
             root.evade.target = null;
             root.ownship.engageTarget = null;
             // With no aspect steering it, ownship flies straight and level
@@ -98,9 +101,10 @@ Scenario {
             return;
         }
         root.clearTimer = 0;
-        const threat = root.nearest(foes);
-        root.evade.target = threat;
-        root.ownship.engageTarget = threat;
+        if (root.quarry === null || !foes.includes(root.quarry))
+            root.quarry = foes[Math.floor(Math.random() * foes.length)];
+        root.evade.target = root.quarry;
+        root.ownship.engageTarget = root.quarry;
     }
 
     // The demo must never end: the hull stays topped (SystemWeapon must keep
@@ -115,21 +119,15 @@ Scenario {
         }
     }
 
-    // Tallies each side's rounds in the air for the engageHold gates above.
+    // Tallies ownship's rounds in the air for the engageHold gate above.
     function countRounds() {
         let own = 0;
-        let hostile = 0;
         for (let i = 0; i < root.world.entities.length; ++i) {
             const entity = root.world.entities[i];
-            if (entity.weapon === null)
-                continue;
-            if (entity.side === Side.Kind.Hostile)
-                ++hostile;
-            else
+            if (entity.weapon !== null && entity.side !== Side.Kind.Hostile)
                 ++own;
         }
         root.ownshipRounds = own;
-        root.hostileRounds = hostile;
     }
 
     // The living wave members — the kind spawnWave() makes, so the director
@@ -139,50 +137,36 @@ Scenario {
         return root.world.entities.filter(e => e.side === Side.Kind.Hostile && e.weapon === null && e.classification === Classification.Kind.AircraftFighterLight);
     }
 
-    function nearest(foes: var): Entity {
-        let best = foes[0];
-        let bestDistance = Geo.distance(root.ownship, best);
-        for (let i = 1; i < foes.length; ++i) {
-            const d = Geo.distance(root.ownship, foes[i]);
-            if (d < bestDistance) {
-                best = foes[i];
-                bestDistance = d;
-            }
-        }
-        return best;
-    }
-
     // Spawns a fresh wave fanned out ahead of ownship's nose — downrated
-    // airframes off the database, each declaring its whole behaviour at
-    // birth: chase the player, shoot on a slow cadence from a staggered
-    // start, flare at inbound rounds. Deliberately personality-free: the
-    // director owns engageHold for its salvo cap, and a personality would
-    // fight it for the trigger every tick.
+    // airframes off the database, each flying its slot's temperament against
+    // the player from birth. The personalities own their maneuvers and
+    // trigger discipline; the director only points the target and staggers
+    // the opening shots.
     function spawnWave() {
         const heading = root.ownship.heading;
         for (let i = 0; i < root.waveSize; ++i) {
             const lateral = (i - (root.waveSize - 1) / 2) * root.spawnSpread;
-            const foe = root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
+            root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
                 side: Side.Kind.Hostile,
                 posX: root.ownship.posX + Geo.offsetX(heading, root.spawnAhead) + Geo.offsetX(Geo.perpendicularRight(heading), lateral),
                 posY: root.ownship.posY + Geo.offsetY(heading, root.spawnAhead) + Geo.offsetY(Geo.perpendicularRight(heading), lateral),
                 heading: Geo.reciprocal(heading),
                 speed: 320,
+                personality: root.temperaments[i % root.temperaments.length],
                 engageTarget: root.ownship,
-                // Slower than the duel bandit: three shooters share one
-                // salvo allowance.
+                // The base pace for stances that keep the spawn setting;
+                // firing stances repace themselves.
                 engageHoldoff: 12,
                 engageTimer: i * root.stagger,
                 threatReflex: true
             });
-            // Parented to the foe, so the maneuver despawns with it.
-            foe.maneuvers = [root.pursueFactory.createObject(foe, { target: root.ownship }) as Maneuver];
         }
     }
 
     // Ends the show: strips the demo aspects off the player's craft — the
     // wave bandits despawn with the world purge on leaving the menu.
     function reset() {
+        root.quarry = null;
         root.evade.target = null;
         root.ownship.maneuvers = [];
         root.ownship.engageTarget = null;
