@@ -18,4 +18,9 @@ Data {
     // The abilities instances carry, by registry name — the whole loadout an
     // airframe brings, turned into live AbilitySlots when one is created.
     property list<string> abilities
+
+    // The stock temperament instances carry, by registry name; empty is
+    // pilot- or director-flown. Kind rows stay empty for now — the menu
+    // demo's director must keep sole ownership of engageHold on its spawns.
+    property string personality: ""
 }

@@ -50,6 +50,16 @@ QtObject {
     // an empty (or fully stood-down) list leaves the commands to the pilot.
     property list<Maneuver> maneuvers
 
+    // The temperament SystemPersonality flies this entity with, defaulting
+    // from its kind; empty opts out. A personality owns maneuvers,
+    // engageHold and engageHoldoff — a director must not share an entity
+    // with one.
+    property string personality: root.def ? root.def.personality : ""
+
+    // The live stance machine, built by SystemPersonality on the first
+    // tick; reassigning personality mid-life is not supported.
+    property PersonalityState mind: null
+
     // SystemEngage shoots at this inside the envelope. holdoff (s) paces the
     // launches; the timer is its run-down state, seedable to stagger a
     // wave's opening shots; engageHold stands the shooter down while true —
@@ -63,6 +73,10 @@ QtObject {
     // timer spaces the pops so each decoy gets its chance to seduce.
     property bool threatReflex: false
     property real threatTimer: 0
+
+    // The nearest homing round SystemThreat marked inbound this tick; both
+    // the flare reflex and SystemPersonality read this one fact.
+    property Entity threatInbound: null
 
     // SystemFuel drains the tank; the launch screen's demo craft clears this
     // so an endless showing never runs dry.
@@ -85,6 +99,23 @@ QtObject {
     readonly property real acceleration: GameRules.accelerationFor(root.maneuver)
     readonly property real detectionRange: GameRules.detectionRangeFor(root.sensor)
     readonly property real fuelBurn: GameRules.fuelBurnFor(root.kinetic)
+
+    // The longest reach across the rack's launch slots — capability, not
+    // stock, so the envelope survives an empty magazine.
+    readonly property real weaponReach: root.reachFrom(root.abilities)
+
+    function reachFrom(slots: list<AbilitySlot>): real {
+        let reach = 0;
+        for (let i = 0; i < slots.length; ++i) {
+            const launch = slots[i].def as AbilityLaunch;
+            if (launch === null)
+                continue;
+            const round = Database.weaponDataFor(launch.weapon);
+            if (round !== null)
+                reach = Math.max(reach, round.reach);
+        }
+        return reach;
+    }
 
     // Condition: current and maximum hull integrity and fuel. Pure state —
     // SystemWeapon's blasts write health, SystemFuel writes fuel, the view

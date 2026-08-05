@@ -5,7 +5,9 @@ set(QML_SINGLETONS
     qml/database/Abilities.qml
     qml/database/Database.qml
     qml/database/GameRules.qml
+    qml/database/Personalities.qml
     qml/model/Geo.qml
+    qml/model/Maneuvers.qml
     qml/themes/Style.qml
 )
 
@@ -32,7 +34,15 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/Data.qml
         qml/database/DataEntity.qml
         qml/database/DataWeapon.qml
+        qml/database/Envelope.qml
+        qml/database/Personality.qml
+        qml/database/Stance.qml
         qml/database/Stats.qml
+        qml/database/Switch.qml
+        qml/database/SwitchAmmoOut.qml
+        qml/database/SwitchHealth.qml
+        qml/database/SwitchRange.qml
+        qml/database/SwitchThreat.qml
         qml/database/abilities/AbilityFlare.qml
         qml/database/abilities/AbilityLaunchGuided.qml
         qml/database/abilities/AbilityLaunchKinetic.qml
@@ -40,6 +50,10 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/entities/DataAircraftFighterLight.qml
         qml/database/entities/DataDecoy.qml
         qml/database/entities/DataUnknown.qml
+        qml/database/personalities/PersonalityAggressive.qml
+        qml/database/personalities/PersonalityDefensive.qml
+        qml/database/personalities/PersonalityFearful.qml
+        qml/database/personalities/PersonalityTactical.qml
         qml/database/weapons/DataMissileGuided.qml
         qml/database/weapons/DataMissileKinetic.qml
         qml/input/AbilityInput.qml
@@ -54,6 +68,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/ManeuverFormation.qml
         qml/model/ManeuverNotch.qml
         qml/model/ManeuverPursue.qml
+        qml/model/PersonalityState.qml
         qml/model/RangeProjection.qml
         qml/model/Side.qml
         qml/model/StoreGame.qml
@@ -71,6 +86,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemManeuver.qml
         qml/systems/SystemMission.qml
         qml/systems/SystemMovement.qml
+        qml/systems/SystemPersonality.qml
         qml/systems/SystemThreat.qml
         qml/systems/SystemWeapon.qml
         qml/themes/Aurora.qml

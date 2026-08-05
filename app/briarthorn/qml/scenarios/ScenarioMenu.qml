@@ -155,7 +155,9 @@ Scenario {
     // Spawns a fresh wave fanned out ahead of ownship's nose — downrated
     // airframes off the database, each declaring its whole behaviour at
     // birth: chase the player, shoot on a slow cadence from a staggered
-    // start, flare at inbound rounds.
+    // start, flare at inbound rounds. Deliberately personality-free: the
+    // director owns engageHold for its salvo cap, and a personality would
+    // fight it for the trigger every tick.
     function spawnWave() {
         const heading = root.ownship.heading;
         for (let i = 0; i < root.waveSize; ++i) {

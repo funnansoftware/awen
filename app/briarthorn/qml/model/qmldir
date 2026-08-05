@@ -1,3 +1,4 @@
-# This folder's singleton for the directory import — see commands/qmldir for
+# This folder's singletons for the directory import — see commands/qmldir for
 # the full story. Mirror changes into QML_SINGLETONS in ../../CMakeLists.txt.
 singleton Geo Geo.qml
+singleton Maneuvers Maneuvers.qml
