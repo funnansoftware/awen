@@ -52,17 +52,22 @@ Scenario {
     // How the demo craft fights: launches paced a beat apart.
     readonly property real demoHoldoff: 6
 
-    // Ownship's demo behaviour, armed by restart(): orbit the threat the
+    // Ownship's demo behaviour, armed by restart(): orbit the quarry the
     // director points at standoff. Scenario-owned, so it outlives the craft
     // swaps and strips cleanly on reset().
     readonly property ManeuverEvade evade: ManeuverEvade {}
+
+    // The wave member ownship hunts, picked at random when a wave arrives or
+    // its quarry falls — so each showing pairs the demo craft against a
+    // different temperament rather than whoever drifts nearest.
+    property Entity quarry: null
 
 
     // Seconds the sky has been clear, toward the next wave.
     property real clearTimer: 0
 
     // Wave direction, the scenario's one running part: sustain ownship,
-    // point its aspects at the nearest fighter, hold each side's shooters at
+    // point its aspects at the randomly drawn quarry, hold its shooting at
     // the salvo cap and keep the wave populated.
     System {
         function update(dt: real) {
@@ -81,6 +86,7 @@ Scenario {
         const foes = root.foes();
         root.ownship.engageHold = root.ownshipRounds >= root.missileCap;
         if (foes.length === 0) {
+            root.quarry = null;
             root.evade.target = null;
             root.ownship.engageTarget = null;
             // With no aspect steering it, ownship flies straight and level
@@ -95,9 +101,10 @@ Scenario {
             return;
         }
         root.clearTimer = 0;
-        const threat = root.nearest(foes);
-        root.evade.target = threat;
-        root.ownship.engageTarget = threat;
+        if (root.quarry === null || !foes.includes(root.quarry))
+            root.quarry = foes[Math.floor(Math.random() * foes.length)];
+        root.evade.target = root.quarry;
+        root.ownship.engageTarget = root.quarry;
     }
 
     // The demo must never end: the hull stays topped (SystemWeapon must keep
@@ -130,19 +137,6 @@ Scenario {
         return root.world.entities.filter(e => e.side === Side.Kind.Hostile && e.weapon === null && e.classification === Classification.Kind.AircraftFighterLight);
     }
 
-    function nearest(foes: var): Entity {
-        let best = foes[0];
-        let bestDistance = Geo.distance(root.ownship, best);
-        for (let i = 1; i < foes.length; ++i) {
-            const d = Geo.distance(root.ownship, foes[i]);
-            if (d < bestDistance) {
-                best = foes[i];
-                bestDistance = d;
-            }
-        }
-        return best;
-    }
-
     // Spawns a fresh wave fanned out ahead of ownship's nose — downrated
     // airframes off the database, each flying its slot's temperament against
     // the player from birth. The personalities own their maneuvers and
@@ -172,6 +166,7 @@ Scenario {
     // Ends the show: strips the demo aspects off the player's craft — the
     // wave bandits despawn with the world purge on leaving the menu.
     function reset() {
+        root.quarry = null;
         root.evade.target = null;
         root.ownship.maneuvers = [];
         root.ownship.engageTarget = null;
