@@ -20,7 +20,8 @@ Data {
     property list<string> abilities
 
     // The stock temperament instances carry, by registry name; empty is
-    // pilot- or director-flown. Kind rows stay empty for now — the menu
-    // demo's director must keep sole ownership of engageHold on its spawns.
+    // pilot- or director-flown. Kind rows stay empty for now — spawn sites
+    // assign temperaments per instance, and a craft a director flies (the
+    // menu demo's ownship) must never carry one.
     property string personality: ""
 }
