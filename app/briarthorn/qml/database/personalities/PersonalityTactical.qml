@@ -4,59 +4,59 @@ import ".."
 // paced, withdraw when pressed — with overlapped band edges as hysteresis,
 // notches only genuine inbounds, and retires hurt or dry.
 Personality {
-    name: "tactical"
+    name: Names.personality.tactical
 
     switches: [
         SwitchThreat {
             present: true
             within: 0.4
-            to: "evade"
+            to: Names.stance.evade
         },
         // Hurt is one solid hit: flat warhead damage quantizes the hull, so
         // a deeper threshold would never be seen alive.
         SwitchHealth {
             below: 0.45
-            to: "retire"
+            to: Names.stance.retire
         },
         SwitchAmmoOut {
-            to: "retire"
+            to: Names.stance.retire
         }
     ]
 
     stances: [
         Stance {
-            name: "advance"
-            maneuver: "pursue"
+            name: Names.stance.advance
+            maneuver: Names.maneuver.pursue
             holdFire: true
             switches: [
                 SwitchRange {
                     inside: true
                     at: 0.9
-                    to: "strike"
+                    to: Names.stance.strike
                 }
             ]
         },
         Stance {
-            name: "strike"
-            maneuver: "pursue"
+            name: Names.stance.strike
+            maneuver: Names.maneuver.pursue
             holdoff: 10
             switches: [
                 SwitchRange {
                     inside: true
                     at: 0.6
-                    to: "withdraw"
+                    to: Names.stance.withdraw
                 },
                 SwitchRange {
                     inside: false
                     at: 1
                     dwell: 1
-                    to: "advance"
+                    to: Names.stance.advance
                 }
             ]
         },
         Stance {
-            name: "withdraw"
-            maneuver: "evade"
+            name: Names.stance.withdraw
+            maneuver: Names.maneuver.evade
             holdFire: true
             standoff: 0.9
             switches: [
@@ -64,13 +64,13 @@ Personality {
                     inside: false
                     at: 0.85
                     dwell: 1.5
-                    to: "strike"
+                    to: Names.stance.strike
                 }
             ]
         },
         Stance {
-            name: "evade"
-            maneuver: "notch"
+            name: Names.stance.evade
+            maneuver: Names.maneuver.notch
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
@@ -78,13 +78,13 @@ Personality {
                     present: false
                     within: 0.4
                     dwell: 1
-                    to: "advance"
+                    to: Names.stance.advance
                 }
             ]
         },
         Stance {
-            name: "retire"
-            maneuver: "flee"
+            name: Names.stance.retire
+            maneuver: Names.maneuver.flee
             holdFire: true
         }
     ]

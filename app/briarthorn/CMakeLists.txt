@@ -5,6 +5,7 @@ set(QML_SINGLETONS
     qml/database/Abilities.qml
     qml/database/Database.qml
     qml/database/GameRules.qml
+    qml/database/Names.qml
     qml/database/Personalities.qml
     qml/model/Geo.qml
     qml/model/Maneuvers.qml

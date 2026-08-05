@@ -27,7 +27,7 @@ Scenario {
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
-        personality: "aggressive"
+        personality: Names.personality.aggressive
         engageTarget: root.ownship
         threatReflex: true
 
