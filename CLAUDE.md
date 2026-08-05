@@ -96,11 +96,12 @@ assembles the APK).
 ## Briarthorn's game database
 
 Every static kind definition is one file under `app/briarthorn/qml/database/`,
-in `entities/`, `weapons/` or `abilities/`, registered in the single list on the
-`Database` (or `Abilities`) singleton — the lookup table derives from that list,
-so adding a kind is a new file, a new `Classification` and one line, never a
-switch to keep in step. `qml/model/` holds the live state those rows seed and is
-allowed to import `../database`; the database imports nothing back.
+in `entities/`, `weapons/`, `abilities/` or `personalities/`, registered in the
+single list on the `Database`, `Abilities` or `Personalities` singleton — the
+lookup table derives from that list, so adding a kind is a new file, a new
+`Classification` and one line, never a switch to keep in step. `qml/model/`
+holds the live state those rows seed and is allowed to import `../database`;
+the database imports nothing back.
 
 - **Stats are ratings, never quantities.** A `DataEntity` rates a kind 0..10 on
   the six stats and `GameRules` prices every rating into m/s, deg/s, m/s^2,
@@ -113,6 +114,14 @@ allowed to import `../database`; the database imports nothing back.
   overrides only what makes that one different; assigning nothing to `abilities`
   gives it the loadout its kind carries. `World.spawn(prefix, classification,
   props)` is the one spawn path.
+- **A personality is stances plus switches, priced on envelopes.** A
+  `Personality` row's stances name maneuvers from the model's `Maneuvers`
+  registry, and its `Switch` rows express every distance as a fraction of a
+  priced envelope (own weapon reach, the target's, detection range) — never
+  metres. `SystemPersonality` attaches the live `PersonalityState` and owns
+  `maneuvers`, `engageHold` and `engageHoldoff` on its entities; scenarios
+  point `engageTarget` and the personality decides how to fight it, so a
+  director-run entity (the menu demo's spawns) stays personality-free.
 - **Ability input is generated, never written.** Adding an ability is four
   edits: the def under `database/abilities/` (carrying its own `defaultKey` and
   `defaultButton`), a line in the `Abilities` registry, a line in

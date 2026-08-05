@@ -331,11 +331,13 @@ Window {
         // Run order is the lifetimes and the data flow: publish the batch,
         // consume player intent into the game store, let the scenarios set
         // conditions, judge the duel, then run the one set of shared systems
-        // — behaviour by entity aspect, ability clocks, fuel, poses, weapons,
-        // countermeasures and the radar sweep, detection last so tracks see
-        // the tick's outcome. Every system runs in every mode and processes
-        // exactly the entities carrying its aspect; the scenarios only shape
-        // the world and never load systems of their own.
+        // — threat marks first so minds and reflexes read fresh inbounds,
+        // personalities pick their stances, behaviour by entity aspect,
+        // ability clocks, fuel, poses, weapons, countermeasures and the
+        // radar sweep, detection last so tracks see the tick's outcome.
+        // Every system runs in every mode and processes exactly the entities
+        // carrying its aspect; the scenarios only shape the world and never
+        // load systems of their own.
         Systems {
             // The controls page, the pause menu and a decided duel all stop
             // the sim rather than letting it run on behind the player.
@@ -373,15 +375,19 @@ Window {
                 target: scenario.bandit
             }
 
+            SystemThreat {
+                entities: root.entities
+            }
+
+            SystemPersonality {
+                entities: root.entities
+            }
+
             SystemManeuver {
                 entities: root.entities
             }
 
             SystemEngage {
-                entities: root.entities
-            }
-
-            SystemThreat {
                 entities: root.entities
             }
 

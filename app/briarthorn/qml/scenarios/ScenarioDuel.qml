@@ -18,21 +18,18 @@ Scenario {
     required property Entity ownship
 
     // The downrated airframe, so the duel is winnable, with its rack's flare
-    // pod halved on top — a full pod outlasts the player's patience.
+    // pod halved on top — a full pod outlasts the player's patience. The
+    // scenario points the target; the personality decides how to fight it,
+    // so a dry bandit breaks off rather than pursuing forever.
     component DuelBandit: Entity {
         callsign: "BANDIT 1"
         classification: Classification.Kind.AircraftFighterLight
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
+        personality: "aggressive"
         engageTarget: root.ownship
         threatReflex: true
-
-        maneuvers: [
-            ManeuverPursue {
-                target: root.ownship
-            }
-        ]
 
         abilities: [
             AbilitySlot {
