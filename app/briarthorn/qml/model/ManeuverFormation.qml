@@ -6,6 +6,11 @@ import QtQml
 Maneuver {
     id: root
 
+    // Entity-only: the slot is placed off the leader's nose and the throttle
+    // trims against the leader's speed, neither of which a point has — so an
+    // anchor alone never engages this maneuver.
+    engaged: root.target !== null
+
     // The station: degrees clockwise off the leader's nose and metres out —
     // the default is the leader's right-rear quarter.
     property real station: 135

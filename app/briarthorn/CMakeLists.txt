@@ -67,6 +67,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/ManeuverFlee.qml
         qml/model/ManeuverFormation.qml
         qml/model/ManeuverNotch.qml
+        qml/model/ManeuverOrbit.qml
         qml/model/ManeuverPursue.qml
         qml/model/PersonalityState.qml
         qml/model/RangeProjection.qml

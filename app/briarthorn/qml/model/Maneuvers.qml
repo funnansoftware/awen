@@ -21,6 +21,10 @@ QtObject {
         ManeuverNotch {}
     }
 
+    readonly property Component orbit: Component {
+        ManeuverOrbit {}
+    }
+
     readonly property Component flee: Component {
         ManeuverFlee {}
     }
@@ -33,6 +37,7 @@ QtObject {
             "pursue": root.pursue,
             "evade": root.evade,
             "notch": root.notch,
+            "orbit": root.orbit,
             "flee": root.flee,
             "formation": root.formation
         })
