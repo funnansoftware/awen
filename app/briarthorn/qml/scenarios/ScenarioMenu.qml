@@ -1,3 +1,4 @@
+import QtQml
 import awen.entity
 import "../database"
 import "../model"
@@ -47,6 +48,16 @@ Scenario {
     // How the demo craft fights: launches paced a beat apart.
     readonly property real demoHoldoff: 6
 
+    // Ownship's demo behaviour, armed by restart(): orbit the threat the
+    // director points at standoff. Scenario-owned, so it outlives the craft
+    // swaps and strips cleanly on reset().
+    readonly property ManeuverEvade evade: ManeuverEvade {}
+
+    // What a wave bandit flies: pursuit of ownship, one instance per spawn.
+    readonly property Component pursueFactory: Component {
+        ManeuverPursue {}
+    }
+
     // Seconds the sky has been clear, toward the next wave.
     property real clearTimer: 0
 
@@ -73,7 +84,7 @@ Scenario {
         for (let i = 0; i < foes.length; ++i)
             foes[i].engageHold = hostileHold;
         if (foes.length === 0) {
-            root.ownship.evadeTarget = null;
+            root.evade.target = null;
             root.ownship.engageTarget = null;
             // With no aspect steering it, ownship flies straight and level
             // toward the next engagement.
@@ -88,7 +99,7 @@ Scenario {
         }
         root.clearTimer = 0;
         const threat = root.nearest(foes);
-        root.ownship.evadeTarget = threat;
+        root.evade.target = threat;
         root.ownship.engageTarget = threat;
     }
 
@@ -149,13 +160,12 @@ Scenario {
         const heading = root.ownship.heading;
         for (let i = 0; i < root.waveSize; ++i) {
             const lateral = (i - (root.waveSize - 1) / 2) * root.spawnSpread;
-            root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
+            const foe = root.world.spawn("FOE", Classification.Kind.AircraftFighterLight, {
                 side: Side.Kind.Hostile,
-                posX: root.ownship.posX + Geo.offsetX(heading, root.spawnAhead) + Geo.offsetX(heading + 90, lateral),
-                posY: root.ownship.posY + Geo.offsetY(heading, root.spawnAhead) + Geo.offsetY(heading + 90, lateral),
-                heading: (heading + 180) % 360,
+                posX: root.ownship.posX + Geo.offsetX(heading, root.spawnAhead) + Geo.offsetX(Geo.perpendicularRight(heading), lateral),
+                posY: root.ownship.posY + Geo.offsetY(heading, root.spawnAhead) + Geo.offsetY(Geo.perpendicularRight(heading), lateral),
+                heading: Geo.reciprocal(heading),
                 speed: 320,
-                pursuitTarget: root.ownship,
                 engageTarget: root.ownship,
                 // Slower than the duel bandit: three shooters share one
                 // salvo allowance.
@@ -163,13 +173,16 @@ Scenario {
                 engageTimer: i * root.stagger,
                 threatReflex: true
             });
+            // Parented to the foe, so the maneuver despawns with it.
+            foe.maneuvers = [root.pursueFactory.createObject(foe, { target: root.ownship }) as Maneuver];
         }
     }
 
     // Ends the show: strips the demo aspects off the player's craft — the
     // wave bandits despawn with the world purge on leaving the menu.
     function reset() {
-        root.ownship.evadeTarget = null;
+        root.evade.target = null;
+        root.ownship.maneuvers = [];
         root.ownship.engageTarget = null;
         root.ownship.engageHold = false;
         root.clearTimer = 0;
@@ -196,5 +209,8 @@ Scenario {
         root.ownship.engageHoldoff = root.demoHoldoff;
         root.ownship.engageTimer = 0;
         root.reset();
+        // Re-armed after the strip: the demo craft flies the scenario's own
+        // orbit maneuver, pointed by the director as the fight moves.
+        root.ownship.maneuvers = [root.evade];
     }
 }

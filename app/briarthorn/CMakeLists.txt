@@ -48,6 +48,12 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/AbilitySlot.qml
         qml/model/Detonation.qml
         qml/model/Entity.qml
+        qml/model/Maneuver.qml
+        qml/model/ManeuverEvade.qml
+        qml/model/ManeuverFlee.qml
+        qml/model/ManeuverFormation.qml
+        qml/model/ManeuverNotch.qml
+        qml/model/ManeuverPursue.qml
         qml/model/RangeProjection.qml
         qml/model/Side.qml
         qml/model/StoreGame.qml
@@ -61,11 +67,10 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemCountermeasure.qml
         qml/systems/SystemDetection.qml
         qml/systems/SystemEngage.qml
-        qml/systems/SystemEvade.qml
         qml/systems/SystemFuel.qml
+        qml/systems/SystemManeuver.qml
         qml/systems/SystemMission.qml
         qml/systems/SystemMovement.qml
-        qml/systems/SystemPursuit.qml
         qml/systems/SystemThreat.qml
         qml/systems/SystemWeapon.qml
         qml/themes/Aurora.qml

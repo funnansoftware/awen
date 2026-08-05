@@ -25,9 +25,14 @@ Scenario {
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
-        pursuitTarget: root.ownship
         engageTarget: root.ownship
         threatReflex: true
+
+        maneuvers: [
+            ManeuverPursue {
+                target: root.ownship
+            }
+        ]
 
         abilities: [
             AbilitySlot {

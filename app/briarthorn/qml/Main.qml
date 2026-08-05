@@ -373,11 +373,7 @@ Window {
                 target: scenario.bandit
             }
 
-            SystemPursuit {
-                entities: root.entities
-            }
-
-            SystemEvade {
+            SystemManeuver {
                 entities: root.entities
             }
 
