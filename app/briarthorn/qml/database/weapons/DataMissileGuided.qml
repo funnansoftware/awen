@@ -7,7 +7,9 @@ DataWeapon {
     id: root
 
     classification: Classification.Kind.MissileGuided
-    outline: [Qt.point(0, -0.5), Qt.point(0.15, 0.5), Qt.point(-0.15, 0.5)]
+    // A finned dart — the steering surfaces tell it from the kinetic slug's
+    // plain triangle on the scope.
+    outline: [Qt.point(0, -0.5), Qt.point(0.12, 0.1), Qt.point(0.32, 0.5), Qt.point(0, 0.32), Qt.point(-0.32, 0.5), Qt.point(-0.12, 0.1)]
     label: qsTr("MSL")
     symbolScale: 0.55
 

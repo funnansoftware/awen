@@ -29,6 +29,9 @@ Item {
     // Symbol size in px before the classification's own scale.
     property real symbolSize: 36
 
+    // Outline stroke width each mark draws with.
+    property real symbolStrokeWidth: 2
+
     // Whether track symbols carry their contact-id labels.
     property bool showLabels: true
 
@@ -71,6 +74,7 @@ Item {
         readonly property Component symbolMark: Component {
             Symbol {
                 symbolSize: root.symbolSize
+                strokeWidth: root.symbolStrokeWidth
                 noseAngle: mark.track ? mark.track.heading : 0
                 viewRotation: root.viewRotation
                 classification: mark.track ? mark.track.classification : Classification.Kind.Unknown

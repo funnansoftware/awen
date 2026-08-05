@@ -52,6 +52,11 @@ Item {
     // Symbol size in px before each classification's own scale.
     property real symbolSize: 36
 
+    // Line weights: the rings', and the marks' outline stroke, which starts
+    // at the rings' weight so the whole scope draws with one line.
+    property real ringStrokeWidth: 2
+    property real symbolStrokeWidth: ringStrokeWidth
+
     // Feature toggles — the minimap turns most of these off for a clean
     // overview. closedRings drops the range-label gap for a plain closed ring.
     property bool showInnerRing: true
@@ -116,7 +121,7 @@ Item {
         centerX: root.centerX
         centerY: root.centerY
         radius: root.outerRadius
-        strokeWidth: 2
+        strokeWidth: root.ringStrokeWidth
         gapLength: root.ringGapLength
         gapAngle: 20
         range: root.projection ? root.projection.rangeKm : 0
@@ -131,7 +136,7 @@ Item {
         centerX: root.centerX
         centerY: root.centerY
         radius: root.outerRadius / 2
-        strokeWidth: 2
+        strokeWidth: root.ringStrokeWidth
         gapLength: root.ringGapLength
         gapAngle: 20
         range: root.projection ? root.projection.innerRangeKm : 0
@@ -178,6 +183,7 @@ Item {
         viewRotation: root.viewRotation
         tracks: root.tracks
         symbolSize: root.symbolSize
+        symbolStrokeWidth: root.symbolStrokeWidth
         showLabels: root.showTrackLabels
         clampRadius: root.gutterClamp ? root.outerRadius : 0
         clampMargin: root.gutterClampMargin
@@ -203,6 +209,7 @@ Item {
         x: root.centerX - width / 2
         y: root.centerY - height / 2
         symbolSize: root.symbolSize
+        strokeWidth: root.symbolStrokeWidth
         noseAngle: root.headingUp ? 0 : (root.observer ? root.observer.heading : 0)
         classification: root.observer ? root.observer.classification : Classification.Kind.Unknown
         side: root.observer ? root.observer.side : Side.Kind.Unknown

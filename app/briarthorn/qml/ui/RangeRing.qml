@@ -7,10 +7,14 @@ import "../themes"
 ShapeRing {
     id: root
 
-    // Tick geometry scales with the ring, so bearing labels stay legible on a
-    // large window instead of shrinking to a static 10px. Floored at the design
-    // sizes, so a default-size scope looks unchanged.
+    // Tick geometry scales with the ring rather than sitting at static pixel
+    // sizes, floored so a small scope stays legible.
     property real padding: Math.max(10, radius * 0.018)
+
+    // The bearing labels' seat inset past the tick inner ends, budgeted off
+    // the label text size (~0.9x its pixel size) so the widest label — and
+    // the 1.5x-scaled 'N' — clears its tick at any radius.
+    property real labelPadding: Math.max(16, radius * 0.03)
     property real range: 40
     property alias enableTicks: ticks.visible
     // Screen rotation of the tick assembly — bind -ownship.heading for a
@@ -42,13 +46,13 @@ ShapeRing {
             Text {
                 required property int index
                 readonly property real bearing: index * ticks.stepAngle
-                property point anchor: ticks.tickPoint(bearing, ticks.radius - ticks.length - root.padding)
+                property point anchor: ticks.tickPoint(bearing, ticks.radius - ticks.length - root.labelPadding)
 
                 visible: !root.inGap(bearing + ticks.angleOffset)
                 text: Math.round(bearing) === 0 ? "N" : Math.round(bearing)
                 color: Style.theme.textPrimary
                 font {
-                    pixelSize: Math.max(10, root.radius * 0.02)
+                    pixelSize: Math.max(15, root.radius * 0.03)
                     family: Style.monospace
                 }
                 scale: Math.round(bearing) === 0 ? 1.5 : 1
