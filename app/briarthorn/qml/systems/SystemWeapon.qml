@@ -55,7 +55,7 @@ System {
             if (w.def.guided)
                 root.seek(missile);
             const near = w.def.guided ? w.target : root.nearestNonOwning(missile, w.def.fuzeRange);
-            const tripped = near !== null && near.health > 0 && root.dist(missile, near) <= w.def.fuzeRange;
+            const tripped = near !== null && near.health > 0 && Geo.distance(missile, near) <= w.def.fuzeRange;
             if (tripped || w.elapsed >= w.def.duration) {
                 w.state = Weapon.State.Fuzing;
                 w.fuzeTarget = tripped ? near : null;
@@ -83,7 +83,7 @@ System {
             missile.commandedSteer = 0;
             return;
         }
-        const error = root.wrap180(root.bearingTo(missile, best) - missile.heading);
+        const error = Geo.wrap180(Geo.bearing(missile, best) - missile.heading);
         missile.commandedSteer = Math.max(-1, Math.min(1, error / root.cutAngle));
     }
 
@@ -116,7 +116,7 @@ System {
                     owner: launcher,
                     posX: launcher.posX,
                     posY: launcher.posY,
-                    heading: target !== null ? root.bearingTo(launcher, target) : launcher.heading,
+                    heading: target !== null ? Geo.bearing(launcher, target) : launcher.heading,
                     // The motor lifts the round past the airframe ceiling and
                     // it leaves the rail already there, rather than
                     // accelerating up to it — an unguided slug has no agility
@@ -151,7 +151,7 @@ System {
             const struck = root.world.entities[i];
             if (struck === missile || struck === missile.owner)
                 continue;
-            if (root.dist(missile, struck) <= w.def.blastRadius)
+            if (Geo.distance(missile, struck) <= w.def.blastRadius)
                 struck.health = Math.max(0, struck.health - w.def.damage);
         }
     }
@@ -194,7 +194,7 @@ System {
                 continue;
             if (!root.opposed(side, contact.side))
                 continue;
-            const d = root.dist(at, contact);
+            const d = Geo.distance(at, contact);
             if (d > range || !root.illuminated(illuminator, contact))
                 continue;
             if (best === null || contact.stealth < best.stealth || (contact.stealth === best.stealth && d < bestDist)) {
@@ -216,7 +216,7 @@ System {
                 continue;
             if (missile.owner !== null && contact.owner === missile.owner)
                 continue;
-            const d = root.dist(missile, contact);
+            const d = Geo.distance(missile, contact);
             if (d <= bestDist) {
                 best = contact;
                 bestDist = d;
@@ -230,7 +230,7 @@ System {
     function illuminated(illuminator: Entity, contact: Entity): bool {
         if (illuminator === null)
             return true;
-        const off = root.wrap180(root.bearingTo(illuminator, contact) - illuminator.heading);
+        const off = Geo.wrap180(Geo.bearing(illuminator, contact) - illuminator.heading);
         return Math.abs(off) <= illuminator.radarFov / 2;
     }
 
@@ -239,17 +239,5 @@ System {
     function opposed(a: int, b: int): bool {
         const friend = s => s === Side.Kind.Ownship || s === Side.Kind.Friendly;
         return (friend(a) && b === Side.Kind.Hostile) || (a === Side.Kind.Hostile && friend(b));
-    }
-
-    function bearingTo(from: Entity, to: Entity): real {
-        return Math.atan2(to.posX - from.posX, -(to.posY - from.posY)) * 180 / Math.PI;
-    }
-
-    function wrap180(angle: real): real {
-        return ((angle % 360) + 540) % 360 - 180;
-    }
-
-    function dist(a: Entity, b: Entity): real {
-        return Math.hypot(b.posX - a.posX, b.posY - a.posY);
     }
 }

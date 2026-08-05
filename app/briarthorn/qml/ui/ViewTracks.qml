@@ -59,7 +59,7 @@ Item {
 
         required property Track track
 
-        readonly property real azimuthRad: mark.track ? mark.track.azimuth * Math.PI / 180 : 0
+        readonly property real azimuth: mark.track ? mark.track.azimuth : 0
         readonly property real trueRange: mark.track ? mark.track.range * root.pxPerMeter : 0
 
         // Beyond the scale, and so clamped: the symbol steps out to its
@@ -86,8 +86,8 @@ Item {
             }
         }
 
-        x: root.centerX + Math.sin(mark.azimuthRad) * mark.screenRange - width / 2
-        y: root.centerY - Math.cos(mark.azimuthRad) * mark.screenRange - height / 2
+        x: root.centerX + Geo.offsetX(mark.azimuth, mark.screenRange) - width / 2
+        y: root.centerY + Geo.offsetY(mark.azimuth, mark.screenRange) - height / 2
 
         // A contact classified as a countermeasure plots as a burning
         // flare, no faction symbol or label — briardart skips the symbol

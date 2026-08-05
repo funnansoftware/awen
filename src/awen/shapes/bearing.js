@@ -17,3 +17,10 @@ function point(cx, cy, angleDeg, r) {
     const a = angleDeg * Math.PI / 180;
     return Qt.point(cx + Math.sin(a) * r, cy - Math.cos(a) * r);
 }
+
+// A bearing re-expressed in PathAngleArc's frame, which measures from the
+// 3 o'clock +x axis instead of north; both turn clockwise, so the quarter
+// turn is the whole difference.
+function arcAngle(angleDeg) {
+    return angleDeg - 90;
+}

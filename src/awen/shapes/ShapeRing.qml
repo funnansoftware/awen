@@ -55,7 +55,7 @@ Shape {
             centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
-            startAngle: root.gapAngle + root.gapHalfAngle - 90
+            startAngle: Bearing.arcAngle(root.gapAngle + root.gapHalfAngle)
             sweepAngle: 360 - 2 * root.gapHalfAngle
         }
     }

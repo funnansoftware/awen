@@ -49,7 +49,7 @@ Shape {
             centerY: root.centerY
             radiusX: root.radius
             radiusY: root.radius
-            startAngle: root.angleAt - root.angleSpan / 2 - 90
+            startAngle: Bearing.arcAngle(root.angleAt - root.angleSpan / 2)
             sweepAngle: root.angleSpan
         }
 

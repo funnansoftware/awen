@@ -67,14 +67,15 @@ Item {
             required property int index
             required property AbilitySlot modelData
 
-            // Swept anticlockwise from the bottom edge: 0 lies left of the
-            // pivot, 90 directly above it.
-            readonly property real bearing: (root.count > 1 ? control.index * root.step : 45) * Math.PI / 180
+            // The button's polar angle about the thumb pivot, in radians —
+            // screen layout, not a world bearing. Swept clockwise from the
+            // bottom edge: 0 lies left of the pivot, 90 directly above it.
+            readonly property real pivotRad: (root.count > 1 ? control.index * root.step : 45) * Math.PI / 180
 
             width: root.buttonSize
             height: width
-            x: root.pivotX - Math.cos(control.bearing) * root.radius - width / 2
-            y: root.pivotY - Math.sin(control.bearing) * root.radius - height / 2
+            x: root.pivotX - Math.cos(control.pivotRad) * root.radius - width / 2
+            y: root.pivotY - Math.sin(control.pivotRad) * root.radius - height / 2
 
             // A thumb on the button is the control; there is nothing to caption
             // it with, so the rack's buttons carry no cap at all.

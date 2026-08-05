@@ -19,8 +19,7 @@ System {
 
     function advance(entity: Entity, dt: real) {
         const steer = Math.max(-1, Math.min(1, entity.commandedSteer));
-        const turned = entity.heading + (steer * entity.turnRate * dt);
-        entity.heading = ((turned % 360) + 360) % 360;
+        entity.heading = Geo.wrap360(entity.heading + (steer * entity.turnRate * dt));
 
         // Throttle commands a speed the airframe has to fly up to — and coast
         // back down to — rather than one it snaps to.
@@ -29,8 +28,7 @@ System {
         const step = entity.acceleration * dt;
         entity.speed = target > entity.speed ? Math.min(target, entity.speed + step) : Math.max(target, entity.speed - step);
 
-        const rad = entity.heading * Math.PI / 180;
-        entity.posX += Math.sin(rad) * entity.speed * dt;
-        entity.posY -= Math.cos(rad) * entity.speed * dt;
+        entity.posX += Geo.offsetX(entity.heading, entity.speed * dt);
+        entity.posY += Geo.offsetY(entity.heading, entity.speed * dt);
     }
 }
