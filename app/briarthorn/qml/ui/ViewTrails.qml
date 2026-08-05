@@ -67,17 +67,17 @@ Item {
 
         required property Track track
 
-        readonly property real azimuthRad: wake.track ? wake.track.azimuth * Math.PI / 180 : 0
+        readonly property real azimuth: wake.track ? wake.track.azimuth : 0
         readonly property real trueRange: wake.track ? wake.track.range * root.pxPerMeter : 0
         readonly property real screenRange: root.clampRadius > 0 ? Math.min(wake.trueRange, root.clampRadius) : wake.trueRange
 
         anchors.fill: parent
         capacity: root.capacity
         positionScale: root.trailScale
-        currentX: root.observer && wake.track ? root.observer.posX + Math.sin(wake.azimuthRad) * wake.track.range : 0
-        currentY: root.observer && wake.track ? root.observer.posY - Math.cos(wake.azimuthRad) * wake.track.range : 0
-        centerX: root.centerX + Math.sin(wake.azimuthRad) * wake.screenRange
-        centerY: root.centerY - Math.cos(wake.azimuthRad) * wake.screenRange
+        currentX: root.observer && wake.track ? root.observer.posX + Geo.offsetX(wake.azimuth, wake.track.range) : 0
+        currentY: root.observer && wake.track ? root.observer.posY + Geo.offsetY(wake.azimuth, wake.track.range) : 0
+        centerX: root.centerX + Geo.offsetX(wake.azimuth, wake.screenRange)
+        centerY: root.centerY + Geo.offsetY(wake.azimuth, wake.screenRange)
         color: {
             switch (wake.track ? wake.track.side : Side.Kind.Unknown) {
             case Side.Kind.Ownship:
@@ -132,7 +132,7 @@ Item {
     function sample() {
         if (!root.observer)
             return;
-        if (root.primed && Math.hypot(root.observer.posX - root.lastX, root.observer.posY - root.lastY) > root.teleportRange)
+        if (root.primed && Geo.distanceFrom(root.lastX, root.lastY, root.observer.posX, root.observer.posY) > root.teleportRange)
             root.clear();
         root.lastX = root.observer.posX;
         root.lastY = root.observer.posY;

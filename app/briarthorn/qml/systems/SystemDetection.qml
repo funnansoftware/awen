@@ -47,10 +47,8 @@ System {
                 root.held[entity.callsign] = track;
                 changed = true;
             }
-            const dx = entity.posX - root.observer.posX;
-            const dy = entity.posY - root.observer.posY;
-            track.range = Math.hypot(dx, dy);
-            track.azimuth = ((Math.atan2(dx, -dy) * 180 / Math.PI) % 360 + 360) % 360;
+            track.range = Geo.distance(root.observer, entity);
+            track.azimuth = Geo.wrap360(Geo.bearing(root.observer, entity));
             const seen = entity.owner === root.observer || root.detected(track);
             track.classification = seen ? entity.classification : Classification.Kind.Unknown;
             track.side = seen ? entity.side : Side.Kind.Unknown;
@@ -73,7 +71,7 @@ System {
     // Whether a measurement falls inside the observer's radar volume: within
     // half the FOV cone off the nose and inside sensor range.
     function detected(track: Track): bool {
-        const off = (((track.azimuth - root.observer.heading) % 360) + 540) % 360 - 180;
+        const off = Geo.wrap180(track.azimuth - root.observer.heading);
         return Math.abs(off) <= root.observer.radarFov / 2 && track.range <= root.observer.detectionRange;
     }
 }

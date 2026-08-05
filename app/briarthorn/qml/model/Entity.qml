@@ -45,12 +45,10 @@ QtObject {
     // behaviour by setting fields at spawn — never by loading systems of its
     // own. A null target or a cleared flag simply opts the entity out.
 
-    // SystemPursuit chases this at full throttle.
-    property Entity pursuitTarget: null
-
-    // SystemEvade orbits this, holding off at the standoff distance (m).
-    property Entity evadeTarget: null
-    property real evadeStandoff: 12000
+    // The movement behaviours this entity flies, in priority order:
+    // SystemManeuver hands the stick to the first engaged one each tick, and
+    // an empty (or fully stood-down) list leaves the commands to the pilot.
+    property list<Maneuver> maneuvers
 
     // SystemEngage shoots at this inside the envelope. holdoff (s) paces the
     // launches; the timer is its run-down state, seedable to stagger a

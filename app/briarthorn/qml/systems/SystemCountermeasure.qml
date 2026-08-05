@@ -38,12 +38,12 @@ System {
                 slot.cooldownRemaining = slot.def.cooldown;
                 // Thrown astern, so the decoy lands between the deployer and
                 // the round chasing it and the range only opens from there.
-                const rad = carrier.heading * Math.PI / 180;
+                const astern = Geo.reciprocal(carrier.heading);
                 const decoy = root.world.spawn("CM", slot.def.decoy, {
                     side: carrier.side,
                     owner: carrier,
-                    posX: carrier.posX - (Math.sin(rad) * slot.def.ejectRange),
-                    posY: carrier.posY + (Math.cos(rad) * slot.def.ejectRange),
+                    posX: carrier.posX + Geo.offsetX(astern, slot.def.ejectRange),
+                    posY: carrier.posY + Geo.offsetY(astern, slot.def.ejectRange),
                     heading: carrier.heading
                 });
                 root.flares.push({

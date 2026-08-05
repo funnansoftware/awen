@@ -215,15 +215,14 @@ Item {
     Text {
         // North (true bearing 0) sits at screen angle viewRotation on a
         // heading-up scope; seat the label a little past the ring.
-        readonly property real northRad: root.viewRotation * Math.PI / 180
         readonly property real seatRadius: root.outerRadius + root.northFontSize * 0.7
 
         visible: root.showNorth
         text: "N"
         color: Style.theme.textBright
         font { bold: true; pixelSize: root.northFontSize; family: Style.monospace }
-        x: root.centerX + Math.sin(northRad) * seatRadius - width / 2
-        y: root.centerY - Math.cos(northRad) * seatRadius - height / 2
+        x: root.centerX + Geo.offsetX(root.viewRotation, seatRadius) - width / 2
+        y: root.centerY + Geo.offsetY(root.viewRotation, seatRadius) - height / 2
     }
 
     // The pulsing acquisition ring marking ownship, fixed at the scope centre.
