@@ -5,23 +5,23 @@ import ".."
 // moment danger shows. The orbit at 0.8 sits clear of the snipe gate at 0.9
 // so the entry holds solidly rather than flickering on the rim.
 Personality {
-    name: "fearful"
+    name: Names.personality.fearful
 
     switches: [
         SwitchThreat {
             present: true
             within: 0.6
-            to: "bail"
+            to: Names.stance.bail
         },
         SwitchAmmoOut {
-            to: "depart"
+            to: Names.stance.depart
         }
     ]
 
     stances: [
         Stance {
-            name: "shadow"
-            maneuver: "evade"
+            name: Names.stance.shadow
+            maneuver: Names.maneuver.evade
             holdFire: true
             standoff: 0.8
             switches: [
@@ -29,31 +29,31 @@ Personality {
                     inside: true
                     at: 0.9
                     dwell: 2
-                    to: "snipe"
+                    to: Names.stance.snipe
                 }
             ]
         },
         Stance {
-            name: "snipe"
-            maneuver: "pursue"
+            name: Names.stance.snipe
+            maneuver: Names.maneuver.pursue
             holdoff: 8
             switches: [
                 SwitchRange {
                     inside: true
                     at: 0.5
-                    to: "shadow"
+                    to: Names.stance.shadow
                 },
                 SwitchRange {
                     inside: false
                     at: 1
                     dwell: 1
-                    to: "shadow"
+                    to: Names.stance.shadow
                 }
             ]
         },
         Stance {
-            name: "bail"
-            maneuver: "notch"
+            name: Names.stance.bail
+            maneuver: Names.maneuver.notch
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
@@ -61,13 +61,13 @@ Personality {
                     present: false
                     within: 0.6
                     dwell: 1.5
-                    to: "shadow"
+                    to: Names.stance.shadow
                 }
             ]
         },
         Stance {
-            name: "depart"
-            maneuver: "flee"
+            name: Names.stance.depart
+            maneuver: Names.maneuver.flee
             holdFire: true
         }
     ]

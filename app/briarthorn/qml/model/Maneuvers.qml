@@ -1,6 +1,7 @@
 pragma Singleton
 
 import QtQml
+import "../database"
 
 // The maneuver factory registry: database stances name flights by string so
 // the database keeps importing nothing back, and this table turns a name
@@ -34,12 +35,12 @@ QtObject {
     }
 
     readonly property var table: ({
-            "pursue": root.pursue,
-            "evade": root.evade,
-            "notch": root.notch,
-            "orbit": root.orbit,
-            "flee": root.flee,
-            "formation": root.formation
+            [Names.maneuver.pursue]: root.pursue,
+            [Names.maneuver.evade]: root.evade,
+            [Names.maneuver.notch]: root.notch,
+            [Names.maneuver.orbit]: root.orbit,
+            [Names.maneuver.flee]: root.flee,
+            [Names.maneuver.formation]: root.formation
         })
 
     // A fresh maneuver of the named kind under the given owner, or null with

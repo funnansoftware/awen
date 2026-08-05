@@ -6,27 +6,27 @@ import ".."
 // Against an unarmed target the range switches never fire and monitor's
 // standoff falls back to the carrier's own reach.
 Personality {
-    name: "defensive"
+    name: Names.personality.defensive
 
     switches: [
         SwitchThreat {
             present: true
             within: 1
-            to: "break"
+            to: Names.stance.defend
         },
         SwitchHealth {
             below: 0.5
-            to: "abscond"
+            to: Names.stance.abscond
         },
         SwitchAmmoOut {
-            to: "abscond"
+            to: Names.stance.abscond
         }
     ]
 
     stances: [
         Stance {
-            name: "monitor"
-            maneuver: "evade"
+            name: Names.stance.monitor
+            maneuver: Names.maneuver.evade
             holdFire: true
             standoff: 1.15
             standoffOf: Envelope.Kind.TargetWeapon
@@ -36,13 +36,13 @@ Personality {
                     at: 0.9
                     of: Envelope.Kind.TargetWeapon
                     dwell: 1
-                    to: "repel"
+                    to: Names.stance.repel
                 }
             ]
         },
         Stance {
-            name: "repel"
-            maneuver: "pursue"
+            name: Names.stance.repel
+            maneuver: Names.maneuver.pursue
             holdoff: 4
             switches: [
                 SwitchRange {
@@ -50,13 +50,13 @@ Personality {
                     at: 1
                     of: Envelope.Kind.TargetWeapon
                     dwell: 2
-                    to: "monitor"
+                    to: Names.stance.monitor
                 }
             ]
         },
         Stance {
-            name: "break"
-            maneuver: "notch"
+            name: Names.stance.defend
+            maneuver: Names.maneuver.notch
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
@@ -64,13 +64,13 @@ Personality {
                     present: false
                     within: 1
                     dwell: 3
-                    to: "monitor"
+                    to: Names.stance.monitor
                 }
             ]
         },
         Stance {
-            name: "abscond"
-            maneuver: "flee"
+            name: Names.stance.abscond
+            maneuver: Names.maneuver.flee
             holdFire: true
         }
     ]

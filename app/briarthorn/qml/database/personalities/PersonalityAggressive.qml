@@ -4,43 +4,43 @@ import ".."
 // backs off only once staying engaged stops paying — an empty rack. guard
 // keeps the trigger; the radar cone is what disciplines a beaming shot.
 Personality {
-    name: "aggressive"
+    name: Names.personality.aggressive
 
     switches: [
         SwitchAmmoOut {
-            to: "disengage"
+            to: Names.stance.disengage
         }
     ]
 
     stances: [
         Stance {
-            name: "press"
-            maneuver: "pursue"
+            name: Names.stance.press
+            maneuver: Names.maneuver.pursue
             switches: [
                 SwitchThreat {
                     present: true
                     within: 0.2
                     dwell: 0.3
-                    to: "guard"
+                    to: Names.stance.guard
                 }
             ]
         },
         Stance {
-            name: "guard"
-            maneuver: "notch"
+            name: Names.stance.guard
+            maneuver: Names.maneuver.notch
             reference: Stance.Reference.Threat
             switches: [
                 SwitchThreat {
                     present: false
                     within: 0.2
                     dwell: 0.5
-                    to: "press"
+                    to: Names.stance.press
                 }
             ]
         },
         Stance {
-            name: "disengage"
-            maneuver: "flee"
+            name: Names.stance.disengage
+            maneuver: Names.maneuver.flee
             holdFire: true
         }
     ]

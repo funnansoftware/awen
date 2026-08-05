@@ -3,4 +3,5 @@
 singleton Abilities Abilities.qml
 singleton Database Database.qml
 singleton GameRules GameRules.qml
+singleton Names Names.qml
 singleton Personalities Personalities.qml
