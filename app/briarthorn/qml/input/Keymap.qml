@@ -52,10 +52,11 @@ QtObject {
             throttle: {
                 key: {
                     positive: [Qt.Key_W, Qt.Key_Up],
-                    negative: []
+                    negative: [Qt.Key_S, Qt.Key_Down]
                 },
                 // No button of its own: the d-pad's vertical ranges the scope
-                // and the left stick already throttles by how far it is pushed.
+                // and the left stick is the whole lever — pushed throttles up,
+                // pulled back brakes.
                 pad: {
                     positive: [],
                     negative: []

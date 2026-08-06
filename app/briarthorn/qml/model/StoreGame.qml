@@ -22,6 +22,9 @@ Store {
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Ownship
         radarFov: 60
+        // Spawned already at cruise: the lever at rest commands idle, not a
+        // stop, and the first post overwrites this binding.
+        commandedThrottle: GameRules.throttleIdle
     }
 
     // The live craft. reset() owns the swap; everything else binds through
@@ -39,7 +42,7 @@ Store {
 
     CommandHandler {
         name: Verbs.throttle
-        onHandle: payload => root.ownship.commandedThrottle = payload.value
+        onHandle: payload => root.ownship.commandedThrottle = GameRules.throttleFor(payload.value)
     }
 
     // Ability invocation routes to the named slot; activation is a no-op
