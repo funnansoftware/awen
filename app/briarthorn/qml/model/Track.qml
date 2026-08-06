@@ -25,4 +25,13 @@ QtObject {
 
     // The contact's facing, degrees clockwise from north.
     property real heading: 0
+
+    // The contact's perceived hull, hit points, against the full hull its kind
+    // carries. A maxHealth of zero is the no-reading case — a return the sweep
+    // has not resolved, or a kind that was never given hull at all.
+    property real health: 0
+    property real maxHealth: 0
+
+    // The hull reading as a fraction of full, 0..1; zero without a reading.
+    readonly property real healthFrac: root.maxHealth > 0 ? Math.max(0, Math.min(1, root.health / root.maxHealth)) : 0
 }

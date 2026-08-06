@@ -35,6 +35,11 @@ Item {
     // Whether track symbols carry their contact-id labels.
     property bool showLabels: true
 
+    // Whether track symbols carry their hull gauges. Only kinds whose database
+    // row asks for one ever draw it, so this just suppresses the lot — the
+    // minimap wants the plot, not the condition of everything on it.
+    property bool showHealth: true
+
     // When positive, off-scale contacts clamp to this pixel radius (the outer
     // ring) instead of plotting beyond it, so ranging in seats a contact that
     // no longer fits at the edge rather than losing it off the display.
@@ -81,6 +86,8 @@ Item {
                 side: mark.track ? mark.track.side : Side.Kind.Unknown
                 showLabel: root.showLabels
                 label: !mark.track || mark.track.classification === Classification.Kind.Unknown ? "" : mark.track.contactId
+                hasHealth: root.showHealth && mark.track && mark.track.maxHealth > 0
+                healthFrac: mark.track ? mark.track.healthFrac : 1
             }
         }
 
