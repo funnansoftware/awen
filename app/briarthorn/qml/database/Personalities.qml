@@ -13,6 +13,7 @@ QtObject {
     readonly property list<Personality> registry: [
         PersonalityAggressive {},
         PersonalityDefensive {},
+        PersonalityDuelist {},
         PersonalityFearful {},
         PersonalityTactical {}
     ]

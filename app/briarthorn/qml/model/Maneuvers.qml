@@ -14,6 +14,10 @@ QtObject {
         ManeuverPursue {}
     }
 
+    readonly property Component crank: Component {
+        ManeuverCrank {}
+    }
+
     readonly property Component evade: Component {
         ManeuverEvade {}
     }
@@ -35,6 +39,7 @@ QtObject {
     }
 
     readonly property var table: ({
+            [Names.maneuver.crank]: root.crank,
             [Names.maneuver.pursue]: root.pursue,
             [Names.maneuver.evade]: root.evade,
             [Names.maneuver.notch]: root.notch,

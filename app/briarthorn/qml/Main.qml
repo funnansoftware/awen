@@ -479,6 +479,23 @@ Window {
             }
         }
 
+        // The missile warning, top-centre under the band: flashes the moment
+        // a homing round is marked inbound on ownship, with its bearing and
+        // closing range — the reaction window the scope alone buries in a
+        // small mark.
+        ViewThreat {
+            id: threatAlert
+
+            visible: !root.inMenu && threatAlert.active
+            ownship: game.ownship
+
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: topBar.bottom
+                topMargin: 12
+            }
+        }
+
         // The ability rack, bottom-right: one square button per carried
         // ability, capped with the key or pad button that fires it and posting
         // the same ability record those bindings post — no second invocation

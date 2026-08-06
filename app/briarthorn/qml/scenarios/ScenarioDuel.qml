@@ -6,11 +6,12 @@ import QtQml
 import "../database"
 import "../model"
 
-// The 1v1 duel: one hostile fighter boring in from the north, spawned just
+// The 1v1 duel: one hostile fighter closing from the north, spawned just
 // past sensor range so it opens as an Unknown contact. Pure initial
 // conditions — the bandit's declaration carries its behaviour aspects
-// (pursue the player, shoot inside the envelope, flare at inbound rounds)
-// and the shared systems do the rest; this scenario loads nothing of its own.
+// (press to fire, crank behind the round in flight, beam inbounds, flare at
+// them) and the shared systems do the rest; this scenario loads nothing of
+// its own.
 Scenario {
     id: root
 
@@ -27,7 +28,7 @@ Scenario {
         side: Side.Kind.Hostile
         posY: -65000
         heading: 180
-        personality: Names.personality.aggressive
+        personality: Names.personality.duelist
         engageTarget: root.ownship
         threatReflex: true
 
