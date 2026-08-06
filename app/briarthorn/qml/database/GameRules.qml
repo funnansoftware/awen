@@ -22,7 +22,11 @@ QtObject {
     // Multiplier on the cruise burn at full throttle — the draw is
     // fuelBurnFor(kinetic) * (1 + fuelThrottleBurn * throttle), so pushing the
     // airframe costs far more than loitering does.
-    readonly property real fuelThrottleBurn: 8
+    readonly property real fuelThrottleBurn: 2
+
+    // The speed fraction a hands-off lever commands: the airframe cruises at
+    // half its ceiling, full brake pulls it to a stop and full throttle to max.
+    readonly property real throttleIdle: 0.5
 
     // maneuver buys agility: the full-deflection turn rate (deg/s) and the
     // acceleration (m/s^2) speed closes on the commanded setting with.
@@ -32,7 +36,7 @@ QtObject {
     // durable buys survivability: hull integrity (hit points) and the fuel
     // capacity (units) of one airframe.
     readonly property real maxHealth: 200
-    readonly property real maxFuel: 200
+    readonly property real maxFuel: 400
 
     // sensor buys the radar's detection range (m).
     readonly property real maxDetectionRange: 120000
@@ -48,6 +52,13 @@ QtObject {
 
     function topSpeedFor(kinetic: real): real {
         return root.maxSpeed * root.fraction(kinetic);
+    }
+
+    // Prices a throttle lever, -1 (full brake) to 1 (full throttle), into the
+    // commanded speed fraction swinging around the idle cruise.
+    function throttleFor(lever: real): real {
+        const swing = Math.max(-1, Math.min(1, lever));
+        return root.throttleIdle + swing * (swing >= 0 ? 1 - root.throttleIdle : root.throttleIdle);
     }
 
     function fuelBurnFor(kinetic: real): real {

@@ -176,7 +176,6 @@ Window {
 
         Axis {
             id: axisThrottle
-            minimum: 0
         }
 
         // The scope's range control, the one object every ranging source —
@@ -211,6 +210,7 @@ Window {
             ActionKey {
                 control: axisThrottle
                 positive: root.keymap.flight.throttle.key.positive
+                negative: root.keymap.flight.throttle.key.negative
             }
 
             ActionButton {
@@ -568,9 +568,9 @@ Window {
             // over — including on a laptop that has both.
             visible: TouchScreen.available && root.device.touch && !settings.open && !root.inMenu
             onValueXChanged: axisSteer.invoke(valueX)
-            // The stick has no reverse, so a downward pull must not subtract
-            // from a throttle another source (keys, pad) is holding up.
-            onValueYChanged: axisThrottle.invoke(Math.max(0, valueY))
+            // The stick's whole travel is the lever: pushed past centre
+            // throttles up, pulled back brakes.
+            onValueYChanged: axisThrottle.invoke(valueY)
             onActiveChanged: {
                 if (stick.active)
                     root.device.kind = ActiveDevice.Touch;
