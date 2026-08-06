@@ -7,8 +7,8 @@ import "../model"
 // each other entity gets a track at its measured azimuth and range; a contact
 // inside the radar volume (within half of radarFov off the nose and inside the
 // detection range its sensor rating affords) resolves to its true
-// classification, side and heading, anything else stays Unknown with the
-// heading held at its last seen value.
+// classification, side, heading and hull condition, anything else stays
+// Unknown with the heading held at its last seen value and no hull reading.
 // The observer's own launches (missiles, decoys) are datalinked: always
 // resolved, no radar volume needed.
 // Tracks update in place — the list itself changes only when a contact first
@@ -52,6 +52,10 @@ System {
             const seen = entity.owner === root.observer || root.detected(track);
             track.classification = seen ? entity.classification : Classification.Kind.Unknown;
             track.side = seen ? entity.side : Side.Kind.Unknown;
+            // Condition rides with the resolution: lose the contact and the
+            // hull reading goes with it rather than freezing on the scope.
+            track.health = seen ? entity.health : 0;
+            track.maxHealth = seen ? entity.maxHealth : 0;
             if (seen)
                 track.heading = entity.heading;
         }

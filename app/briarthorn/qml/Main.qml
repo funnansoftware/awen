@@ -637,6 +637,7 @@ Window {
             showRadarCone: true
             showOwnshipPulse: false
             showTrackLabels: false
+            showTrackHealth: false
             showEngagements: false
             showTrails: false
 

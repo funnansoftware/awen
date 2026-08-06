@@ -67,6 +67,7 @@ Item {
     property bool showOwnship: true
     property bool showOwnshipPulse: true
     property bool showTrackLabels: true
+    property bool showTrackHealth: true
     property bool showNorth: false
     property bool closedRings: false
 
@@ -185,6 +186,7 @@ Item {
         symbolSize: root.symbolSize
         symbolStrokeWidth: root.symbolStrokeWidth
         showLabels: root.showTrackLabels
+        showHealth: root.showTrackHealth
         clampRadius: root.gutterClamp ? root.outerRadius : 0
         clampMargin: root.gutterClampMargin
     }

@@ -9,6 +9,7 @@ DataEntity {
     classification: Classification.Kind.AircraftFighter
     outline: [Qt.point(0, -0.5), Qt.point(0.4, 0.45), Qt.point(0, 0.18), Qt.point(-0.4, 0.45)]
     label: qsTr("FIGHTER")
+    hullGauge: true
 
     // A +/- 60 degree radar cone: it has to point at what it wants to see, and
     // a semi-active round of its own only tracks what it keeps inside this.
