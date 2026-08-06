@@ -37,10 +37,11 @@ System {
     }
 
     // Pins each entity's nearest homing round within its detection range,
-    // clearing yesterday's marks first so a defeated round drops off.
+    // writing only real changes — a defeated round drops off, but a held mark
+    // is never cleared and repinned in place, which would flicker every
+    // binding on it (and restart any animation gated by one) once a tick.
     function mark() {
-        for (let i = 0; i < root.entities.length; ++i)
-            root.entities[i].threatInbound = null;
+        const nearest = new Map();
         for (let i = 0; i < root.entities.length; ++i) {
             const missile = root.entities[i];
             if (missile.weapon === null || missile.weapon.target === null)
@@ -49,8 +50,16 @@ System {
             const range = Geo.distance(missile, target);
             if (range > target.detectionRange)
                 continue;
-            if (target.threatInbound === null || range < Geo.distance(target, target.threatInbound))
-                target.threatInbound = missile;
+            const held = nearest.get(target);
+            if (held === undefined || range < Geo.distance(target, held))
+                nearest.set(target, missile);
+        }
+        for (let i = 0; i < root.entities.length; ++i) {
+            const entity = root.entities[i];
+            const mark = nearest.get(entity);
+            const next = mark !== undefined ? mark : null;
+            if (entity.threatInbound !== next)
+                entity.threatInbound = next;
         }
     }
 
