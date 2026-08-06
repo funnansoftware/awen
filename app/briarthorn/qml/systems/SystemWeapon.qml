@@ -88,9 +88,10 @@ System {
     }
 
     // Consumes raised launch intents: a guided round refuses (keeping its
-    // charge) without an illuminated return to lock; an unguided round fires
-    // straight off the nose. The spawned missile takes its whole flight
-    // envelope from its database row and inherits the launcher's side.
+    // charge) without an illuminated return to lock, but still leaves the rail
+    // down the nose and homes from there; an unguided round just flies where it
+    // was pointed. The spawned missile takes its whole flight envelope from its
+    // database row and inherits the launcher's side.
     function consumeLaunches() {
         const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
@@ -116,7 +117,10 @@ System {
                     owner: launcher,
                     posX: launcher.posX,
                     posY: launcher.posY,
-                    heading: target !== null ? Geo.bearing(launcher, target) : launcher.heading,
+                    // Every round leaves the rail down the launcher's nose; a
+                    // guided one then curves onto its lock through the seeker,
+                    // held to the turn rate its maneuver rating buys.
+                    heading: launcher.heading,
                     // The motor lifts the round past the airframe ceiling and
                     // it leaves the rail already there, rather than
                     // accelerating up to it — an unguided slug has no agility

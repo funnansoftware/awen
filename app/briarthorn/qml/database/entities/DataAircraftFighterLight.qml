@@ -10,7 +10,7 @@ DataAircraftFighter {
     classification: Classification.Kind.AircraftFighterLight
 
     stats: Stats {
-        kinetic: 4.5 // 450 m/s against the stock fighter's 500
+        kinetic: 2.5 // 450 m/s against the stock fighter's 500
         maneuver: 4 // 9.6 deg/s against its 12
         durable: 5
         compute: 6

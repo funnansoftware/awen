@@ -2,7 +2,8 @@ import QtQuick
 import ".."
 
 // The guided round: homes on the loudest return its launcher illuminates. It
-// outruns the kinetic slug and reaches far further, but hits softer.
+// flies slower than the kinetic slug and hits softer, buying that back with a
+// seeker that steers it onto a target the dumb slug could never touch.
 DataWeapon {
     id: root
 
@@ -14,17 +15,17 @@ DataWeapon {
     symbolScale: 0.55
 
     stats: Stats {
-        kinetic: 9 // 900 m/s, doubled by the motor below
-        maneuver: 10 // 24 deg/s: the most agile thing in the sky
+        kinetic: 8
+        maneuver: 6
         durable: 1 // 20 hp
         compute: 6 // a 90 km seeker
         sensor: 6
         stealth: 8 // a small, quiet return
     }
 
-    // A burning motor screams past the airframe ceiling at 1800 m/s, and over
-    // 24 s of flight that is ~43 km of reach.
-    speedMultiplier: 2
+    // No motor boost: it cruises at the airframe speed its kinetic rating
+    // buys, and over 24 s of flight that is ~19 km of reach.
+    speedMultiplier: 1
     duration: 24
     guided: true
 

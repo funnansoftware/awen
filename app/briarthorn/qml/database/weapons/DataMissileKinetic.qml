@@ -12,14 +12,14 @@ DataWeapon {
     symbolScale: 0.55
 
     stats: Stats {
-        kinetic: 10 // 1000 m/s off the rail
+        kinetic: 10 // 1000 m/s off the rail: the fastest thing in the sky
         maneuver: 0 // no steering at all: it flies where it was pointed
         durable: 1 // 20 hp
         stealth: 8
     }
 
-    duration: 18
-
+    duration: 40
+    speedMultiplier: 1
     fuzeRange: 1200
     fuzeTime: 0.3
     damage: 80
