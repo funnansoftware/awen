@@ -9,11 +9,11 @@ import "../themes"
 
 // A scope symbol: the classification's outline polygon stroked in its side's
 // colour over a window-background fill, nose turned to noseAngle, with a
-// screen-upright label below and optional condition arcs on its flanks — hull
-// left, fuel right. Centre it on the plot point; an empty label falls back to
-// the classification's. Inside a rotated view, bind viewRotation to the
-// container's rotation so the label and the arcs counter-rotate and hold their
-// screen-upright places.
+// screen-upright label below and an optional hull gauge standing off its left.
+// Centre it on the plot point; an empty label falls back to the
+// classification's. Inside a rotated view, bind viewRotation to the
+// container's rotation so the label and the gauge counter-rotate and hold
+// their screen-upright places.
 Item {
     id: root
 
@@ -29,16 +29,13 @@ Item {
     property string label: ""
     property bool showLabel: true
 
-    // Condition arcs: whether the caller holds a hull or fuel reading for this
-    // contact, and the readings themselves as fractions of full. Whether a
+    // Hull condition: whether the caller holds a reading for this contact at
+    // all, and the reading itself as a fraction of full hull. Whether that
     // reading is worth drawing is the kind's call, not the caller's — only a
-    // row asking for gauges gets them, so a munition mark and the bare
-    // instrument marks plot without. Fuel is ownship's alone: no sensor ever
-    // reports what is in another aircraft's tanks.
+    // row asking for a gauge gets one, so a munition mark and the bare
+    // instrument marks plot without.
     property bool hasHealth: false
     property real healthFrac: 1
-    property bool hasFuel: false
-    property real fuelFrac: 1
 
     // Symbol size in px, before the classification's symbolScale.
     property real symbolSize: 36
@@ -64,31 +61,25 @@ Item {
         }
     }
 
-    readonly property bool showHealth: root.hasHealth && root.def.conditionGauge
-    readonly property bool showFuel: root.hasFuel && root.def.conditionGauge
+    readonly property bool showHealth: root.hasHealth && root.def.hullGauge
 
-    // A reading this far down goes to the warn colour — the same thresholds
-    // the ownship condition instrument reads at.
+    // A hull this far down reads as a casualty, and the gauge goes to the warn
+    // colour — the same threshold the ownship condition instrument uses.
     readonly property bool healthLow: root.healthFrac <= 0.3
-    readonly property bool fuelLow: root.fuelFrac <= 0.2
 
-    // Gauge geometry: arcs standing just clear of the symbol's own extent,
-    // weighted off the mark so a mark drawn small carries a thin arc. A third
-    // of a circle each, so a flank reads as a bar beside the mark rather than
-    // a ring around it.
+    // Gauge geometry: an arc standing well off the symbol's own extent, so it
+    // reads as a bar beside the mark rather than a ring around it. Weighted
+    // and seated off the mark, so a mark drawn small carries a thin close arc.
     readonly property real gaugeStrokeWidth: Math.max(2, root.width * 0.1)
-    readonly property real gaugeRadius: root.width * 0.62
+    readonly property real gaugeRadius: root.width * 0.85
     readonly property real gaugeSweep: 120
 
-    // How far a flank's lower end hangs below the mark's own bounds. The span
-    // is centred on its flank, so the ends sit sin(half-span) of the radius
+    // How far the arc's lower end hangs below the mark's own bounds. The span
+    // is centred on the flank, so the ends sit sin(half-span) of the radius
     // below the centre. The caption clears it, so a gauged mark's label seats
     // exactly that much lower than a bare one's.
     readonly property real gaugeOverhang: Math.max(0, root.gaugeRadius * Math.sin(root.gaugeSweep * Math.PI / 360) + root.gaugeStrokeWidth / 2 - root.height / 2)
     readonly property real labelGap: Math.max(2, root.symbolSize * 0.07)
-
-    // The box either arc needs, so both flanks seat off one number.
-    readonly property real gaugeSide: 2 * (root.gaugeRadius + root.gaugeStrokeWidth / 2)
 
     // Hull on the left flank, swept clockwise up from 7 o'clock so damage
     // drains the arc downward.
@@ -100,19 +91,6 @@ Item {
             value: root.healthFrac
             trackColor: Style.theme.gaugeTrack
             fillColor: root.healthLow ? Style.theme.warn : root.sideColor
-        }
-    }
-
-    // Fuel mirrors it on the right, so ownship carries the pair as one
-    // instrument and both readings drain toward the bottom together.
-    readonly property Component fuelArc: Component {
-        ShapeGauge {
-            strokeWidth: root.gaugeStrokeWidth
-            angleStart: 90 + root.gaugeSweep / 2
-            angleSweep: -root.gaugeSweep
-            value: root.fuelFrac
-            trackColor: Style.theme.gaugeTrack
-            fillColor: root.fuelLow ? Style.theme.warn : Style.theme.fuel
         }
     }
 
@@ -138,23 +116,15 @@ Item {
         anchors.fill: parent
         rotation: -root.viewRotation
 
-        // The condition arcs, loaded on demand — a scope in a dogfight plots
-        // far more ungauged marks than gauged ones, and a shape each of those
+        // The hull gauge, loaded on demand — a scope in a dogfight plots far
+        // more ungauged marks than gauged ones, and a shape each of those
         // builds only to keep hidden is a shape too many.
         Loader {
             anchors.centerIn: parent
-            width: root.gaugeSide
+            width: 2 * (root.gaugeRadius + root.gaugeStrokeWidth / 2)
             height: width
             active: root.showHealth
             sourceComponent: root.healthArc
-        }
-
-        Loader {
-            anchors.centerIn: parent
-            width: root.gaugeSide
-            height: width
-            active: root.showFuel
-            sourceComponent: root.fuelArc
         }
 
         Text {
@@ -172,7 +142,7 @@ Item {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: parent.bottom
-                topMargin: root.labelGap + (root.showHealth || root.showFuel ? root.gaugeOverhang : 0)
+                topMargin: root.labelGap + (root.showHealth ? root.gaugeOverhang : 0)
             }
         }
     }
