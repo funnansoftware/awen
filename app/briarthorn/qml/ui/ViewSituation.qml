@@ -68,7 +68,6 @@ Item {
     property bool showOwnshipPulse: true
     property bool showTrackLabels: true
     property bool showTrackHealth: true
-    property bool showOwnshipCondition: true
     property bool showNorth: false
     property bool closedRings: false
 
@@ -217,12 +216,6 @@ Item {
         classification: root.observer ? root.observer.classification : Classification.Kind.Unknown
         side: root.observer ? root.observer.side : Side.Kind.Unknown
         showLabel: false
-        // Ownship carries both flanks — hull left, fuel right — the one mark
-        // on the scope with a tank reading to show.
-        hasHealth: root.showOwnshipCondition && root.observer && root.observer.maxHealth > 0
-        healthFrac: root.observer ? root.observer.healthFrac : 1
-        hasFuel: root.showOwnshipCondition && root.observer && root.observer.maxFuel > 0
-        fuelFrac: root.observer ? root.observer.fuelFrac : 1
     }
 
     // North marker: an 'N' seated just outside the rim at the north bearing,
