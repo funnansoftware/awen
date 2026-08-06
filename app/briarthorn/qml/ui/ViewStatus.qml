@@ -21,8 +21,8 @@ Item {
     readonly property real cy: height / 2
     readonly property real ringWidth: shortSide * 0.055
 
-    readonly property real healthFrac: ownship && ownship.maxHealth > 0 ? Math.max(0, Math.min(1, ownship.health / ownship.maxHealth)) : 0
-    readonly property real fuelFrac: ownship && ownship.maxFuel > 0 ? Math.max(0, Math.min(1, ownship.fuel / ownship.maxFuel)) : 0
+    readonly property real healthFrac: ownship ? ownship.healthFrac : 0
+    readonly property real fuelFrac: ownship ? ownship.fuelFrac : 0
     readonly property bool hullLow: healthFrac <= 0.3
     readonly property bool fuelLow: fuelFrac <= 0.2
 
