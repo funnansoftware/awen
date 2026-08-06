@@ -125,6 +125,12 @@ QtObject {
     property real maxFuel: GameRules.fuelCapacityFor(root.durable)
     property real fuel: root.maxFuel
 
+    // Condition as fractions of full, 0..1, and zero where there is nothing to
+    // fill — every gauge and readout reads these rather than dividing for
+    // itself and clamping again.
+    readonly property real healthFrac: root.maxHealth > 0 ? Math.max(0, Math.min(1, root.health / root.maxHealth)) : 0
+    readonly property real fuelFrac: root.maxFuel > 0 ? Math.max(0, Math.min(1, root.fuel / root.maxFuel)) : 0
+
     // The entity that launched or deployed this one; null for craft. Fuzes
     // ignore anything the owner also owns, the blast spares the owner and a
     // guided seeker sees only what the owner's radar illuminates.

@@ -638,6 +638,7 @@ Window {
             showOwnshipPulse: false
             showTrackLabels: false
             showTrackHealth: false
+            showOwnshipCondition: false
             showEngagements: false
             showTrails: false
 
