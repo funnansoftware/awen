@@ -89,8 +89,20 @@ System {
             threatRange: entity.threatInbound !== null ? Geo.distance(entity, entity.threatInbound) : Infinity,
             // A hull never given health is unkillable, so it is never hurt.
             healthFrac: entity.maxHealth > 0 ? entity.health / entity.maxHealth : 1,
-            rounds: root.roundsOf(entity)
+            rounds: root.roundsOf(entity),
+            outbound: root.outboundOf(entity)
         };
+    }
+
+    // Whether a round of the entity's own is still in flight — what a
+    // shoot-look-shoot stance cranks behind.
+    function outboundOf(entity: Entity): bool {
+        for (let i = 0; i < root.entities.length; ++i) {
+            const e = root.entities[i];
+            if (e.weapon !== null && e.owner === entity)
+                return true;
+        }
+        return false;
     }
 
     // Rounds left across the launch rack; any unlimited slot reads Infinity.

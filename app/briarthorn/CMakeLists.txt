@@ -42,6 +42,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/Switch.qml
         qml/database/SwitchAmmoOut.qml
         qml/database/SwitchHealth.qml
+        qml/database/SwitchOutbound.qml
         qml/database/SwitchRange.qml
         qml/database/SwitchThreat.qml
         qml/database/abilities/AbilityFlare.qml
@@ -53,6 +54,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/entities/DataUnknown.qml
         qml/database/personalities/PersonalityAggressive.qml
         qml/database/personalities/PersonalityDefensive.qml
+        qml/database/personalities/PersonalityDuelist.qml
         qml/database/personalities/PersonalityFearful.qml
         qml/database/personalities/PersonalityTactical.qml
         qml/database/weapons/DataMissileGuided.qml
@@ -64,6 +66,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/Detonation.qml
         qml/model/Entity.qml
         qml/model/Maneuver.qml
+        qml/model/ManeuverCrank.qml
         qml/model/ManeuverEvade.qml
         qml/model/ManeuverFlee.qml
         qml/model/ManeuverFormation.qml

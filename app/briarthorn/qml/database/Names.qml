@@ -14,6 +14,7 @@ QtObject {
     component PersonalityNames: QtObject {
         readonly property string aggressive: "aggressive"
         readonly property string defensive: "defensive"
+        readonly property string duelist: "duelist"
         readonly property string fearful: "fearful"
         readonly property string tactical: "tactical"
     }
@@ -21,6 +22,7 @@ QtObject {
     // The maneuver names stances fly — the keys of the model's Maneuvers
     // factory table.
     component ManeuverNames: QtObject {
+        readonly property string crank: "crank"
         readonly property string evade: "evade"
         readonly property string flee: "flee"
         readonly property string formation: "formation"
@@ -34,6 +36,7 @@ QtObject {
         readonly property string abscond: "abscond"
         readonly property string advance: "advance"
         readonly property string bail: "bail"
+        readonly property string crank: "crank"
         readonly property string defend: "defend"
         readonly property string depart: "depart"
         readonly property string disengage: "disengage"
