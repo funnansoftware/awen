@@ -333,8 +333,9 @@ Window {
         // conditions, judge the duel, then run the one set of shared systems
         // — threat marks first so minds and reflexes read fresh inbounds,
         // personalities pick their stances, behaviour by entity aspect,
-        // ability clocks, fuel, poses, weapons, countermeasures and the
-        // radar sweep, detection last so tracks see the tick's outcome.
+        // ability clocks, fuel, poses, arena collision on the fresh poses,
+        // weapons, countermeasures and the radar sweep, detection last so
+        // tracks see the tick's outcome.
         // Every system runs in every mode and processes exactly the entities
         // carrying its aspect; the scenarios only shape the world and never
         // load systems of their own.
@@ -377,6 +378,7 @@ Window {
 
             SystemThreat {
                 entities: root.entities
+                obstacles: root.world.obstacles
             }
 
             SystemPersonality {
@@ -389,6 +391,7 @@ Window {
 
             SystemEngage {
                 entities: root.entities
+                obstacles: root.world.obstacles
             }
 
             SystemAbility {
@@ -401,6 +404,10 @@ Window {
 
             SystemMovement {
                 entities: root.entities
+            }
+
+            SystemCollision {
+                world: root.world
             }
 
             SystemWeapon {
@@ -417,6 +424,7 @@ Window {
                 id: detection
                 observer: game.ownship
                 entities: root.entities
+                obstacles: root.world.obstacles
             }
         }
 
@@ -450,6 +458,7 @@ Window {
             tracks: detection.tracks
             entities: root.entities
             detonations: weapons.detonations
+            obstacles: root.world.obstacles
             symbolSize: height * 0.04
             trailsRunning: !settings.open && !root.inMenu && !root.paused && !root.ended
 
@@ -625,6 +634,7 @@ Window {
             projection: projection
             observer: game.ownship
             tracks: detection.tracks
+            obstacles: root.world.obstacles
 
             radiusFraction: 0.45
             symbolSize: height * 0.08
@@ -675,6 +685,7 @@ Window {
             tracks: detection.tracks
             entities: root.entities
             detonations: weapons.detonations
+            obstacles: root.world.obstacles
             radiusFraction: 0.64
             verticalShift: 0.18
             horizontalShift: 0.25
@@ -765,6 +776,8 @@ Window {
         root.dropInput();
         root.paused = false;
         demo.restart();
+        // The demo plays an open sky: the duel's arena leaves with the duel.
+        root.world.obstacles = [];
         projection.step = 1;
         root.inMenu = true;
     }
@@ -795,6 +808,7 @@ Window {
         root.world.add(game.ownship);
         for (let i = 0; i < scenario.entities.length; ++i)
             root.world.add(scenario.entities[i]);
+        root.world.obstacles = scenario.obstacles;
         projection.step = 2;
         root.inMenu = false;
         root.dropInput();

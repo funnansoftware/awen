@@ -13,4 +13,8 @@ SystemGroup {
 
     // The level-owned entities; the player's craft is referenced, not owned.
     property list<Entity> entities
+
+    // The level's arena geometry; empty is an open sky. The shell hands the
+    // active scenario's list to the world with the entities.
+    property list<Obstacle> obstacles
 }

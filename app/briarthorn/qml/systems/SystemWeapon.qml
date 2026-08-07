@@ -201,6 +201,10 @@ System {
             const d = Geo.distance(at, contact);
             if (d > range || !root.illuminated(illuminator, contact))
                 continue;
+            // The seeker is a radar receiver too: a return behind a pillar
+            // reaches neither it nor the illuminator.
+            if (!Geo.lineOfSight(at, contact, root.world.obstacles))
+                continue;
             if (best === null || contact.stealth < best.stealth || (contact.stealth === best.stealth && d < bestDist)) {
                 best = contact;
                 bestDist = d;
@@ -229,13 +233,14 @@ System {
         return best;
     }
 
-    // Whether the illuminator's radar cone paints the contact; a missing
-    // illuminator is lenient, per briardart.
+    // Whether the illuminator's radar cone paints the contact — inside the
+    // cone with a clear line past the arena's pillars; a missing illuminator
+    // is lenient, per briardart.
     function illuminated(illuminator: Entity, contact: Entity): bool {
         if (illuminator === null)
             return true;
         const off = Geo.wrap180(Geo.bearing(illuminator, contact) - illuminator.heading);
-        return Math.abs(off) <= illuminator.radarFov / 2;
+        return Math.abs(off) <= illuminator.radarFov / 2 && Geo.lineOfSight(illuminator, contact, root.world.obstacles);
     }
 
     // Whether two sides shoot at each other: ownship and friendly versus

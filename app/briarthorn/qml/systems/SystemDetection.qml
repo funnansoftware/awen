@@ -21,6 +21,9 @@ System {
     required property Entity observer
     property list<Entity> entities
 
+    // The arena geometry radar cannot see through.
+    property list<Obstacle> obstacles
+
     // The track picture, one Track per contact.
     property list<Track> tracks
 
@@ -49,7 +52,7 @@ System {
             }
             track.range = Geo.distance(root.observer, entity);
             track.azimuth = Geo.wrap360(Geo.bearing(root.observer, entity));
-            const seen = entity.owner === root.observer || root.detected(track);
+            const seen = entity.owner === root.observer || root.detected(track, entity);
             track.classification = seen ? entity.classification : Classification.Kind.Unknown;
             track.side = seen ? entity.side : Side.Kind.Unknown;
             // Condition rides with the resolution: lose the contact and the
@@ -72,10 +75,11 @@ System {
             root.tracks = Object.values(root.held);
     }
 
-    // Whether a measurement falls inside the observer's radar volume: within
-    // half the FOV cone off the nose and inside sensor range.
-    function detected(track: Track): bool {
+    // Whether a measurement falls inside the observer's radar volume — within
+    // half the FOV cone off the nose and inside sensor range — with the line
+    // to the contact clear of the arena's pillars.
+    function detected(track: Track, entity: Entity): bool {
         const off = Geo.wrap180(track.azimuth - root.observer.heading);
-        return Math.abs(off) <= root.observer.radarFov / 2 && track.range <= root.observer.detectionRange;
+        return Math.abs(off) <= root.observer.radarFov / 2 && track.range <= root.observer.detectionRange && Geo.lineOfSight(root.observer, entity, root.obstacles);
     }
 }

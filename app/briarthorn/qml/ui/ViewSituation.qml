@@ -31,6 +31,9 @@ Item {
     property list<Entity> entities
     property list<Detonation> detonations
 
+    // The arena's pillars, drawn as terrain under the air picture.
+    property list<Obstacle> obstacles
+
     // Geometry. The outer ring's radius is a fraction of the short side; the
     // centre drops by verticalShift (and slides by horizontalShift) so the
     // attack scope can push ownship down and crop the rear off the bottom edge.
@@ -155,6 +158,21 @@ Item {
         angleSpan: root.observer ? root.observer.radarFov : 0
         radius: root.observer ? Math.min(root.observer.detectionRange * root.pxPerMeter, root.outerRadius) : 0
         fillColor: Style.theme.gaugeTrack
+    }
+
+    // The arena terrain, over the rings and cone but under everything that
+    // flies. Culled to the backing disc where one masks the picture, so a
+    // pillar never spills past the minimap onto the scope beneath.
+    ViewObstacles {
+        anchors.fill: parent
+        observer: root.observer
+        obstacles: root.obstacles
+        centerX: root.centerX
+        centerY: root.centerY
+        pxPerMeter: root.pxPerMeter
+        viewRotation: root.viewRotation
+        strokeWidth: root.ringStrokeWidth
+        cullRadius: root.backgroundColor.a > 0 ? root.discRadius : 0
     }
 
     // The motion wakes, under the marks they trail: each object's recent

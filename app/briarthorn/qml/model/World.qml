@@ -10,6 +10,11 @@ QtObject {
     // Every live entity, in no meaningful order.
     property list<Entity> entities
 
+    // The arena geometry every system tests against and every scope draws —
+    // assigned wholesale when a scenario carrying an arena takes the stage,
+    // cleared when one without leaves it. Terrain, so no spawn machinery.
+    property list<Obstacle> obstacles
+
     // Entities this world created and therefore destroys.
     property var spawned: new Set()
 

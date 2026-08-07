@@ -13,6 +13,9 @@ System {
     // The world's roster; entities without the aspect are passed over.
     property list<Entity> entities
 
+    // The arena geometry radar cannot see through.
+    property list<Obstacle> obstacles
+
     // The launch ability invoked, by registry name, and the round it spawns;
     // the cast is null for a name that is not a launch at all.
     property string ability: "guided"
@@ -35,6 +38,10 @@ System {
                 continue;
             const off = Geo.wrap180(Geo.bearing(entity, entity.engageTarget) - entity.heading);
             if (Math.abs(off) > entity.radarFov / 2)
+                continue;
+            // A pillar between shooter and target breaks the radar picture
+            // the shot needs, so ducking behind one denies the launch.
+            if (!Geo.lineOfSight(entity, entity.engageTarget, root.obstacles))
                 continue;
             root.fire(entity);
         }
