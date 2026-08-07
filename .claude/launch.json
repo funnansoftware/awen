@@ -6,6 +6,12 @@
             "runtimeExecutable": "python",
             "runtimeArgs": ["-m", "http.server", "8730", "--directory", "build/web-release/installed/web/briarthorn"],
             "port": 8730
+        },
+        {
+            "name": "briarthorn-web-debug",
+            "runtimeExecutable": "python",
+            "runtimeArgs": ["-m", "http.server", "8731", "--directory", "build/web-debug/installed/web/briarthorn"],
+            "port": 8731
         }
     ]
 }
