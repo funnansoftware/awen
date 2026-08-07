@@ -69,13 +69,13 @@ QtObject {
     property real engageTimer: 0
     property bool engageHold: false
 
-    // SystemThreat pops this entity's flares at inbound homing rounds; the
+    // SystemThreat pops this entity's flares at inbound guided rounds; the
     // timer spaces the pops so each decoy gets its chance to seduce.
     property bool threatReflex: false
     property real threatTimer: 0
 
-    // The nearest homing round SystemThreat marked inbound this tick; both
-    // the flare reflex and SystemPersonality read this one fact.
+    // The nearest round SystemThreat marked inbound this tick — guided or
+    // not; both the flare reflex and SystemPersonality read this one fact.
     property Entity threatInbound: null
 
     // SystemFuel drains the tank; the launch screen's demo craft clears this

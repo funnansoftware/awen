@@ -1,6 +1,6 @@
-// Fires while a homing round is marked inbound inside a fraction of the
-// defended craft's detection envelope (present), or once none is (present
-// false) — the calm side of the same test, for the switch back.
+// Fires while a round is marked inbound inside a fraction of the defended
+// craft's detection envelope (present), or once none is (present false) —
+// the calm side of the same test, for the switch back.
 Switch {
     id: root
 
