@@ -54,11 +54,13 @@ Personality {
                 }
             ]
         },
+        // Withdraw reopens the band dead away — flee, not evade: evade
+        // trades radial speed for perimeter riding as it nears its ring, and
+        // a merely-jogging pursuer stalls that inside the rejoin edge forever.
         Stance {
             name: Names.stance.withdraw
-            maneuver: Names.maneuver.evade
+            maneuver: Names.maneuver.flee
             holdFire: true
-            standoff: 0.9
             switches: [
                 SwitchRange {
                     inside: false
