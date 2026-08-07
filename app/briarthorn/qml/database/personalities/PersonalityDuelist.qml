@@ -2,8 +2,9 @@ import ".."
 
 // Fights one exchange at a time: presses to fire, then cranks — trigger held,
 // target ridden at the cone's edge — until the round in flight dies, so no
-// magazine ever streams. Beams genuine inbounds early enough to watch, and
-// breaks off dry.
+// magazine ever streams. Beams genuine inbounds early enough to watch, breaks
+// off dry, and opens a too-close merge back out to launch distance rather
+// than wasting a round that cannot make its turn.
 Personality {
     name: Names.personality.duelist
 
@@ -27,6 +28,14 @@ Personality {
                 SwitchOutbound {
                     present: true
                     to: Names.stance.crank
+                },
+                // A launch from inside ~half the round's reach cannot make
+                // its turn; no dwell, so the crossing tick holds fire before
+                // the trigger system runs.
+                SwitchRange {
+                    inside: true
+                    at: 0.55
+                    to: Names.stance.withdraw
                 }
             ]
         },
@@ -48,15 +57,42 @@ Personality {
                 }
             ]
         },
+        // Guard holds the trigger too: a notch that sweeps the cone across
+        // the target would otherwise stream rounds — at whatever range the
+        // fight has closed to — outside the press-crank exchange rhythm.
         Stance {
             name: Names.stance.guard
             maneuver: Names.maneuver.notch
             reference: Stance.Reference.Threat
+            holdFire: true
             switches: [
                 SwitchThreat {
                     present: false
                     within: 0.45
                     dwell: 0.5
+                    to: Names.stance.press
+                }
+            ]
+        },
+        // The extension: run dead away — trigger cold — and press again once
+        // comfortably clear of the failure band. Flee, not evade: evade
+        // trades radial speed for perimeter riding as it nears its ring, and
+        // a merely-jogging pursuer stalls that inside the rejoin edge forever.
+        Stance {
+            name: Names.stance.withdraw
+            maneuver: Names.maneuver.flee
+            holdFire: true
+            switches: [
+                SwitchThreat {
+                    present: true
+                    within: 0.45
+                    dwell: 0.3
+                    to: Names.stance.guard
+                },
+                SwitchRange {
+                    inside: false
+                    at: 0.8
+                    dwell: 1
                     to: Names.stance.press
                 }
             ]
