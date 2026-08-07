@@ -73,6 +73,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/model/ManeuverNotch.qml
         qml/model/ManeuverOrbit.qml
         qml/model/ManeuverPursue.qml
+        qml/model/Obstacle.qml
         qml/model/PersonalityState.qml
         qml/model/RangeProjection.qml
         qml/model/Side.qml
@@ -84,6 +85,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/scenarios/ScenarioDuel.qml
         qml/scenarios/ScenarioMenu.qml
         qml/systems/SystemAbility.qml
+        qml/systems/SystemCollision.qml
         qml/systems/SystemCountermeasure.qml
         qml/systems/SystemDetection.qml
         qml/systems/SystemEngage.qml
@@ -110,6 +112,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
         qml/ui/ViewMenu.qml
+        qml/ui/ViewObstacles.qml
         qml/ui/ViewPause.qml
         qml/ui/ViewSettings.qml
         qml/ui/ViewSituation.qml

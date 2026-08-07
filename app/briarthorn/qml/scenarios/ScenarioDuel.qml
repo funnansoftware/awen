@@ -26,7 +26,11 @@ Scenario {
         callsign: "BANDIT 1"
         classification: Classification.Kind.AircraftFighterLight
         side: Side.Kind.Hostile
-        posY: -65000
+        // Seated a shade east of true north: the closing line to the merge
+        // then passes the north pillar with kilometres to spare, where the
+        // axis itself would fly the pursuit straight into it.
+        posX: 10000
+        posY: -64000
         heading: 180
         personality: Names.personality.duelist
         engageTarget: root.ownship
@@ -51,6 +55,32 @@ Scenario {
     }
 
     entities: [root.bandit]
+
+    // The arena: four large pillars boxing the fight at 60 km on the
+    // cardinals, a picket of smaller ones every 45 degrees at 120 km, and
+    // four more on the intercardinals at 30 km — off the cardinal axes, so
+    // the opening lane from the north stays flyable. Static terrain, so
+    // reset() never touches it.
+    readonly property Component pillarFactory: Component {
+        Obstacle {}
+    }
+
+    obstacles: [...root.pillarRing(4, 0, 60000, 6000), ...root.pillarRing(8, 0, 120000, 3000), ...root.pillarRing(4, 45, 30000, 3000)]
+
+    // count pillars of one radius, evenly spaced around the origin at range,
+    // the first seated at startBearing.
+    function pillarRing(count: int, startBearing: real, range: real, radius: real): list<Obstacle> {
+        const ring = [];
+        for (let i = 0; i < count; ++i) {
+            const bearing = startBearing + i * 360 / count;
+            ring.push(root.pillarFactory.createObject(root, {
+                posX: Geo.offsetX(bearing, range),
+                posY: Geo.offsetY(bearing, range),
+                radius: radius
+            }));
+        }
+        return ring;
+    }
 
     // Replaces the bandit with a factory-fresh one — QML's constructor — so a
     // duel entered from the menu always opens the same fight, with nothing to

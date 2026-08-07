@@ -60,6 +60,25 @@ QtObject {
         return root.wrap360(bearing - 90);
     }
 
+    // Whether the straight line between two entities is clear of every
+    // pillar — the one radar line-of-sight test the sensor, seeker and
+    // trigger gates all share. A pillar cuts the line when the segment's
+    // closest point to its centre falls inside its radius.
+    function lineOfSight(a: Entity, b: Entity, obstacles: list<Obstacle>): bool {
+        for (let i = 0; i < obstacles.length; ++i) {
+            const o = obstacles[i];
+            const dx = b.posX - a.posX;
+            const dy = b.posY - a.posY;
+            const len2 = dx * dx + dy * dy;
+            const t = len2 > 0 ? Math.max(0, Math.min(1, ((o.posX - a.posX) * dx + (o.posY - a.posY) * dy) / len2)) : 0;
+            const nx = a.posX + t * dx - o.posX;
+            const ny = a.posY + t * dy - o.posY;
+            if (nx * nx + ny * ny <= o.radius * o.radius)
+                return false;
+        }
+        return true;
+    }
+
     // The axis offsets of a step along a bearing.
     function offsetX(bearing: real, range: real): real {
         return Math.sin(bearing * Math.PI / 180) * range;

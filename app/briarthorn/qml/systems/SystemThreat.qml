@@ -19,6 +19,9 @@ System {
     // for the rounds homing on them.
     property list<Entity> entities
 
+    // The arena geometry radar cannot see through.
+    property list<Obstacle> obstacles
+
     // Metres at which an inbound homing round triggers a pop.
     property real threatRange: 9000
 
@@ -69,11 +72,12 @@ System {
         }
     }
 
-    // Holds the round against the target's mark if the target detects it and
-    // no nearer round is already held.
+    // Holds the round against the target's mark if the target detects it —
+    // inside its detection range with a clear line to it — and no nearer
+    // round is already held.
     function consider(nearest: var, target: Entity, missile: Entity) {
         const range = Geo.distance(missile, target);
-        if (range > target.detectionRange)
+        if (range > target.detectionRange || !Geo.lineOfSight(target, missile, root.obstacles))
             return;
         const held = nearest.get(target);
         if (held === undefined || range < Geo.distance(target, held))

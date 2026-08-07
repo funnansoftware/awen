@@ -28,6 +28,11 @@ QtObject {
     property color factionNeutral: "#FFFFD23F"
     property color factionHostile: "#FFFF3B6B"
     property color rangeRing: "#FF11566A"
+    // Arena terrain: a burnt-orange rim over a dark leather fill — earthy
+    // against the cyan instrument lines, and dimmer than warn so a pillar
+    // never reads as an alert.
+    property color terrain: "#FFB86A38"
+    property color terrainFill: "#FF2E1B0D"
     property color cursorFree: "#FFFFC23D"
     property color cursorLatched: "#FF6CFBFF"
     property color detonation: "#FFFF6FA8"
