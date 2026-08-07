@@ -6,6 +6,7 @@ QtObject {
     id: root
 
     property Aurora theme: Aurora {}
+    // property CatppuccinMocha theme: CatppuccinMocha {}
 
     // The instrument typeface: the first of these the system actually has.
     // Naming Consolas alone kept windows right but left macOS and linux to
@@ -15,8 +16,7 @@ QtObject {
     readonly property string monospace: {
         const preferred = ["Consolas", "Menlo", "DejaVu Sans Mono"];
         const available = Qt.fontFamilies();
-        for (const family of preferred)
-        {
+        for (const family of preferred) {
             if (available.includes(family))
                 return family;
         }
