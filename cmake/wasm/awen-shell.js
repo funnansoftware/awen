@@ -1,9 +1,10 @@
 // awen-shell.js — the shared machinery for awen app entry pages: loader overlay
-// wiring, wasm prefetch with real download progress, and keyboard-focus routing
-// into Qt's shadow DOM. The page supplies #loader/#status/#progress/#screen,
-// includes this script at the end of body BEFORE the app's <target>.js and
-// qtloader.js (so the elements exist and the error hooks cover those scripts),
-// and calls awenShell.init({ name, entry, wasm }) from body onload.
+// wiring, wasm prefetch with real download progress, keyboard-focus routing into
+// Qt's shadow DOM, and fullscreen toggling. The page supplies
+// #loader/#status/#progress/#screen and a .pseudo-fullscreen style (see
+// toggleFullscreen), includes this script at the end of body BEFORE the app's
+// <target>.js and qtloader.js (so the elements exist and the error hooks cover
+// those scripts), and calls awenShell.init({ name, entry, wasm }) from body onload.
 window.awenShell = (() => {
   let appName = 'app';
   const loaderElement = document.getElementById('loader');
@@ -61,6 +62,31 @@ window.awenShell = (() => {
 
   // Fullscreen transitions move focus around; keep the keyboard on the app.
   document.addEventListener('fullscreenchange', () => focusApp());
+
+  // iPhone Safari implements the Fullscreen API on no element but <video>, so
+  // requestFullscreen is absent there rather than merely denied. The page styles
+  // this class to pin the element over the viewport instead, and supplies its own
+  // way back out — the fallback has no browser-level exit gesture.
+  const PseudoFullscreen = 'pseudo-fullscreen';
+
+  function setPseudoFullscreen(element, on) {
+    element.classList.toggle(PseudoFullscreen, on);
+    focusApp(); // no fullscreenchange fires for this path
+  }
+
+  // Toggle @p element between fullscreen and normal, by whichever path the
+  // browser allows. Qt follows its container's size, so both look the same to it.
+  function toggleFullscreen(element) {
+    if (element.classList.contains(PseudoFullscreen))
+      setPseudoFullscreen(element, false);
+    else if (document.fullscreenElement === element)
+      document.exitFullscreen();
+    else if (element.requestFullscreen)
+      // A refusal (an iframe lacking the permission, say) falls back as well.
+      element.requestFullscreen().catch(() => setPseudoFullscreen(element, true)).finally(() => focusApp());
+    else
+      setPseudoFullscreen(element, true);
+  }
 
   // Nothing on the page needs the keyboard except the app, so refocus it
   // after any click — including clicks on the app itself, which Qt 6.11 does
@@ -160,5 +186,5 @@ window.awenShell = (() => {
     }
   }
 
-  return { init, focusApp };
+  return { init, focusApp, toggleFullscreen };
 })();

@@ -10,8 +10,10 @@ js/wasm files are referenced, so the installed web/ directory serves as-is.
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <!-- 1:1 CSS-pixel to Qt device-independent-pixel mapping on mobile. -->
-    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0"/>
+    <!-- 1:1 CSS-pixel to Qt device-independent-pixel mapping on mobile.
+         viewport-fit=cover lets the fullscreen view reach the edges of a notched
+         phone; the safe-area insets below keep content out of the notch itself. -->
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=0, viewport-fit=cover"/>
     <!-- Tab icon as a data URI; source of truth: assets/icon/briarthorn.svg. -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+DQogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjMwIiBmaWxsPSIjMGQxODIwIiBzdHJva2U9IiMzZmI4YjMiIHN0cm9rZS13aWR0aD0iMiIvPg0KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2ZiOGIzIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNSIvPg0KICA8Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2ZiOGIzIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPg0KICA8cGF0aCBkPSJNMzIgMTYgTDMyIDQ4IE0xNiAzMiBMNDggMzIiIHN0cm9rZT0iIzNmYjhiMyIgc3Ryb2tlLXdpZHRoPSIwLjc1IiBvcGFjaXR5PSIwLjM1Ii8+DQogIDxwYXRoIGQ9Ik0zMiAyMiBMNDAgNDQgTDMyIDM4IEwyNCA0NCBaIiBmaWxsPSIjM2ZiOGIzIi8+DQo8L3N2Zz4NCg==">
     <title>Briarthorn</title>
@@ -31,7 +33,8 @@ js/wasm files are referenced, so the installed web/ directory serves as-is.
 
       body {
         margin: 0;
-        padding: 16px;
+        /* Widened where a notch intrudes, which in landscape is a side edge. */
+        padding: 16px max(16px, env(safe-area-inset-right)) 16px max(16px, env(safe-area-inset-left));
         background-color: var(--bg);
         color: var(--text);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -47,11 +50,22 @@ js/wasm files are referenced, so the installed web/ directory serves as-is.
         border: 1px solid var(--border);
         background: var(--bg-deep);
       }
-      /* Fullscreen drops the frame; Qt follows the container size automatically. */
-      .view:fullscreen {
+      /* Fullscreen drops the frame; Qt follows the container size automatically.
+         The second selector is awen-shell's fallback for browsers with no element
+         Fullscreen API — iPhone Safari — where the view pins itself instead. */
+      .view:fullscreen,
+      .view.pseudo-fullscreen {
         max-width: none;
         aspect-ratio: auto;
         border: none;
+      }
+      .view.pseudo-fullscreen {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        box-sizing: border-box;
+        /* Cover puts the page under the notch; hold the game clear of it. */
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       }
       #screen { display: none; width: 100%; height: 100%; }
 
@@ -98,6 +112,22 @@ js/wasm files are referenced, so the installed web/ directory serves as-is.
         cursor: pointer;
       }
       input[type="button"]:hover { filter: brightness(1.08); }
+
+      /* The way out of the pinned fallback, which no browser gesture exits.
+         Centred on the game's top band, whose middle carries nothing — the
+         corners either side of it hold the condition gauge and the minimap. */
+      #exit-fullscreen { display: none; }
+      .view.pseudo-fullscreen #exit-fullscreen {
+        display: block;
+        position: absolute;
+        top: calc(env(safe-area-inset-top) + 5px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1;
+        padding: 2px 12px;
+        font-size: 12px;
+        opacity: 0.75;
+      }
     </style>
   </head>
   <body onload="awenShell.init({ name: 'briarthorn', entry: window.briarthorn_entry, wasm: 'briarthorn.wasm' })">
@@ -110,11 +140,12 @@ js/wasm files are referenced, so the installed web/ directory serves as-is.
         <noscript>JavaScript is disabled. Please enable JavaScript to run Briarthorn.</noscript>
       </div>
       <div id="screen"></div>
+      <!-- Inside the view, so the pinned fallback keeps it reachable; styled
+           away entirely on the paths that have a browser exit gesture. -->
+      <input type="button" id="exit-fullscreen" value="Exit Fullscreen" onclick="awenShell.toggleFullscreen(document.getElementById('view'))">
     </div>
     <div class="controls">
-      <!-- Swallow the rejection when the browser denies fullscreen, and either
-           way hand keyboard focus back to the game. -->
-      <input type="button" value="Fullscreen" onclick="document.getElementById('view').requestFullscreen().catch(() => {}).finally(() => awenShell.focusApp())">
+      <input type="button" value="Fullscreen" onclick="awenShell.toggleFullscreen(document.getElementById('view'))">
     </div>
 
     <script src="awen-shell.js"></script>
