@@ -16,9 +16,9 @@ DataEntity {
     radarFov: 120
 
     stats: Stats {
-        kinetic: 3 // 500 m/s, burning 0.5 units/s at cruise
+        kinetic: 3 // 300 m/s, burning 0.3 units/s at cruise
         maneuver: 5 // 12 deg/s and 100 m/s^2
-        durable: 5 // 100 hp on 100 units of fuel
+        durable: 5 // 100 hp on 200 units of fuel
         compute: 6
         sensor: 5 // a 60 km radar
         stealth: 5
