@@ -27,6 +27,10 @@ PACK = os.path.join(HERE, "kenney", "Audio")
 # is resampled by Qt at play time, and that is audible as crackle.
 RATE = 48000
 
+# Seconds of silence appended to every cue — see the comment where it is added.
+# This is what each file's size is, almost entirely.
+TAIL = 1.2
+
 CUES = {
     "navigate": "tick_001.ogg",
     "press": "select_002.ogg",
@@ -60,7 +64,20 @@ for role, source in CUES.items():
     if ceiling > 0.97:
         data *= 0.97 / ceiling
 
+    # Then a long tail of digital silence, which is the whole reason these files
+    # are the size they are. Qt stops the audio device when an effect finishes,
+    # and stopping it just after audible content clicks — measured on the output
+    # as a 3 ms transient about 40 ms behind every single cue, with the stream
+    # restart clipping the next attack besides. Silence holds the stream open
+    # across a run of navigation and lets it close, when it finally does, out of
+    # nowhere quiet enough that the stop is inaudible.
+    #
+    # Long enough to bridge unhurried navigation. Shorter and the stream closes
+    # between keypresses, which is the fault coming straight back.
+    data = np.vstack([data, np.zeros((int(RATE * TAIL), data.shape[1]))])
+
     target = os.path.join(HERE, f"{role}.wav")
     sf.write(target, data, RATE, subtype="PCM_16")
-    print(f"{role:<9} <- {source:<16} {n / RATE * 1000:>5.0f} ms  "
-          f"peak {np.abs(data).max():.3f}  {os.path.getsize(target):>6} B")
+    print(f"{role:<9} <- {source:<16} {n / RATE * 1000:>5.0f} ms sound "
+          f"+ {TAIL:.1f}s silence  peak {np.abs(data).max():.3f}  "
+          f"{os.path.getsize(target) / 1024:>6.0f} KiB")

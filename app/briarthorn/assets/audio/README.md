@@ -57,19 +57,41 @@ Only what the output device wants, and nothing to the samples themselves:
 - **Peaks pulled under 0.97**, because resampling overshoots and a sample that
   clips on write clips on every play.
 
-## The device costs more than the sample
+## Why each file is a quarter of a megabyte of mostly silence
 
-Worth knowing before tuning anything here: the audible faults in this feature
-were never in the audio. Qt probes the sink's supported formats on a
-`SoundEffect`'s **first** play — dozens of `IsFormatSupported` calls, on the
-main thread — and on a USB interface that burst is long enough to chop the very
-sound that triggered it. Heard from the outside, cues cut out, crackle and go
-missing for the first few keypresses of a session, and then settle.
+This is the important part, and it is not about the samples at all. **Qt stops
+the audio device when an effect finishes playing, and stopping it just after
+audible content clicks.** Recorded off the output, every cue was followed about
+40 ms later — after 20 ms of pure digital silence — by a separate 3 ms
+transient. The matching stream *start* clipped the front of the next cue, so
+each one came out a slightly different length and loudness.
 
-So `Sfx` keeps exactly one `SoundEffect` per cue and warms all three at startup
-in silence (`Cue.warm()`). Adding voices multiplies that cost by their number —
-a four-voice pool made it four times worse — and buys nothing at these lengths,
-because no one can navigate fast enough to overlap a 23 ms tick with itself.
+Heard from the outside that is a tick, then a click; cues that cut out; cues
+that sound different every time. It survived three changes of sample, because
+it was never in the sample.
+
+The fix is the **1.2 s of digital silence appended to every cue**. It holds the
+stream open across a run of navigation, so it never restarts mid-menu, and when
+it does finally close it closes out of a long quiet where the stop is inaudible.
+Measured over fourteen plays:
+
+| | short files | with the silent tail |
+| ------------------ | ----------- | -------------------- |
+| events recorded    | 18          | 12 — no extras       |
+| peak spread        | 9.01×       | **1.00×**            |
+| length             | 2.9–9.6 ms  | **9.6 ms every time** |
+
+Shorten `TAIL` in `build-cues.py` and the stream starts closing between
+keypresses, which is the fault coming straight back. `Sfx` also keeps exactly
+one `SoundEffect` per cue: a pool multiplies Qt's per-effect device work — the
+format probing on first play is dozens of blocking `IsFormatSupported` calls —
+and buys nothing at these lengths, since no one navigates fast enough to overlap
+a 23 ms tick with itself.
+
+One thing that is **not** safe: nothing may play a cue muted at startup to warm
+the device. Unmuting from inside `playingChanged` re-enters Qt's state machine
+and takes the process down on exit, reproducibly. `Cue.warm()` is deliberately
+empty because of it.
 
 Levels are otherwise untouched: the mix is the three `volume` values in
 `qml/audio/Sfx.qml`, and nothing else.
