@@ -77,8 +77,16 @@ Item {
 
     // The keyboard vocabulary, on the menu's own focus — the Qt way round:
     // Main gives the launch screen focus while it is up, and a key declined
-    // here bubbles on to the scene, which ignores it in menu mode.
+    // here bubbles on to the window.
+    //
+    // A key the menu acts on is accepted, and accepted explicitly: a QML key
+    // event arrives at its handler unaccepted, so a branch that only acts is a
+    // branch that also leaks. An entry acts synchronously — DUEL has already
+    // started the duel and cleared the menu by the time this handler returns —
+    // so a leaked press lands on the game the menu just started, and the space
+    // bar that picked DUEL fires an ability into the opening frame.
     Keys.onPressed: event => {
+        event.accepted = true;
         if (event.isAutoRepeat) {
             event.accepted = false;
             return;

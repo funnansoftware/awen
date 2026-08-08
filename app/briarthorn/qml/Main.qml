@@ -114,8 +114,8 @@ Window {
         Keys.onPressed: event => {
             if (event.isAutoRepeat)
                 return;
-            // Keys a focused overlay menu declined bubble up here; they have
-            // no game meaning while one is up.
+            // A backstop only: the scene holds the keys in no other mode, and
+            // the overlays are siblings, so nothing of theirs reaches here.
             if (root.inMenu || root.paused || root.ended)
                 return;
             // Any key at all hands the HUD back to the keyboard, bound or not:
@@ -694,60 +694,70 @@ Window {
 
             anchors.fill: parent
         }
+    }
 
-        // The launch screen itself, transparent over the demo scope. It holds
-        // the keys while up — its own handlers drive the cursor — and hands
-        // them to the controls page when that stacks on top.
-        ViewMenu {
-            id: menu
+    // Every overlay screen is a sibling of the scene rather than a child, for
+    // the reason spelled out on the controls page below: a key one of them
+    // declines must bubble to the window, not sideways into the game's handler.
+    // They stack in declaration order over the scene, exactly as they did as its
+    // last children.
 
-            visible: root.inMenu
-            focus: root.inMenu && !settings.open
-            device: root.device
-            onDuel: root.startDuel()
-            onControls: root.openSettings()
-            onExitGame: Qt.quit()
+    // The launch screen itself, transparent over the demo scope. It holds
+    // the keys while up — its own handlers drive the cursor — and hands
+    // them to the controls page when that stacks on top.
+    ViewMenu {
+        id: menu
 
-            anchors.fill: parent
-        }
+        visible: root.inMenu
+        focus: root.inMenu && !settings.open
+        device: root.device
+        onDuel: root.startDuel()
+        onControls: root.openSettings()
+        onExitGame: Qt.quit()
 
-        // The pause menu, over the frozen scope and HUD; the controls page
-        // stacks on top of it and hands the keys back on close.
-        ViewPause {
-            id: pausePage
+        anchors.fill: parent
+    }
 
-            visible: root.paused
-            focus: root.paused && !settings.open
-            device: root.device
-            onResumed: root.resumeDuel()
-            onControls: root.openSettings()
-            onToMenu: root.startMenu()
-            onExitGame: Qt.quit()
+    // The pause menu, over the frozen scope and HUD; the controls page
+    // stacks on top of it and hands the keys back on close.
+    ViewPause {
+        id: pausePage
 
-            anchors.fill: parent
-        }
+        visible: root.paused
+        focus: root.paused && !settings.open
+        device: root.device
+        onResumed: root.resumeDuel()
+        onControls: root.openSettings()
+        onToMenu: root.startMenu()
+        onExitGame: Qt.quit()
 
-        // The duel's result, over the deciding frame.
-        ViewEnd {
-            id: endPage
+        anchors.fill: parent
+    }
 
-            visible: root.ended
-            focus: root.ended
-            device: root.device
-            mission: mission
-            onFlyAgain: root.startDuel()
-            onToMenu: root.startMenu()
-            onExitGame: Qt.quit()
+    // The duel's result, over the deciding frame.
+    ViewEnd {
+        id: endPage
 
-            anchors.fill: parent
-        }
+        visible: root.ended
+        focus: root.ended
+        device: root.device
+        mission: mission
+        onFlyAgain: root.startDuel()
+        onToMenu: root.startMenu()
+        onExitGame: Qt.quit()
+
+        anchors.fill: parent
     }
 
     // The controls page, a sibling of the scene rather than a child: it paints
     // over the whole HUD, and a key it declines bubbles to the window instead of
-    // falling sideways into the game's handler. Focus follows open on both sides
-    // declaratively — an imperative hand-off leaves the scene unfocused and the
-    // game permanently deaf the moment one exit path forgets to hand it back.
+    // falling sideways into the game's handler. An overlay's entries act inside
+    // the very key handler that reads them — starting the duel, unpausing — so a
+    // key that fell through to the scene would be read by the game the overlay
+    // had already switched to, one dispatch too late for the scene's mode guards
+    // to refuse it. Focus follows open on both sides declaratively — an
+    // imperative hand-off leaves the scene unfocused and the game permanently
+    // deaf the moment one exit path forgets to hand it back.
     ViewSettings {
         id: settings
 
