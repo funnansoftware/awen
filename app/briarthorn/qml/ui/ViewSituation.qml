@@ -34,6 +34,24 @@ Item {
     // The arena's pillars, drawn as terrain under the air picture.
     property list<Obstacle> obstacles
 
+    // The same pillars as plain disc rows for awen.shapes' shadow cast, held
+    // to the ones the terrain layer draws so a bite always has its disc under
+    // it. Unmasked, that is every pillar and the rows rebuild only when a
+    // scenario swaps its arena; a masked scope re-culls as ownship moves.
+    readonly property var occluderRows: {
+        const rows = [];
+        for (let i = 0; i < obstacles.length; ++i) {
+            const pillar = obstacles[i];
+            if (terrain.draws(pillar.posX, pillar.posY, pillar.radius))
+                rows.push({
+                    x: pillar.posX,
+                    y: pillar.posY,
+                    r: pillar.radius
+                });
+        }
+        return rows;
+    }
+
     // Geometry. The outer ring's radius is a fraction of the short side; the
     // centre drops by verticalShift (and slides by horizontalShift) so the
     // attack scope can push ownship down and crop the rear off the bottom edge.
@@ -147,7 +165,8 @@ Item {
         enableTicks: false
     }
 
-    // Ownship's radar volume: a wedge off the nose (straight up, heading-up),
+    // Ownship's commanded radar volume, faint: where the antenna points even
+    // where terrain masks it. A wedge off the nose (straight up, heading-up),
     // reaching the sensor's detection range, capped at the outer ring.
     ShapeSector {
         anchors.fill: parent
@@ -157,13 +176,39 @@ Item {
         angleAt: root.headingUp ? 0 : (root.observer ? root.observer.heading : 0)
         angleSpan: root.observer ? root.observer.radarFov : 0
         radius: root.observer ? Math.min(root.observer.detectionRange * root.pxPerMeter, root.outerRadius) : 0
+        fillColor: Qt.alpha(Style.theme.gaugeTrack, 0.035)
+    }
+
+    // What the radar actually sees: the same wedge shadow-cast behind the
+    // pillars, computed in world bearings and turned by the rotation
+    // ViewObstacles carries, so every bite lands exactly on its drawn disc.
+    ShapeSectorOccluded {
+        anchors.fill: parent
+        visible: root.showRadarCone && root.observer
+        centerX: root.centerX
+        centerY: root.centerY
+        angleAt: root.observer ? root.observer.heading : 0
+        angleSpan: root.observer ? root.observer.radarFov : 0
+        radius: root.observer ? Math.min(root.observer.detectionRange * root.pxPerMeter, root.outerRadius) : 0
+        sourceX: root.observer ? root.observer.posX : 0
+        sourceY: root.observer ? root.observer.posY : 0
+        positionScale: root.pxPerMeter
+        occluders: root.occluderRows
         fillColor: Style.theme.gaugeTrack
+
+        transform: Rotation {
+            origin.x: root.centerX
+            origin.y: root.centerY
+            angle: root.viewRotation
+        }
     }
 
     // The arena terrain, over the rings and cone but under everything that
     // flies. Culled to the backing disc where one masks the picture, so a
     // pillar never spills past the minimap onto the scope beneath.
     ViewObstacles {
+        id: terrain
+
         anchors.fill: parent
         observer: root.observer
         obstacles: root.obstacles

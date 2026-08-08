@@ -32,6 +32,17 @@ Item {
     // past that mask onto the scope beneath.
     property real cullRadius: 0
 
+    // Whether this layer draws a given pillar. The shadow caster asks the
+    // same question before occluding with one, so a bite never lands on a
+    // scope where no disc was drawn.
+    function draws(posX: real, posY: real, radius: real): bool {
+        if (cullRadius <= 0)
+            return true;
+        if (!observer)
+            return false;
+        return Math.hypot(posX - observer.posX, posY - observer.posY) * pxPerMeter + radius * pxPerMeter <= cullRadius;
+    }
+
     transform: Rotation {
         origin.x: root.centerX
         origin.y: root.centerY
@@ -50,7 +61,7 @@ Item {
             readonly property real screenX: root.observer ? root.centerX + (pillar.modelData.posX - root.observer.posX) * root.pxPerMeter : 0
             readonly property real screenY: root.observer ? root.centerY + (pillar.modelData.posY - root.observer.posY) * root.pxPerMeter : 0
 
-            visible: root.cullRadius <= 0 || Math.hypot(pillar.screenX - root.centerX, pillar.screenY - root.centerY) + pillar.edge <= root.cullRadius
+            visible: root.draws(pillar.modelData.posX, pillar.modelData.posY, pillar.modelData.radius)
             x: pillar.screenX - pillar.edge
             y: pillar.screenY - pillar.edge
             width: pillar.edge * 2
