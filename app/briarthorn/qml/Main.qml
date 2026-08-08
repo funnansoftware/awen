@@ -389,6 +389,11 @@ Window {
                 entities: root.entities
             }
 
+            SystemAvoidance {
+                entities: root.entities
+                obstacles: root.world.obstacles
+            }
+
             SystemEngage {
                 entities: root.entities
                 obstacles: root.world.obstacles

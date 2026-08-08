@@ -85,6 +85,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/scenarios/ScenarioDuel.qml
         qml/scenarios/ScenarioMenu.qml
         qml/systems/SystemAbility.qml
+        qml/systems/SystemAvoidance.qml
         qml/systems/SystemCollision.qml
         qml/systems/SystemCountermeasure.qml
         qml/systems/SystemDetection.qml
