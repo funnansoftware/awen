@@ -59,12 +59,20 @@ ENV CC=gcc-14 \
 
 # Qt build dependencies — vcpkg builds Qt from source on linux (xcb windowing,
 # EGL, xkbcommon) and its meta-build needs the autotools family. Same set as
-# the main Dockerfile.
+# the main Dockerfile, plus libltdl-dev.
+#
+# libltdl-dev is for QtMultimedia, which briarthorn's interface cues play
+# through: it needs the pulseaudio port for a linux audio sink, which reaches
+# libxcrypt, which refuses to configure without ltdl from the system package
+# manager and says so by name. Unlike the main image this one cannot borrow
+# pulse from the official Qt binaries — steamos builds Qt from source to hold
+# the glibc floor, so the backend is built here too.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf \
     autoconf-archive \
     automake \
     libtool \
+    libltdl-dev \
     '^libxcb.*-dev' \
     libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev \
     libxkbcommon-x11-dev libegl1-mesa-dev \
