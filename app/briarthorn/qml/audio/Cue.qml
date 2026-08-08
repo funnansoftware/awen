@@ -48,10 +48,9 @@ QtObject {
         root.voice.play();
     }
 
-    // Opens the device and pays for the format probe now, silently, so the
-    // first cue the player actually asks for is not the one that pays.
+    // Reserved. It should open the device and pay for the format probe here,
+    // silently — but a QSoundEffect that has ever played takes the process down
+    // on exit (see README), so nothing may play until that is resolved.
     function warm() {
-        root.voice.muted = true;
-        root.voice.play();
     }
 }
