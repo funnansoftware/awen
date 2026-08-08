@@ -7,6 +7,7 @@ add_executable(awen-shapes-test
     ShapeLink.test.cpp
     ShapePolygon.test.cpp
     ShapeRing.test.cpp
+    ShapeSectorOccluded.test.cpp
     ShapeSparkline.test.cpp
     ShapeTicks.test.cpp
     ShapeTrail.test.cpp

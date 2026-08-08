@@ -17,6 +17,7 @@ awen_add_qml_module(awen-shapes
         ShapeReticle.qml
         ShapeRing.qml
         ShapeSector.qml
+        ShapeSectorOccluded.qml
         ShapeSparkline.qml
         ShapeTicks.qml
         ShapeTrail.qml
