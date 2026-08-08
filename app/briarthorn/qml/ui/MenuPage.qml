@@ -46,7 +46,14 @@ Item {
         onStepped: direction => root.cursor.move(direction)
     }
 
+    // A key this page acts on is accepted, and accepted explicitly: a QML key
+    // event arrives at its handler unaccepted, so a branch that only acts is a
+    // branch that also leaks. The entries act synchronously — RESUME has
+    // already unpaused, FLY AGAIN already started the next duel — so a leaked
+    // press lands on the running game the page just handed back to, and the
+    // space bar that picked the entry fires an ability with it.
     Keys.onPressed: event => {
+        event.accepted = true;
         if (event.isAutoRepeat) {
             event.accepted = false;
             return;
