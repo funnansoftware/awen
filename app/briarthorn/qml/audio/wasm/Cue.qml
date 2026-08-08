@@ -22,4 +22,7 @@ QtObject {
 
     function play() {
     }
+
+    function warm() {
+    }
 }

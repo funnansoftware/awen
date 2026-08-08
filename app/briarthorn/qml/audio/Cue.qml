@@ -1,17 +1,19 @@
 import QtMultimedia
 import QtQuick
 
-// One cue and the small pool of voices it speaks through.
+// One cue, and the one voice it speaks through.
 //
-// A SoundEffect is a single voice: play() landing on one that is still sounding
-// restarts it from the top, which cuts the waveform mid-flight. That is both
-// faults at once — the cue that goes missing when the cursor moves on quickly,
-// and the click heard in its place, because an abrupt cut is a step edge like
-// any other. Walking a pool instead lets a fast run down a menu overlap its own
-// cues, and only a run long enough to use every voice takes one back.
+// A single SoundEffect per cue, deliberately. The expensive thing here is not
+// the sample, it is the audio device: Qt probes the sink's supported formats on
+// an effect's FIRST play — dozens of IsFormatSupported calls, on the main
+// thread — and on a USB interface that burst is long enough to chop the very
+// sound that triggered it. A pool of voices multiplies that cost by its size
+// and buys almost nothing back, because these cues are 10-70 ms and a player
+// cannot navigate fast enough to overlap one with itself.
 //
-// The voices share one decoded sample: QSampleCache keys on the URL, so the
-// pool costs four small objects and no extra audio.
+// warm() is what pays the cost, once, at startup and in silence. Without it the
+// player pays it instead, spread across their first few keypresses — which is
+// heard as cues that cut out, crackle, or go missing, and then settle.
 //
 // This is the QtMultimedia implementation. wasm/Cue.qml is the silent one the
 // browser build is given instead, under this same type name — so Sfx, and every
@@ -26,40 +28,30 @@ QtObject {
     // through Sfx, so it offers an audio switch only where there is audio.
     readonly property bool available: true
 
-    // Where the search for a free voice starts, so a pool with every voice busy
-    // takes back the one that has been sounding longest rather than the one it
-    // just handed out.
-    property int turn: 0
+    readonly property SoundEffect voice: SoundEffect {
+        source: root.source
+        volume: root.volume
 
-    readonly property list<SoundEffect> voices: [
-        SoundEffect {
-            source: root.source
-            volume: root.volume
-        },
-        SoundEffect {
-            source: root.source
-            volume: root.volume
-        },
-        SoundEffect {
-            source: root.source
-            volume: root.volume
-        },
-        SoundEffect {
-            source: root.source
-            volume: root.volume
-        }
-    ]
+        // The warming play is the only muted one, and it unmutes itself the
+        // moment it is over. Hung off playing rather than a timer because a
+        // QML Timer rides the animation driver, which an occluded window
+        // stops — and a cue that stayed muted would be worse than the glitch
+        // this avoids.
+        onPlayingChanged: if (!playing && muted)
+            muted = false
+    }
 
+    // Retriggering restarts the voice. At these lengths that is what should
+    // happen: one cursor tick is audible at a time, and a restart the player
+    // is fast enough to cause is one they asked for.
     function play() {
-        for (let i = 0; i < root.voices.length; ++i) {
-            const free = root.voices[(root.turn + i) % root.voices.length];
-            if (!free.playing) {
-                free.play();
-                root.turn = (root.turn + i + 1) % root.voices.length;
-                return;
-            }
-        }
-        root.voices[root.turn].play();
-        root.turn = (root.turn + 1) % root.voices.length;
+        root.voice.play();
+    }
+
+    // Opens the device and pays for the format probe now, silently, so the
+    // first cue the player actually asks for is not the one that pays.
+    function warm() {
+        root.voice.muted = true;
+        root.voice.play();
     }
 }

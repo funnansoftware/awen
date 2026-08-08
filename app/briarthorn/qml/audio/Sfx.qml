@@ -84,10 +84,14 @@ QtObject {
         root.store.sync();
     }
 
-    // Empty on purpose: the call is the point. A QML singleton is built on
-    // first use and a SoundEffect loads its source asynchronously, so without
-    // someone touching this at startup the first cue of the session is the one
-    // that gets dropped — still Loading when play() reaches it.
+    // Called once at startup, and it earns its keep twice over: a QML singleton
+    // is built on first use, so this is also what brings the cues into being
+    // early enough to have loaded — and each one then opens the audio device
+    // silently, which is the part the player would otherwise pay for out of
+    // their first few keypresses. See Cue.warm().
     function warm() {
+        root.navigateCue.warm();
+        root.pressCue.warm();
+        root.backCue.warm();
     }
 }

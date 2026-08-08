@@ -11,9 +11,14 @@ so swapping a cue is one file and no QML edit:
 
 | file           | Kenney source    | ms | fires on                                 |
 | -------------- | ---------------- | -- | ---------------------------------------- |
-| `navigate.wav` | `click_005.ogg`  | 10 | the cursor or the mouse reaching an item |
+| `navigate.wav` | `tick_001.ogg`   | 23 | the cursor or the mouse reaching an item |
 | `press.wav`    | `select_002.ogg` | 43 | an item being chosen                     |
 | `back.wav`     | `back_002.ogg`   | 70 | a page being dismissed                   |
+
+The `.wav` files are derived, not authored: `build-cues.py` beside them is the
+recipe, and swapping a cue is one line in its table and a re-run. It lists the
+other sources that pass the rule below, for a cue that wants more or less body
+than the one in place.
 
 ## Choosing a cue
 
@@ -48,9 +53,23 @@ Only what the output device wants, and nothing to the samples themselves:
 - **A 5 ms fade-out**, capped at a sixth of the file, so the tail lands on
   silence without eating the body of a very short cue. No fade-in — see above.
 - **Trailing silence below −60 dB trimmed**, because it is inaudible but still
-  holds a voice in `Sfx`'s pool for as long as a real sound.
+  makes the cue outlast itself.
 - **Peaks pulled under 0.97**, because resampling overshoots and a sample that
   clips on write clips on every play.
+
+## The device costs more than the sample
+
+Worth knowing before tuning anything here: the audible faults in this feature
+were never in the audio. Qt probes the sink's supported formats on a
+`SoundEffect`'s **first** play — dozens of `IsFormatSupported` calls, on the
+main thread — and on a USB interface that burst is long enough to chop the very
+sound that triggered it. Heard from the outside, cues cut out, crackle and go
+missing for the first few keypresses of a session, and then settle.
+
+So `Sfx` keeps exactly one `SoundEffect` per cue and warms all three at startup
+in silence (`Cue.warm()`). Adding voices multiplies that cost by their number —
+a four-voice pool made it four times worse — and buys nothing at these lengths,
+because no one can navigate fast enough to overlap a 23 ms tick with itself.
 
 Levels are otherwise untouched: the mix is the three `volume` values in
 `qml/audio/Sfx.qml`, and nothing else.
