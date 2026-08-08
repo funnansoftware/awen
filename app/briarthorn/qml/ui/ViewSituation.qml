@@ -327,7 +327,10 @@ Item {
         viewRotation: root.viewRotation
     }
 
-    // Ownship, pinned at the scope centre; nose up on a heading-up scope.
+    // Ownship, pinned at the scope centre; nose up on a heading-up scope. It
+    // holds its place through a turn, so its bank is the one thing on the
+    // scope that shows the turn as the pilot's own — the picture swinging
+    // round is what everyone else's looks like.
     Symbol {
         visible: root.showOwnship && root.observer
         x: root.centerX - width / 2
@@ -335,6 +338,7 @@ Item {
         symbolSize: root.symbolSize
         strokeWidth: root.symbolStrokeWidth
         noseAngle: root.headingUp ? 0 : (root.observer ? root.observer.heading : 0)
+        bankAngle: root.observer ? root.observer.bank : 0
         classification: root.observer ? root.observer.classification : Classification.Kind.Unknown
         side: root.observer ? root.observer.side : Side.Kind.Unknown
         showLabel: false

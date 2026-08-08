@@ -23,6 +23,11 @@ QtObject {
     property real posY: 0
     property real heading: 0
 
+    // Roll in degrees, positive right wing down: SystemMovement leans it into
+    // the turn off the same steer that swings the heading. Attitude only —
+    // nothing flies off it — it is what a mark of this entity leans by.
+    property real bank: 0
+
     // Ground speed in m/s: SystemMovement eases it toward what the throttle
     // commands and integrates the pose from it.
     property real speed: 0

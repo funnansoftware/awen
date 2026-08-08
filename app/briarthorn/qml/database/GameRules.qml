@@ -33,6 +33,13 @@ QtObject {
     readonly property real maxTurnRate: 24
     readonly property real maxAcceleration: 200
 
+    // The roll a turn is flown with: the bank (deg) full stick deflection
+    // leans an airframe over to, and the rate (deg/s) it rolls there and back
+    // level at. Attitude alone — a rating buys no part of it and nothing flies
+    // off it — so it is one lean for every airframe, tuned to taste.
+    readonly property real maxBank: 45
+    readonly property real bankRate: 90
+
     // durable buys survivability: hull integrity (hit points) and the fuel
     // capacity (units) of one airframe.
     readonly property real maxHealth: 200

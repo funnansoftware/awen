@@ -23,6 +23,15 @@ Item {
     // Rotation of the symbol's nose, degrees clockwise from the frame's up.
     property real noseAngle: 0
 
+    // The bank the outline leans by, degrees, positive right wing down.
+    property real bankAngle: 0
+
+    // How far the outline cants per degree of that bank. Straight overhead a
+    // roll only foreshortens the span, and it foreshortens it the same either
+    // way, so the mark also cants a fraction of the bank — the one part of the
+    // lean that says which way the craft went over.
+    readonly property real bankCant: 0.3
+
     // The containing view's rotation.
     property real viewRotation: 0
 
@@ -99,7 +108,6 @@ Item {
 
     ShapePolygon {
         anchors.fill: parent
-        rotation: root.noseAngle
         points: root.def.outline
         fillColor: Style.theme.windowBackground
         strokeColor: root.sideColor
@@ -108,6 +116,24 @@ Item {
         // limit and would chop flat, and the fighter's tips would spike past
         // the item bounds the views seat marks by.
         joinStyle: ShapePath.RoundJoin
+
+        // Roll first, in the mark's own axes — span across x, nose up the
+        // page — and turn the nose after: a transform list applies first to
+        // last, so the squash lands on the wings whatever heading the mark
+        // ends up drawn at. The rotation here is what the plain unbanked mark
+        // used to carry as its rotation property.
+        transform: [
+            Scale {
+                origin.x: root.width / 2
+                origin.y: root.height / 2
+                xScale: Math.cos(root.bankAngle * Math.PI / 180)
+            },
+            Rotation {
+                origin.x: root.width / 2
+                origin.y: root.height / 2
+                angle: root.noseAngle + root.bankAngle * root.bankCant
+            }
+        ]
     }
 
     // Counter-rotating frame: cancels the view rotation so the label reads
