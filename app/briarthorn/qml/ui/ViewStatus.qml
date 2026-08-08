@@ -103,6 +103,7 @@ Item {
         x: root.cx - width / 2
         y: root.cy - height / 2 - root.shortSide * 0.09
         symbolSize: root.shortSide * 0.24
+        bankAngle: root.ownship ? root.ownship.bank : 0
         classification: root.ownship ? root.ownship.classification : Classification.Kind.AircraftFighter
         side: root.ownship ? root.ownship.side : Side.Kind.Ownship
         showLabel: false
