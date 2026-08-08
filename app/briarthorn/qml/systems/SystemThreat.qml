@@ -4,10 +4,11 @@ import "../model"
 
 // Threat sensing and the defensive reflex: a mark pass pins the nearest
 // round inside each target's detection envelope onto its threatInbound —
-// the one inbound fact both the flare reflex below and SystemPersonality
-// read. A locked round threatens exactly its lock; an unlocked one — a
-// kinetic slug, or a guided round flying blind — threatens every opposed
-// entity that detects it, since nothing says where it will pass. Then every
+// the one inbound fact the flare reflex below, the pod that places its decoy
+// against that round and SystemPersonality all read. A locked round threatens
+// exactly its lock; an unlocked one — a kinetic slug, or a guided round
+// flying blind — threatens every opposed entity that detects it, since
+// nothing says where it will pass. Then every
 // entity carrying the threatReflex flag pops its flare once its marked round
 // closes inside threatRange, with a per-entity holdoff so consecutive pops
 // give each decoy a chance to steal the lock before the next one burns —

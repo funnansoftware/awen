@@ -57,10 +57,30 @@ Personality {
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
+                SwitchDecoy {
+                    present: true
+                    to: Names.stance.defeat
+                },
                 SwitchThreat {
                     present: false
                     within: 0.6
                     dwell: 1.5
+                    to: Names.stance.shadow
+                }
+            ]
+        },
+        // Riding the flare out: the decoy returns exactly what the craft
+        // does, so the round holds it only while the craft keeps opening the
+        // range. Run dead away from the decoy, cold, and back to shadowing
+        // once the round is off it.
+        Stance {
+            name: Names.stance.defeat
+            maneuver: Names.maneuver.flee
+            reference: Stance.Reference.Decoy
+            holdFire: true
+            switches: [
+                SwitchDecoy {
+                    present: false
                     to: Names.stance.shadow
                 }
             ]

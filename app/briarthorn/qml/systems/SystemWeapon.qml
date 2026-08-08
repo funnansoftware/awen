@@ -73,8 +73,11 @@ System {
 
     // The semi-active seeker: re-homes every tick on the loudest (lowest
     // stealth) opposed return the owner's radar illuminates, inside
-    // seekerRange. No return leaves the round flying straight; a destroyed
-    // owner drops the illumination gate (plain homing).
+    // seekerRange, and on the nearest of the returns that are equally loud —
+    // which is what a flare exploits, wearing its deployer's signature so the
+    // round takes whichever of the two it is closer to. No return leaves the
+    // round flying straight; a destroyed owner drops the illumination gate
+    // (plain homing).
     function seek(missile: Entity) {
         const w = missile.weapon;
         const best = root.bestReturn(missile, missile.owner, missile.side, w.def.seekerRange);
@@ -188,7 +191,9 @@ System {
     }
 
     // The loudest opposed live return within range of at, gated by the
-    // illuminator's radar cone; ties break to the nearest.
+    // illuminator's radar cone; ties break to the nearest — the tie a craft
+    // and its own flare are always in, so range alone decides between them
+    // and a pop only works while the deployer flies off the decoy.
     function bestReturn(at: Entity, illuminator: Entity, side: int, range: real): Entity {
         let best = null;
         let bestDist = 0;

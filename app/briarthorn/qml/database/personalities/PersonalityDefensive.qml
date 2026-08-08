@@ -60,10 +60,31 @@ Personality {
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
+                SwitchDecoy {
+                    present: true
+                    to: Names.stance.defeat
+                },
                 SwitchThreat {
                     present: false
                     within: 1
                     dwell: 3
+                    to: Names.stance.monitor
+                }
+            ]
+        },
+        // Working the flare it just popped: a decoy carries the same return
+        // as the craft, so the round stays on it only while the craft opens
+        // the range. Run dead away from the decoy, cold, and back to station
+        // once the round is off it — a fresh inbound is the personality's
+        // own switch to make, above.
+        Stance {
+            name: Names.stance.defeat
+            maneuver: Names.maneuver.flee
+            reference: Stance.Reference.Decoy
+            holdFire: true
+            switches: [
+                SwitchDecoy {
+                    present: false
                     to: Names.stance.monitor
                 }
             ]

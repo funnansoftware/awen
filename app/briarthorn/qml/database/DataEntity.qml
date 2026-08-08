@@ -15,6 +15,11 @@ Data {
     // 360 is an all-round sensor.
     property real radarFov: 360
 
+    // Whether instances are expendable decoys rather than craft or rounds:
+    // what a seeker can be seduced by, and what the deployer's behaviour
+    // flies away from while one of its own is holding a lock.
+    property bool decoy: false
+
     // The abilities instances carry, by registry name — the whole loadout an
     // airframe brings, turned into live AbilitySlots when one is created.
     property list<string> abilities

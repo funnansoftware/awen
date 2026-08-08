@@ -131,6 +131,11 @@ QtObject {
     readonly property real healthFrac: root.maxHealth > 0 ? Math.max(0, Math.min(1, root.health / root.maxHealth)) : 0
     readonly property real fuelFrac: root.maxFuel > 0 ? Math.max(0, Math.min(1, root.fuel / root.maxFuel)) : 0
 
+    // Whether this entity is an expendable decoy rather than a craft or a
+    // round: true of a popped flare, which wears its deployer's signature
+    // and so holds a seeker only while the deployer opens the range on it.
+    readonly property bool decoy: root.def ? root.def.decoy : false
+
     // The entity that launched or deployed this one; null for craft. Fuzes
     // ignore anything the owner also owns, the blast spares the owner and a
     // guided seeker sees only what the owner's radar illuminates.
