@@ -1,8 +1,10 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import awen.shapes
 import "../database"
 import "../model"
+import "../themes"
 
 // Renders a track picture: each Track plots at its true azimuth and range
 // about the scope centre, scaled by the projection's metres-to-pixels
@@ -40,6 +42,11 @@ Item {
     // minimap wants the plot, not the condition of everything on it.
     property bool showHealth: true
 
+    // The contact an armed weapon's seeker is holding, by track id; empty
+    // brackets nothing. Exactly one mark ever carries the reticle, so the
+    // scope answers "which one is the shot going to" without a legend.
+    property string lockedContact: ""
+
     // When positive, off-scale contacts clamp to this pixel radius (the outer
     // ring) instead of plotting beyond it, so ranging in seats a contact that
     // no longer fits at the edge rather than losing it off the display.
@@ -60,15 +67,32 @@ Item {
         angle: root.viewRotation
     }
 
-    // One contact's mark. The track guards cover the window between the
-    // sweep destroying a dropped track and the deferred teardown of its mark.
-    component Mark: Loader {
+    // The seeker's lock bracket: a screen-upright reticle standing off the one
+    // mark an armed weapon is holding, in the same colour the scope paints
+    // that weapon's envelope with.
+    readonly property Component lockMark: Component {
+        ShapeReticle {
+            gap: width * 0.3
+            armLength: width * 0.15
+            strokeColor: Style.theme.armValid
+            strokeWidth: Math.max(1.5, root.symbolStrokeWidth)
+        }
+    }
+
+    // One contact's mark: the classification symbol, plus the lock bracket on
+    // the one contact carrying it. An Item rather than the bare Loader the
+    // symbol loads into, because a Loader's default property is the component
+    // it loads and a second child could not sit beside it. The track guards
+    // cover the window between the sweep destroying a dropped track and the
+    // deferred teardown of its mark.
+    component Mark: Item {
         id: mark
 
         required property Track track
 
         readonly property real azimuth: mark.track ? mark.track.azimuth : 0
         readonly property real trueRange: mark.track ? mark.track.range * root.pxPerMeter : 0
+        readonly property bool locked: root.lockedContact !== "" && mark.track !== null && mark.track.contactId === root.lockedContact
 
         // Beyond the scale, and so clamped: the symbol steps out to its
         // seat past the clamp radius rather than plotting where it truly
@@ -99,11 +123,31 @@ Item {
 
         x: root.centerX + Geo.offsetX(mark.azimuth, mark.screenRange) - width / 2
         y: root.centerY + Geo.offsetY(mark.azimuth, mark.screenRange) - height / 2
+        // Sized by the symbol it carries, so the plot still seats the mark by
+        // its own extent and the clamp still steps it out by half of one.
+        width: symbol.width
+        height: symbol.height
 
-        // A contact classified as a countermeasure plots as a burning
-        // flare, no faction symbol or label — briardart skips the symbol
-        // the same way. Everything else keeps the classification mark.
-        sourceComponent: mark.track && mark.track.classification === Classification.Kind.Decoy ? mark.flareMark : mark.symbolMark
+        Loader {
+            id: symbol
+
+            // A contact classified as a countermeasure plots as a burning
+            // flare, no faction symbol or label — briardart skips the symbol
+            // the same way. Everything else keeps the classification mark.
+            sourceComponent: mark.track && mark.track.classification === Classification.Kind.Decoy ? mark.flareMark : mark.symbolMark
+        }
+
+        // The bracket, counter-rotated so it stands square to the screen the
+        // way the symbol's own label does, and loaded only on the locked mark
+        // — a dogfight plots far more contacts than it locks.
+        Loader {
+            anchors.centerIn: parent
+            width: mark.width * 2.1
+            height: width
+            rotation: -root.viewRotation
+            active: mark.locked
+            sourceComponent: root.lockMark
+        }
     }
 
     readonly property Component markFactory: Component {

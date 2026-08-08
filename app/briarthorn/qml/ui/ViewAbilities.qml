@@ -68,7 +68,9 @@ Row {
 
             label: button.modelData.def ? button.modelData.def.label : ""
             charges: button.modelData.charges
-            ready: button.modelData.ready
+            valid: button.modelData.valid
+            armed: button.modelData.armed
+            impediment: button.modelData.impediment
             cooling: button.modelData.cooling
 
             // The cap follows the device in the player's hands: the pad's own
@@ -82,6 +84,17 @@ Row {
             onTapped: if (button.modelData.def)
                 root.invoked(button.ability)
             onTouched: root.touched()
+
+            // The refusal beat is raised by the slot, not by the press: an
+            // invocation that reached it from a key or a pad button must
+            // answer on the rack just as a tap on the button does.
+            Connections {
+                target: button.modelData
+
+                function onRefused() {
+                    button.refuse();
+                }
+            }
         }
     }
 }

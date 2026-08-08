@@ -45,19 +45,12 @@ Store {
         onHandle: payload => root.ownship.commandedThrottle = GameRules.throttleFor(payload.value)
     }
 
-    // Ability invocation routes to the named slot; activation is a no-op
-    // while the slot is cooling or out of charges.
+    // Ability invocation routes to the named slot as a press: it fires where
+    // every check passes, holds the shot armed where one does not yet, stands
+    // an already-armed slot back down, and refuses an empty rack outright.
     CommandHandler {
         name: Verbs.ability
-        onHandle: payload => {
-            const slots = root.ownship.abilities;
-            for (let i = 0; i < slots.length; ++i) {
-                if (slots[i].def.name === payload.ability) {
-                    slots[i].activate();
-                    return;
-                }
-            }
-        }
+        onHandle: payload => root.ownship.invoke(payload.ability)
     }
 
     // Replaces the player's craft with a factory-fresh one — QML's

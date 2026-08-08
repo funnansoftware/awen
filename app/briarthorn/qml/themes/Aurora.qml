@@ -33,6 +33,13 @@ QtObject {
     // never reads as an alert.
     property color terrain: "#FFB86A38"
     property color terrainFill: "#FF2E1B0D"
+    // Launch authority: the armed weapon's envelope, its lock bracket and the
+    // rack's own state all read valid the moment the shot would fire, and
+    // invalid — the colour a refused control flashes — while it would not.
+    // Kept off the faction palette: this is the pilot's own weapon answering,
+    // not a contact's allegiance.
+    property color armValid: "#FF37E8A0"
+    property color armInvalid: "#FFFF8A3C"
     property color cursorFree: "#FFFFC23D"
     property color cursorLatched: "#FF6CFBFF"
     property color detonation: "#FFFF6FA8"

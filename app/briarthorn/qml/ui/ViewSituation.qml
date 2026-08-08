@@ -65,6 +65,19 @@ Item {
     readonly property real centerY: height * (0.5 + verticalShift)
     readonly property real pxPerMeter: projection ? projection.pixelsPerMeter(outerRadius) : 0
 
+    // The armed weapon's launch envelope, in metres of reach: the volume a
+    // contact has to sit inside for the shot to lock on and arrive. Drawn only
+    // while the pilot is holding a weapon armed — a reach of 0 is the
+    // disarmed scope and paints nothing — and painted valid the moment the
+    // seeker has a return, caution-coloured and breathing while it has none.
+    // This is the scope's own answer to "why will this not fire".
+    property real armedReach: 0
+    property bool armedValid: false
+
+    // The contact the armed weapon's seeker is holding, by track id; empty
+    // brackets nothing.
+    property string lockedContact: ""
+
     // Heading-up turns the whole picture so ownship's nose is 12 o'clock; false
     // leaves it north-up. The rotation the track picture carries.
     property bool headingUp: true
@@ -203,6 +216,51 @@ Item {
         }
     }
 
+    // The armed weapon's launch envelope, over the radar volume: the same
+    // shadow-cast wedge drawn at the round's own reach, so a pillar's shadow
+    // shows the shot it denies exactly as it shows the radar's blind arc, and
+    // a contact simply too far out plots visibly beyond the rim. Painted valid
+    // once the seeker holds a return and breathing in the caution colour while
+    // it holds none.
+    ShapeSectorOccluded {
+        id: envelope
+
+        // The breathing, read only while the shot is invalid — a valid
+        // envelope holds steady, so the property is never bound over the
+        // animation driving it.
+        property real pulse: 1
+
+        anchors.fill: parent
+        visible: root.armedReach > 0 && root.observer
+        centerX: root.centerX
+        centerY: root.centerY
+        angleAt: root.observer ? root.observer.heading : 0
+        angleSpan: root.observer ? root.observer.radarFov : 0
+        radius: root.observer ? Math.min(root.armedReach * root.pxPerMeter, root.outerRadius) : 0
+        sourceX: root.observer ? root.observer.posX : 0
+        sourceY: root.observer ? root.observer.posY : 0
+        positionScale: root.pxPerMeter
+        occluders: root.occluderRows
+        fillColor: Qt.alpha(root.armedValid ? Style.theme.armValid : Style.theme.armInvalid, 0.13)
+        strokeColor: root.armedValid ? Style.theme.armValid : Style.theme.armInvalid
+        strokeWidth: root.ringStrokeWidth
+        opacity: root.armedValid ? 1 : envelope.pulse
+
+        transform: Rotation {
+            origin.x: root.centerX
+            origin.y: root.centerY
+            angle: root.viewRotation
+        }
+
+        SequentialAnimation on pulse {
+            running: envelope.visible && !root.armedValid
+            loops: Animation.Infinite
+
+            NumberAnimation { from: 1; to: 0.25; duration: 300 }
+            NumberAnimation { from: 0.25; to: 1; duration: 300 }
+        }
+    }
+
     // The arena terrain, over the rings and cone but under everything that
     // flies. Culled to the backing disc where one masks the picture, so a
     // pillar never spills past the minimap onto the scope beneath.
@@ -248,6 +306,7 @@ Item {
         tracks: root.tracks
         symbolSize: root.symbolSize
         symbolStrokeWidth: root.symbolStrokeWidth
+        lockedContact: root.lockedContact
         showLabels: root.showTrackLabels
         showHealth: root.showTrackHealth
         clampRadius: root.gutterClamp ? root.outerRadius : 0

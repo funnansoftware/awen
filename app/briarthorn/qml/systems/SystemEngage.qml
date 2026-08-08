@@ -48,10 +48,12 @@ System {
     }
 
     // Raises the named launch on its ready slot, winding the pacing back up.
+    // A slot already holding a shot armed is left alone: it fires itself the
+    // tick its lock appears, and asking again would only re-pace it.
     function fire(entity: Entity) {
         for (let i = 0; i < entity.abilities.length; ++i) {
             const slot = entity.abilities[i];
-            if (slot.def.name === root.ability && slot.ready) {
+            if (slot.def.name === root.ability && slot.ready && !slot.armed) {
                 slot.activate();
                 entity.engageTimer = entity.engageHoldoff;
                 return;

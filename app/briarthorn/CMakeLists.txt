@@ -110,6 +110,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/TouchAbilities.qml
         qml/ui/TouchArrow.qml
         qml/ui/ViewAbilities.qml
+        qml/ui/ViewArming.qml
         qml/ui/ViewEnd.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
