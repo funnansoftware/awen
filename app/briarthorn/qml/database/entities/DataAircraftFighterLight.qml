@@ -8,13 +8,14 @@ DataAircraftFighter {
     id: root
 
     classification: Classification.Kind.AircraftFighterLight
+    radarFov: 90
 
     stats: Stats {
-        kinetic: 2.5 // 250 m/s against the stock fighter's 300
-        maneuver: 4 // 9.6 deg/s against its 12
+        kinetic: 4.5
+        maneuver: 6
         durable: 5
         compute: 6
-        sensor: 5
+        sensor: 6
         stealth: 5
     }
 

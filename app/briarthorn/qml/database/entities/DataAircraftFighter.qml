@@ -13,14 +13,14 @@ DataEntity {
 
     // A +/- 60 degree radar cone: it has to point at what it wants to see, and
     // a semi-active round of its own only tracks what it keeps inside this.
-    radarFov: 120
+    radarFov: 90
 
     stats: Stats {
-        kinetic: 3 // 300 m/s, burning 0.3 units/s at cruise
-        maneuver: 5 // 12 deg/s and 100 m/s^2
-        durable: 5 // 100 hp on 200 units of fuel
+        kinetic: 5
+        maneuver: 7
+        durable: 5
         compute: 6
-        sensor: 5 // a 60 km radar
+        sensor: 6
         stealth: 5
     }
 

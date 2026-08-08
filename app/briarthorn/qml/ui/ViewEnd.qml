@@ -1,5 +1,4 @@
 import QtQuick
-import "../model"
 import "../systems"
 import "../themes"
 

@@ -17,19 +17,19 @@ DataWeapon {
     stats: Stats {
         kinetic: 8
         maneuver: 6
-        durable: 1 // 20 hp
-        compute: 6 // a 90 km seeker
+        durable: 1
+        compute: 6
         sensor: 6
-        stealth: 8 // a small, quiet return
+        stealth: 8
     }
 
     // No motor boost: it cruises at the airframe speed its kinetic rating
     // buys, and over 24 s of flight that is ~19 km of reach.
     speedMultiplier: 1
-    duration: 24
+    duration: 64
     guided: true
 
-    fuzeRange: 500
+    fuzeRange: 1000
     fuzeTime: 0.3
     damage: 55
     blastRadius: 900

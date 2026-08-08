@@ -18,6 +18,12 @@ Scenario {
     // The player's craft, for the bandit to pursue; the game store owns it.
     required property Entity ownship
 
+    // Where the player opens the duel: due south of the merge, mirroring the
+    // bandit's seat, so the two start the same distance off the origin.
+    readonly property real ownshipPosX: 3000
+    readonly property real ownshipPosY: 75000
+    readonly property real ownshipHeading: 0
+
     // The downrated airframe, so the duel is winnable, with its rack's flare
     // pod halved on top — a full pod outlasts the player's patience. The
     // scenario points the target; the personality decides how to fight it,
@@ -29,8 +35,8 @@ Scenario {
         // Seated a shade east of true north: the closing line to the merge
         // then passes the north pillar with kilometres to spare, where the
         // axis itself would fly the pursuit straight into it.
-        posX: 10000
-        posY: -64000
+        posX: root.ownshipPosX
+        posY: -root.ownshipPosY
         heading: 180
         personality: Names.personality.duelist
         engageTarget: root.ownship
@@ -84,10 +90,17 @@ Scenario {
 
     // Replaces the bandit with a factory-fresh one — QML's constructor — so a
     // duel entered from the menu always opens the same fight, with nothing to
-    // restore field by field. The caller re-enrolls the scenario's entities.
+    // restore field by field, and seats the player's craft at its opening
+    // mark. Ownship is the store's, rebuilt just before this runs, so its
+    // initial conditions are set here rather than declared on a spawn site.
+    // The caller re-enrolls the scenario's entities.
     function reset() {
         const spent = root.bandit;
         root.bandit = root.banditFactory.createObject(root) as Entity;
         spent.destroy();
+
+        root.ownship.posX = root.ownshipPosX;
+        root.ownship.posY = root.ownshipPosY;
+        root.ownship.heading = root.ownshipHeading;
     }
 }
