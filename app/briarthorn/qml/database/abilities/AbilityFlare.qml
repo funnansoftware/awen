@@ -3,7 +3,7 @@ import awen.gamepad
 import ".."
 
 // The flare pod: ten decoys, popped one at a time off no cooldown, each
-// thrown 2 km astern and burning there for ten seconds.
+// thrown 2 km toward the round it answers and burning there for ten seconds.
 AbilityCountermeasure {
     id: root
 

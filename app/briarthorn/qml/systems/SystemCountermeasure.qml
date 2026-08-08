@@ -3,9 +3,11 @@ import "../database"
 import "../model"
 
 // Countermeasures, ported from briardart: consumes raised countermeasure
-// intents into same-side decoy entities astern of the deployer — the decoy
-// kind's own row makes it the loudest possible return, so a hostile seeker
-// re-homes on it instead — and ages each decoy out again. Runs after
+// intents into same-side decoy entities placed between the deployer and the
+// round marked inbound on it — each one wearing the deployer's own signature,
+// so a hostile seeker cannot pick between the two by loudness and re-homes on
+// whichever is nearer, the decoy for exactly as long as the deployer keeps
+// opening the range on it — and ages each decoy out again. Runs after
 // SystemWeapon, so a popped flare is in play from the next tick.
 System {
     id: root
@@ -36,16 +38,28 @@ System {
                 // cool in zero seconds, but the slot is what holds the rule.
                 slot.charges = slot.charges > 0 ? slot.charges - 1 : slot.charges;
                 slot.cooldownRemaining = slot.def.cooldown;
-                // Thrown astern, so the decoy lands between the deployer and
-                // the round chasing it and the range only opens from there.
-                const astern = Geo.reciprocal(carrier.heading);
+                // Thrown at the round it answers, so the decoy lands between
+                // the two and is the nearer of the matching returns from the
+                // moment it burns; where it goes from there is the deployer's
+                // business. Popped at a clear sky it goes astern instead —
+                // the doctrine when there is nothing to place it against.
+                // Always the pod's full eject range, whatever the aspect, so
+                // the deployer keeps its clearance from the warhead.
+                const inbound = carrier.threatInbound;
+                const bearing = inbound !== null ? Geo.bearing(carrier, inbound) : Geo.reciprocal(carrier.heading);
                 const decoy = root.world.spawn("CM", slot.def.decoy, {
                     side: carrier.side,
                     owner: carrier,
-                    posX: carrier.posX + Geo.offsetX(astern, slot.def.ejectRange),
-                    posY: carrier.posY + Geo.offsetY(astern, slot.def.ejectRange),
+                    posX: carrier.posX + Geo.offsetX(bearing, slot.def.ejectRange),
+                    posY: carrier.posY + Geo.offsetY(bearing, slot.def.ejectRange),
                     heading: carrier.heading
                 });
+                // The whole trick, written after the spawn so it lands on top
+                // of the kind's own rating instead of under it: the flare
+                // returns exactly what the craft that popped it does, leaving
+                // a seeker only range to tell the two apart. Copied at the
+                // pop, not bound — what it imitates is the craft it left.
+                decoy.stealth = carrier.stealth;
                 root.flares.push({
                     entity: decoy,
                     life: slot.def.life

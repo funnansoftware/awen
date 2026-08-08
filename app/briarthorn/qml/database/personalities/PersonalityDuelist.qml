@@ -2,9 +2,10 @@ import ".."
 
 // Fights one exchange at a time: presses to fire, then cranks — trigger held,
 // target ridden at the cone's edge — until the round in flight dies, so no
-// magazine ever streams. Beams genuine inbounds early enough to watch, breaks
-// off dry, and opens a too-close merge back out to launch distance rather
-// than wasting a round that cannot make its turn.
+// magazine ever streams. Beams genuine inbounds early enough to watch, flies
+// its flares off once one bites, breaks off dry, and opens a too-close merge
+// back out to launch distance rather than wasting a round that cannot make
+// its turn.
 Personality {
     name: Names.personality.duelist
 
@@ -66,10 +67,37 @@ Personality {
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
+                SwitchDecoy {
+                    present: true
+                    to: Names.stance.defeat
+                },
                 SwitchThreat {
                     present: false
                     within: 0.45
                     dwell: 0.5
+                    to: Names.stance.press
+                }
+            ]
+        },
+        // Selling the flare: the decoy wears the same return as the craft, so
+        // the seeker keeps whichever it is nearer to — beaming from here
+        // would only walk the craft back into that comparison. Run dead away
+        // from the decoy, cold, until the round is off it; a fresh inbound is
+        // worth more than an old flare and takes the stance back.
+        Stance {
+            name: Names.stance.defeat
+            maneuver: Names.maneuver.flee
+            reference: Stance.Reference.Decoy
+            holdFire: true
+            switches: [
+                SwitchThreat {
+                    present: true
+                    within: 0.45
+                    dwell: 0.3
+                    to: Names.stance.guard
+                },
+                SwitchDecoy {
+                    present: false
                     to: Names.stance.press
                 }
             ]

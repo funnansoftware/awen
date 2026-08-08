@@ -8,7 +8,8 @@ QtObject {
 
     enum Reference {
         Target,
-        Threat
+        Threat,
+        Decoy
     }
 
     property string name: ""
@@ -17,8 +18,9 @@ QtObject {
     // last commands standing.
     property string maneuver: ""
 
-    // What the maneuver flies against: the engage target, or the inbound
-    // round — which falls back to the target while the sky is clear.
+    // What the maneuver flies against: the engage target, the inbound round,
+    // or the entity's own decoy a round is riding — the latter two falling
+    // back to the target while there is no round and no seduced flare.
     property int reference: Stance.Reference.Target
 
     // Fraction of the envelope below priced onto the maneuver's standoff;

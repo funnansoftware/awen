@@ -10,8 +10,8 @@ import "../model"
 // past sensor range so it opens as an Unknown contact. Pure initial
 // conditions — the bandit's declaration carries its behaviour aspects
 // (press to fire, crank behind the round in flight, beam inbounds, flare at
-// them) and the shared systems do the rest; this scenario loads nothing of
-// its own.
+// them and run off the flare once one bites) and the shared systems do the
+// rest; this scenario loads nothing of its own.
 Scenario {
     id: root
 

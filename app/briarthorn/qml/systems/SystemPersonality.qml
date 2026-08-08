@@ -76,7 +76,8 @@ System {
     }
 
     // One priced fact sheet per entity per tick: every span an envelope,
-    // never a raw metre. threat reads the mark SystemThreat pinned.
+    // never a raw metre. threat reads the mark SystemThreat pinned, decoy
+    // the flare of the entity's own that a round is riding.
     function situationOf(entity: Entity): var {
         const target = entity.engageTarget;
         return {
@@ -87,6 +88,7 @@ System {
             targetReach: target !== null ? target.weaponReach : 0,
             threat: entity.threatInbound,
             threatRange: entity.threatInbound !== null ? Geo.distance(entity, entity.threatInbound) : Infinity,
+            decoy: root.seducedOf(entity),
             // A hull never given health is unkillable, so it is never hurt.
             healthFrac: entity.maxHealth > 0 ? entity.health / entity.maxHealth : 1,
             rounds: root.roundsOf(entity),
@@ -103,6 +105,24 @@ System {
                 return true;
         }
         return false;
+    }
+
+    // The decoy of the entity's own that a round is currently locked on —
+    // the pop that took. A seduced flare wears the same signature as the
+    // craft that popped it, so the seeker holds whichever of the two it is
+    // nearer: the flare keeps the round only while its deployer flies away
+    // from it, and that is the one fact a defeating stance needs. Null once
+    // the round is off it, burnt out, killed or gone.
+    function seducedOf(entity: Entity): Entity {
+        for (let i = 0; i < root.entities.length; ++i) {
+            const round = root.entities[i];
+            if (round.weapon === null || round.weapon.target === null)
+                continue;
+            const lock = round.weapon.target;
+            if (lock.decoy && lock.owner === entity)
+                return lock;
+        }
+        return null;
     }
 
     // Rounds left across the launch rack; any unlimited slot reads Infinity.
@@ -171,7 +191,7 @@ System {
         const mind = entity.mind;
         const stance = mind.stance;
         const current = mind.maneuverFor(stance);
-        const reference = stance.reference === Stance.Reference.Threat && s.threat !== null ? s.threat : s.target;
+        const reference = root.referenceOf(stance, s);
         for (let i = 0; i < mind.maneuvers.length; ++i) {
             const m = mind.maneuvers[i];
             if (m !== null)
@@ -187,5 +207,16 @@ System {
         }
         entity.engageHold = stance.holdFire;
         entity.engageHoldoff = stance.holdoff >= 0 ? stance.holdoff : mind.baseHoldoff;
+    }
+
+    // What the stance's maneuver flies against: the inbound round or the
+    // seduced decoy where the stance names one, the engage target both as
+    // the default and as the fallback while there is neither.
+    function referenceOf(stance: Stance, s: var): Entity {
+        if (stance.reference === Stance.Reference.Threat && s.threat !== null)
+            return s.threat;
+        if (stance.reference === Stance.Reference.Decoy && s.decoy !== null)
+            return s.decoy;
+        return s.target;
     }
 }

@@ -510,7 +510,7 @@ Window {
         // the same ability record those bindings post — no second invocation
         // path. A thumb landing on one hands the HUD back to the touch
         // controls. Docked in the corner rather than centred: the scope's
-        // centre column carries ownship, its pulse, the decoys astern and the
+        // centre column carries ownship, its pulse, the decoys it pops and the
         // pursuer's sector, and the rack is captions and clocks, so it is what
         // gives way.
         ViewAbilities {

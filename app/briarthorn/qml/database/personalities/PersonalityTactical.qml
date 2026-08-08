@@ -76,10 +76,30 @@ Personality {
             reference: Stance.Reference.Threat
             holdFire: true
             switches: [
+                SwitchDecoy {
+                    present: true
+                    to: Names.stance.defeat
+                },
                 SwitchThreat {
                     present: false
                     within: 0.4
                     dwell: 1
+                    to: Names.stance.advance
+                }
+            ]
+        },
+        // Cashing the pop: a decoy is the same return as the craft that left
+        // it, so the round stays on it only while the range to it opens. Run
+        // dead away from the decoy, cold, and rejoin the band once the round
+        // is off it — a fresh inbound is the personality's own switch, above.
+        Stance {
+            name: Names.stance.defeat
+            maneuver: Names.maneuver.flee
+            reference: Stance.Reference.Decoy
+            holdFire: true
+            switches: [
+                SwitchDecoy {
+                    present: false
                     to: Names.stance.advance
                 }
             ]

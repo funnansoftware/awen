@@ -41,6 +41,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/Stats.qml
         qml/database/Switch.qml
         qml/database/SwitchAmmoOut.qml
+        qml/database/SwitchDecoy.qml
         qml/database/SwitchHealth.qml
         qml/database/SwitchOutbound.qml
         qml/database/SwitchRange.qml
