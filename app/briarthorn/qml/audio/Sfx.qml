@@ -1,15 +1,16 @@
 pragma Singleton
 
 import QtCore
-import QtMultimedia
 import QtQuick
 
-// The interface's voice: one short cue per navigation event, played through
-// SoundEffect because a menu tick has to land on the frame that caused it —
-// MediaPlayer decodes first and arrives a beat late. A singleton because a cue
-// outlives the control that fires it: DUEL tears the launch screen down inside
-// the very handler that plays the press, and an effect owned by that screen
-// would be destroyed mid-sound.
+// The interface's voice: one short cue per navigation event. A singleton
+// because a cue outlives the control that fires it: DUEL tears the launch screen
+// down inside the very handler that plays the press, and a voice owned by that
+// screen would be destroyed mid-sound.
+//
+// How a cue actually sounds is Cue's business, and which Cue this build got is
+// CMake's — the browser is given a silent one, so nothing here imports
+// QtMultimedia and nothing above here tests for a platform.
 //
 // The cues are Kenney's CC0 interface pack, renamed to the role each one plays;
 // see ../../assets/audio/README.md, which is also where the reason they are
@@ -53,60 +54,11 @@ QtObject {
         volume: 0.45
     }
 
-    // One cue and the small pool of voices it speaks through.
-    //
-    // A SoundEffect is a single voice: play() landing on one that is still
-    // sounding restarts it from the top, which cuts the waveform mid-flight.
-    // That is both faults at once — the cue that went missing when the cursor
-    // moved on quickly, and the click heard in its place, because an abrupt cut
-    // is a step edge like any other. Walking a pool instead lets a fast run down
-    // a menu overlap its own cues, and only a run long enough to use every voice
-    // takes one back.
-    //
-    // The voices share one decoded sample: QSampleCache keys on the URL, so the
-    // pool costs four small objects and no extra audio.
-    component Cue: QtObject {
-        id: cue
-
-        required property url source
-        property real volume: 1
-
-        // Where the search for a free voice starts, so a busy pool hands out
-        // the voice that has been sounding longest rather than the same one.
-        property int turn: 0
-
-        readonly property list<SoundEffect> voices: [
-            SoundEffect {
-                source: cue.source
-                volume: cue.volume
-            },
-            SoundEffect {
-                source: cue.source
-                volume: cue.volume
-            },
-            SoundEffect {
-                source: cue.source
-                volume: cue.volume
-            },
-            SoundEffect {
-                source: cue.source
-                volume: cue.volume
-            }
-        ]
-
-        function play() {
-            for (let i = 0; i < cue.voices.length; ++i) {
-                const free = cue.voices[(cue.turn + i) % cue.voices.length];
-                if (!free.playing) {
-                    free.play();
-                    cue.turn = (cue.turn + i + 1) % cue.voices.length;
-                    return;
-                }
-            }
-            cue.voices[cue.turn].play();
-            cue.turn = (cue.turn + 1) % cue.voices.length;
-        }
-    }
+    // Whether this build can sound anything: the browser's Cue is a stub, and a
+    // settings page that offered a switch there would be offering to silence
+    // silence. Read off one cue because all three are the same implementation —
+    // which one is arbitrary, that they agree is not.
+    readonly property bool available: root.navigateCue.available
 
     function navigate() {
         if (root.enabled)

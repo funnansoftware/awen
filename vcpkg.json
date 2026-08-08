@@ -37,9 +37,10 @@
                     "platform": "!emscripten"
                 },
                 {
-                    "$comment": "QtMultimedia backs briarthorn's interface cues through QSoundEffect, which lives in the module's core and decodes WAV itself. default-features off drops ffmpeg and the multimedia widgets with it: no media backend is needed to play an uncompressed effect, and ffmpeg is by far the heaviest thing in this manifest. pulseaudio is the audio sink on linux — the port offers no ALSA, so without it QAudioSink has no device to open.",
+                    "$comment": "QtMultimedia backs briarthorn's interface cues through QSoundEffect, which lives in the module's core and decodes WAV itself. default-features off drops ffmpeg and the multimedia widgets with it: no media backend is needed to play an uncompressed effect, and ffmpeg is by far the heaviest thing in this manifest. pulseaudio is the audio sink on linux — the port offers no ALSA, so without it QAudioSink has no device to open. Excluded on emscripten to match the prebuilt path, which has no choice: Qt ships QtMultimedia for the multithreaded wasm kit only and this build is single-threaded, so the browser takes the silent Cue either way.",
                     "name": "qtmultimedia",
                     "default-features": false,
+                    "platform": "!emscripten",
                     "features": [
                         "qml",
                         {

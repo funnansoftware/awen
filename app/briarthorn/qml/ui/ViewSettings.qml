@@ -60,11 +60,12 @@ Item {
                 slot: null,
                 audio: false
             });
-        list.push({
-            theme: null,
-            slot: null,
-            audio: true
-        });
+        if (Sfx.available)
+            list.push({
+                theme: null,
+                slot: null,
+                audio: true
+            });
         for (let i = 0; i < root.loadout.length; ++i)
             list.push({
                 theme: null,
@@ -76,8 +77,11 @@ Item {
 
     // Where each section starts, so its delegate can name its own place in the
     // flat list: every palette, then the single audio switch, then the bindings.
+    // The browser has no audio to switch, so there the section is absent and the
+    // bindings move up — one expression for both, rather than a row that is
+    // merely invisible and still holds an index the cursor can land on.
     readonly property int audioRow: Style.themes.length
-    readonly property int bindingBase: root.audioRow + 1
+    readonly property int bindingBase: root.audioRow + (Sfx.available ? 1 : 0)
 
     // The ability under the cursor, empty on a display row: every verb that acts
     // on a binding reads it, so those rows refuse them all without a test of
@@ -247,10 +251,12 @@ Item {
             }
 
             Section {
+                visible: Sfx.available
                 text: qsTr("AUDIO")
             }
 
             AudioRow {
+                visible: Sfx.available
                 width: column.width
                 rowIndex: root.audioRow
             }
