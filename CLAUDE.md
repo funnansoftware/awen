@@ -29,6 +29,11 @@ assembles the APK).
   rest of the repo is MIT). The `Briarthorn` QML module (`qml/Main.qml`); the
   game is implemented in QML. `qml/database/` holds the static definitions and
   `qml/model/` the live state they seed — see the database section below.
+  `qml/themes/` is the same registry shape: one `Theme` row per file listing
+  every colour role, registered in the single list on the `Style` singleton,
+  which resolves and persists the player's choice. Every role defaults to a
+  sentinel magenta, so a palette that forgets one shows it rather than
+  inheriting another palette's colour.
 - `cmake/preset/` — composable presets; `cmake/triplets/` — overlay triplets
   (qt ports dynamic, everything else static; dependencies release-only, except
   the dual-config `x64-windows` triplet the windows debug preset needs).
@@ -128,7 +133,7 @@ the database imports nothing back.
   `CMakeLists.txt`, and its name in a `DataEntity.abilities` list. `Main.qml`
   builds one axis, key binding, pad binding and command per carried slot off the
   loadout, so it needs no edit at all — and `qml/input/Keymap.qml` is what the
-  controls page rebinds, seeded from those defaults and stored as a diff.
+  settings page rebinds, seeded from those defaults and stored as a diff.
 - **A press never fails silently — it arms.** `AbilitySlot` rates its own
   invocation: `valid` is the whole "this would fire right now" test and
   `impediment` names the one thing stopping it. A press that passes fires, a

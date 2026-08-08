@@ -16,11 +16,11 @@ Item {
 
     // Fired by the menu's actions; Main owns what they do.
     signal duel
-    signal controls
+    signal settingsRequested
     signal exitGame
 
     // Which device the player is driving with; the menu's keys report in, as
-    // the controls page's do.
+    // the settings page's do.
     required property ActiveDevice device
 
     // The pad/keyboard cursor over the actions. Mouse hover is independent,
@@ -40,9 +40,9 @@ Item {
                 act: () => root.duel()
             },
             {
-                label: qsTr("CONTROLS"),
+                label: qsTr("SETTINGS"),
                 primary: false,
-                act: () => root.controls()
+                act: () => root.settingsRequested()
             }
         ];
         if (Qt.platform.os !== "wasm") {
@@ -113,7 +113,7 @@ Item {
     }
 
     // The pad's whole vocabulary here; Main hands buttons over while the
-    // menu is up, as it does for the controls page.
+    // menu is up, as it does for the settings page.
     function padPressed(button: int) {
         switch (button) {
         case Gamepad.Button.DpadUp:
@@ -147,7 +147,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible: !root.wide
-        color: "#CC05080D"
+        color: Qt.alpha(Style.theme.windowBackground, 0.8)
     }
 
     // Title block, top-centre in the clear band above the wide picture.

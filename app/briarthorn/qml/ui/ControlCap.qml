@@ -25,7 +25,7 @@ Rectangle {
     property bool waiting: false
     property bool displaced: false
 
-    // The narrowest the cap may draw. The controls page pins a floor under it
+    // The narrowest the cap may draw. The settings page pins a floor under it
     // so a row does not reflow as the player rebinds; an ability button, where
     // the cap is a hint over a caption, lets it shrink to its text.
     property real minimumWidth: 64

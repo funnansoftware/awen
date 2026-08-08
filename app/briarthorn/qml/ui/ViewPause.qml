@@ -7,7 +7,7 @@ MenuPage {
     id: root
 
     signal resumed
-    signal controls
+    signal settingsRequested
     signal toMenu
     signal exitGame
 
@@ -24,9 +24,9 @@ MenuPage {
                 act: () => root.resumed()
             },
             {
-                label: qsTr("CONTROLS"),
+                label: qsTr("SETTINGS"),
                 primary: false,
-                act: () => root.controls()
+                act: () => root.settingsRequested()
             },
             {
                 label: qsTr("MAIN MENU"),
