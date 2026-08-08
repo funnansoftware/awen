@@ -3,16 +3,18 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import awen.gamepad
 import awen.input
+import "../audio"
 import "../input"
 import "../model"
 import "../themes"
 
-// The settings page: the palette the game draws in, then one row per ability the
-// flown craft carries, showing the key and the controller button that invoke it
-// and rebound by picking a cap and pressing the control you want. Full-bleed and
-// opaque, because the duel is stopped behind it, scrolling because a phone in
-// landscape has room for about three rows, and driveable from a pad, so a
-// controller player can reach every row without a keyboard.
+// The settings page: the palette the game draws in, whether the interface makes
+// a sound, then one row per ability the flown craft carries, showing the key and
+// the controller button that invoke it and rebound by picking a cap and pressing
+// the control you want. Full-bleed and opaque, because the duel is stopped
+// behind it, scrolling because a phone in landscape has room for about three
+// rows, and driveable from a pad, so a controller player can reach every row
+// without a keyboard.
 //
 // A sibling of the game scene rather than a child: a key it declines bubbles to
 // the window instead of falling sideways into the scene's handler. Main owns
@@ -55,19 +57,27 @@ Item {
         for (let i = 0; i < Style.themes.length; ++i)
             list.push({
                 theme: Style.themes[i],
-                slot: null
+                slot: null,
+                audio: false
             });
+        list.push({
+            theme: null,
+            slot: null,
+            audio: true
+        });
         for (let i = 0; i < root.loadout.length; ++i)
             list.push({
                 theme: null,
-                slot: root.loadout[i]
+                slot: root.loadout[i],
+                audio: false
             });
         return list;
     }
 
-    // Where the binding rows start, so each section's delegate can name its own
-    // place in the flat list.
-    readonly property int themeCount: Style.themes.length
+    // Where each section starts, so its delegate can name its own place in the
+    // flat list: every palette, then the single audio switch, then the bindings.
+    readonly property int audioRow: Style.themes.length
+    readonly property int bindingBase: root.audioRow + 1
 
     // The ability under the cursor, empty on a display row: every verb that acts
     // on a binding reads it, so those rows refuse them all without a test of
@@ -119,7 +129,7 @@ Item {
             break;
         case Qt.Key_Escape:
         case Qt.Key_Back:
-            root.closed();
+            root.dismiss();
             break;
         default:
             break;
@@ -237,6 +247,15 @@ Item {
             }
 
             Section {
+                text: qsTr("AUDIO")
+            }
+
+            AudioRow {
+                width: column.width
+                rowIndex: root.audioRow
+            }
+
+            Section {
                 text: qsTr("CONTROLS")
             }
 
@@ -249,7 +268,7 @@ Item {
 
                     width: column.width
                     slot: modelData
-                    rowIndex: root.themeCount + index
+                    rowIndex: root.bindingBase + index
                 }
             }
         }
@@ -277,7 +296,7 @@ Item {
 
             Choice {
                 text: qsTr("DONE")
-                onTapped: root.closed()
+                onTapped: root.dismiss()
             }
         }
 
@@ -327,8 +346,11 @@ Item {
 
         MouseArea {
             anchors.fill: parent
+            // A click that acts presses; it does not also tick for the row it
+            // landed on, which would put two cues on one gesture.
             onClicked: {
                 root.select(row.rowIndex);
+                Sfx.press();
                 Style.select(row.theme.name);
             }
         }
@@ -409,6 +431,35 @@ Item {
         color: swatch.tint
     }
 
+    // The interface's own voice, on or off — the same shape of choice a palette
+    // is, and so the same shape of row. It sits above the bindings because the
+    // cues it governs are what every row on this page answers with.
+    component AudioRow: PageRow {
+        id: row
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                root.select(row.rowIndex);
+                root.toggleAudio();
+            }
+        }
+
+        Text {
+            text: qsTr("INTERFACE SOUND")
+            color: row.selected ? Style.theme.textBright : Style.theme.textPrimary
+            anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+            font { pixelSize: 14; bold: true; letterSpacing: Style.theme.capsTracking }
+        }
+
+        Text {
+            text: Sfx.enabled ? qsTr("ON") : qsTr("OFF")
+            color: Sfx.enabled ? Style.theme.accent : Style.theme.textMuted
+            anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
+            font { pixelSize: 14; bold: true; letterSpacing: Style.theme.capsTracking; family: Style.monospace }
+        }
+    }
+
     // One ability's row: its label and one cap per device, either of which is
     // the hit target for a rebind. The whole row selects on touch.
     component BindingRow: PageRow {
@@ -419,7 +470,8 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: root.select(row.rowIndex)
+            // Selection only, so this one ticks rather than presses.
+            onClicked: root.pick(row.rowIndex)
         }
 
         Text {
@@ -465,6 +517,7 @@ Item {
             anchors.fill: parent
             onClicked: {
                 root.select(cap.rowIndex);
+                Sfx.press();
                 root.capture(cap.ability, cap.pad);
             }
         }
@@ -501,21 +554,54 @@ Item {
     }
 
     // Clamped rather than wrapped: one press at the bottom of a scrolling list
-    // would otherwise throw the cursor and the viewport back to the top.
+    // would otherwise throw the cursor and the viewport back to the top. A
+    // press into the clamp arrives nowhere new, and so says nothing.
     function move(delta: int) {
-        root.select(Math.max(0, Math.min(root.rows.length - 1, root.cursor + delta)));
+        root.pick(Math.max(0, Math.min(root.rows.length - 1, root.cursor + delta)));
+    }
+
+    // Navigation's way onto a row — the cue belongs to arriving somewhere new,
+    // so landing on the row already under the cursor stays quiet. select()
+    // itself has to stay silent: the page's own open and its rebuild on a fresh
+    // loadout both call it, and neither is the player moving.
+    function pick(index: int) {
+        if (index === root.cursor)
+            return;
+        Sfx.navigate();
+        root.select(index);
     }
 
     // Enter, or the pad's A, on the highlighted row: a display row takes its
-    // palette, a binding row starts waiting for a control.
+    // palette, the audio row flips the cues, a binding row starts waiting for a
+    // control.
     function chose(pad: bool) {
         const row = root.rows[root.cursor];
         if (!row)
             return;
-        if (row.theme)
+        if (row.theme) {
+            Sfx.press();
             Style.select(row.theme.name);
-        else
+        } else if (row.audio) {
+            root.toggleAudio();
+        } else {
+            Sfx.press();
             root.capture(root.ability, pad);
+        }
+    }
+
+    // Sounded after the flip rather than before it: switching on is the one
+    // press whose confirmation has not been heard yet, and switching off should
+    // simply go quiet.
+    function toggleAudio() {
+        Sfx.setEnabled(!Sfx.enabled);
+        Sfx.press();
+    }
+
+    // The one way out, so the cue and the signal cannot drift apart as the
+    // three routes to it (Escape, pad East/Start, DONE) are edited.
+    function dismiss() {
+        Sfx.back();
+        root.closed();
     }
 
     function capture(name: string, pad: bool) {
@@ -536,19 +622,25 @@ Item {
         if (root.capturing === "")
             return false;
         if (pad ? code === Gamepad.Button.East : code === Qt.Key_Escape) {
+            Sfx.back();
             root.capturing = "";
             return true;
         }
         if (pad !== root.capturingPad)
             return true;
-        if (root.keymap.bind(root.capturing, pad, code))
+        // Only a binding the keymap took is sounded; one it refuses leaves the
+        // row still waiting, and a press cue would read as though it landed.
+        if (root.keymap.bind(root.capturing, pad, code)) {
+            Sfx.press();
             root.capturing = "";
+        }
         return true;
     }
 
     // Two presses, because it throws away every rebind and there is no undo. A
     // page-wide action rather than a row's, so it answers from any row.
     function resetAll() {
+        Sfx.press();
         if (root.resetArmed) {
             root.keymap.reset();
             root.resetArmed = false;
@@ -557,8 +649,13 @@ Item {
         root.resetArmed = true;
     }
 
+    // Nothing to clear on a display or audio row, and nothing said about it:
+    // a cue here would report a binding wiped that was never there.
     function clearRow() {
         const name = root.ability;
+        if (name === "")
+            return;
+        Sfx.press();
         root.keymap.unbind(name, false);
         root.keymap.unbind(name, true);
     }
@@ -586,7 +683,7 @@ Item {
             break;
         case Gamepad.Button.East:
         case Gamepad.Button.Start:
-            root.closed();
+            root.dismiss();
             break;
         default:
             break;

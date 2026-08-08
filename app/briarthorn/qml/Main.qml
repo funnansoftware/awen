@@ -9,6 +9,7 @@ import awen.command
 import awen.entity
 import awen.gamepad
 import awen.input
+import "audio"
 import "commands"
 import "input"
 import "model"
@@ -88,6 +89,9 @@ Window {
     // Only ownship enrolls at startup: the menu demo spawns its own waves,
     // and the duel's entities join when startDuel() enrolls them.
     Component.onCompleted: {
+        // Builds the cue singleton now so its effects are loaded before the
+        // first press asks for one — see Sfx.warm().
+        Sfx.warm();
         root.world.add(game.ownship);
         root.startMenu();
     }

@@ -52,7 +52,7 @@ include(cmake/qt-vcpkg-fixup.cmake)
 include(cmake/target/clang-format.cmake)
 include(cmake/target/clang-tidy.cmake)
 
-find_package(Qt6 6.11 CONFIG REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.11 CONFIG REQUIRED COMPONENTS Multimedia Quick)
 
 qt_standard_project_setup(REQUIRES 6.11)
 

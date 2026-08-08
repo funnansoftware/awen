@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import awen.gamepad
 import awen.input
+import "../audio"
 import "../input"
 import "../themes"
 
@@ -31,9 +32,13 @@ Item {
     signal dismissed
 
     // The pad/keyboard cursor over the entries; mouse hover stays independent.
+    // The press cue is the pad and keyboard's; MenuButton sounds the mouse's.
     readonly property Selector cursor: Selector {
         count: root.entries.length
-        onActivated: index => root.entries[index].act()
+        onActivated: index => {
+            Sfx.press();
+            root.entries[index].act();
+        }
     }
 
     // A page being (re)shown starts unnavigated.
@@ -76,7 +81,7 @@ Item {
         case Qt.Key_Escape:
         case Qt.Key_Back:
             if (root.dismissible)
-                root.dismissed();
+                root.dismiss();
             else
                 event.accepted = false;
             break;
@@ -103,7 +108,7 @@ Item {
         case Gamepad.Button.East:
         case Gamepad.Button.Start:
             if (root.dismissible)
-                root.dismissed();
+                root.dismiss();
             else if (button === Gamepad.Button.Start)
                 root.cursor.activate();
             break;
@@ -115,6 +120,13 @@ Item {
     function axisMoved(axis: int, value: real) {
         if (axis === Gamepad.Axis.LeftY)
             navAxis.invoke(value);
+    }
+
+    // The one way out, so the cue and the signal cannot drift apart as the two
+    // routes in (Escape, pad East/Start) are edited.
+    function dismiss() {
+        Sfx.back();
+        root.dismissed();
     }
 
     // The scrim: dims the frozen scene and swallows every pointer event. The

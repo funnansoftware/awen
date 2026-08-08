@@ -1,4 +1,5 @@
 import QtQuick
+import "../audio"
 import "../themes"
 
 // One themed menu action: lit by hover or the caller's cursor highlight,
@@ -32,6 +33,16 @@ Item {
 
     height: caption.implicitHeight + 2 * root.captionPadding * root.scaleFactor
     opacity: 0
+
+    // The cue for arriving on this button, hung off active rather than off
+    // hover and highlight separately: a mouse landing on the row the cursor
+    // already holds has not arrived anywhere, and should not tick again.
+    //
+    // Guarded on visibility because the launch screen instantiates both its
+    // layouts and hides one — every button exists twice there, and an unguarded
+    // cue would sound the hidden copy's arrival alongside the shown one's.
+    onActiveChanged: if (root.active && root.visible)
+        Sfx.navigate()
 
     transform: Translate {
         id: slide
@@ -106,6 +117,11 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.invoked()
+        // Sounded before the action, which runs synchronously and may take the
+        // whole screen down with it.
+        onClicked: {
+            Sfx.press();
+            root.invoked();
+        }
     }
 }

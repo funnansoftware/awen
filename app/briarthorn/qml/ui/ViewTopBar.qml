@@ -1,4 +1,5 @@
 import QtQuick
+import "../audio"
 import "../themes"
 
 // The full-width top status band: a themed strip across the top edge carrying
@@ -131,7 +132,13 @@ Rectangle {
         width: settingsButton.width + 20 * root.uiScale
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.settingsRequested()
+        // The cues ride the hit target rather than the face, so they answer to
+        // exactly what the player can actually hit.
+        onEntered: Sfx.navigate()
+        onClicked: {
+            Sfx.press();
+            root.settingsRequested();
+        }
         anchors {
             // 10 wider than the face on each side, so it sits 10 in from where
             // the face sits and stays centred on it.

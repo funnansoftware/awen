@@ -20,11 +20,12 @@ inputs:
     default: ""
   modules:
     # Add-on Qt modules the base kit omits. QtNetworkAuth + QtWebSockets back the
-    # chat transport/OAuth; wasm overrides this to drop qtnetworkauth (no browser
-    # loopback, and the wasm kit doesn't offer it).
+    # chat transport/OAuth and QtMultimedia briarthorn's interface cues; wasm
+    # overrides this to drop qtnetworkauth (no browser loopback, and the wasm kit
+    # doesn't offer it).
     description: Space-separated Qt add-on modules to install alongside the base kit.
     required: false
-    default: qtnetworkauth qtwebsockets
+    default: qtmultimedia qtnetworkauth qtwebsockets
   install-deps:
     description: Let install-qt-action apt-install Qt's linux dependencies. Turn off in containers, where sudo is absent and the image already ships them.
     required: false

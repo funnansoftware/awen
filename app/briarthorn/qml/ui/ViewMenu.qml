@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import awen.gamepad
 import awen.input
+import "../audio"
 import "../input"
 import "../themes"
 
@@ -25,9 +26,15 @@ Item {
 
     // The pad/keyboard cursor over the actions. Mouse hover is independent,
     // so the highlight only appears once the player actually navigates.
+    // The press cue lives here rather than on the button, because this is the
+    // path a pad or the keyboard takes — MenuButton.invoked is the mouse's, and
+    // sounds its own.
     readonly property Selector cursor: Selector {
         count: root.entries.length
-        onActivated: index => root.entries[index].act()
+        onActivated: index => {
+            Sfx.press();
+            root.entries[index].act();
+        }
     }
 
     // The menu's actions in order, shared by both layouts and the cursor.
