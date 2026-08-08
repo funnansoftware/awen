@@ -9,35 +9,48 @@ own license without adding a condition to it.
 Each file is renamed to the role it plays rather than kept under its pack name,
 so swapping a cue is one file and no QML edit:
 
-| file           | Kenney source  | fires on                                 |
-| -------------- | -------------- | ---------------------------------------- |
-| `navigate.wav` | `tick_004.ogg` | the cursor or the mouse reaching an item |
-| `press.wav`    | `select_004.ogg` | an item being chosen                   |
-| `back.wav`     | `back_003.ogg` | a page being dismissed                   |
+| file           | Kenney source    | ms | fires on                                 |
+| -------------- | ---------------- | -- | ---------------------------------------- |
+| `navigate.wav` | `click_005.ogg`  | 10 | the cursor or the mouse reaching an item |
+| `press.wav`    | `select_002.ogg` | 43 | an item being chosen                     |
+| `back.wav`     | `back_002.ogg`   | 70 | a page being dismissed                   |
 
-## Why these three, and why they are not the pack's own files
+## Choosing a cue
 
-`SoundEffect` plays uncompressed audio, so the Ogg Vorbis the pack ships has to
-be re-containered regardless. Three things beyond the container decide whether a
-UI cue sounds clean, and all three bit the first attempt:
+`SoundEffect` plays uncompressed audio, so the pack's Ogg Vorbis has to be
+re-containered regardless. Three properties decide whether a cue reads as one
+clean tick, and they are worth measuring rather than judging by name:
 
-- **The sample must begin and end at silence.** A one-shot that starts partway
-  up its waveform steps the speaker cone the instant it is triggered, and that
-  step *is* the click — no amount of volume trimming hides it. Most of the
-  pack's shortest cues are cut hard at the transient (`tick_002` starts at 0.86
-  of full scale, a step with no attack in front of it). These three were picked
-  by measuring instead: their heads sit at −44, −80 and −53 dB below their own
-  peaks, so none needs a fade-in, and the attack survives intact. Only a 5 ms
-  fade-out is applied, to guarantee the tail.
-- **The rate and channel count should match the output device.** Desktop,
-  Android and the browser's Web Audio all run at 48 kHz stereo; at 44.1 kHz mono
-  every play went through Qt's real-time resampler and an upmix. Resampled once,
-  offline, at high quality instead.
-- **Resampling overshoots.** Peaks are checked afterwards and pulled under
-  0.97, because a sample that clips on write clips on every play.
+- **One transient.** Two is heard as two, however short the file — and several
+  of the pack's cues are double hits. `tick_004`, whose name could not sound
+  more like a single tick, is two strikes 16 ms apart.
+- **The transient at sample zero.** Leading silence is latency the player feels
+  on every keypress. `tick_004` again: 30 ms of nothing before it starts.
+- **Short.** Consecutive ticks must not overlap, because two copies of the same
+  sample a few milliseconds apart comb-filter into something that sounds
+  different every time.
 
-`press.wav` also has its trailing silence trimmed: below −60 dB it is inaudible
-but still holds a voice in `Sfx`'s pool for as long as a real sound would.
+**These samples therefore begin at high amplitude, and that is correct.** A
+percussive one-shot whose first sample *is* its attack is a step because the
+sound is a step. Do not fade it in: 1.5 ms of raised cosine band-limits the
+transient to a couple of kHz and the tick goes dull and far away. Only a sample
+cut mid-*sustain* needs a fade-in, and none of these are — which is exactly the
+mistake a "first sample must be near zero" rule leads to, since leading silence
+passes it for free.
 
-Levels are otherwise untouched — the mix is the three `volume` values in
+## Processing
+
+Only what the output device wants, and nothing to the samples themselves:
+
+- **48 kHz stereo**, what desktop, android and the browser's Web Audio all run
+  at. At 44.1 kHz mono every play went through Qt's real-time resampler and a
+  channel upmix, which is audible as crackle.
+- **A 5 ms fade-out**, capped at a sixth of the file, so the tail lands on
+  silence without eating the body of a very short cue. No fade-in — see above.
+- **Trailing silence below −60 dB trimmed**, because it is inaudible but still
+  holds a voice in `Sfx`'s pool for as long as a real sound.
+- **Peaks pulled under 0.97**, because resampling overshoots and a sample that
+  clips on write clips on every play.
+
+Levels are otherwise untouched: the mix is the three `volume` values in
 `qml/audio/Sfx.qml`, and nothing else.
