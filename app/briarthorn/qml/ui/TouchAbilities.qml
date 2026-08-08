@@ -82,13 +82,26 @@ Item {
             showControl: false
             label: control.modelData.def ? control.modelData.def.label : ""
             charges: control.modelData.charges
-            ready: control.modelData.ready
+            valid: control.modelData.valid
+            armed: control.modelData.armed
+            impediment: control.modelData.impediment
             cooling: control.modelData.cooling
 
             // A slot carrying no definition binds nothing and fires nothing —
             // a loadout typo must not reach the bus.
             onTapped: if (control.modelData.def)
                 root.invoked(control.modelData.def.name)
+
+            // The refusal beat is raised by the slot rather than by the press,
+            // so a rack shared with the keyboard and the pad answers whichever
+            // one the invocation came from.
+            Connections {
+                target: control.modelData
+
+                function onRefused() {
+                    control.refuse();
+                }
+            }
         }
     }
 

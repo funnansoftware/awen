@@ -41,9 +41,40 @@ System {
             if (roster[i].weapon !== null)
                 root.advance(roster[i], dt, spent);
         }
+        root.survey();
         root.consumeLaunches();
         root.reap(spent);
         root.ageDetonations(dt);
+    }
+
+    // The shot picture, published before anything launches: for every guided
+    // launch slot in the world, the return it would take right now and —
+    // where it has none — whether the radar is holding one anyway, out beyond
+    // what the round could fly to. The rack's readout, the scope's envelope
+    // and the launch below all read this one answer, so what the pilot is
+    // shown is exactly what the trigger does.
+    function survey() {
+        for (let i = 0; i < root.world.entities.length; ++i) {
+            const launcher = root.world.entities[i];
+            for (let j = 0; j < launcher.abilities.length; ++j) {
+                const slot = launcher.abilities[j];
+                if (!slot.guided)
+                    continue;
+                const lock = root.bestReturn(launcher, launcher, launcher.side, slot.reach);
+                // Written only where it changes: a lock repinned in place
+                // every tick flickers every binding on it, and restarts the
+                // animations gated by them — the same care SystemThreat's
+                // mark pass takes.
+                if (slot.lock !== lock)
+                    slot.lock = lock;
+                // Nothing to take inside the envelope, but something out
+                // past it: "close the range" and "point at something" are
+                // different instructions, so the rack gets to tell them apart.
+                const distant = lock === null && root.bestReturn(launcher, launcher, launcher.side, launcher.detectionRange) !== null;
+                if (slot.distant !== distant)
+                    slot.distant = distant;
+            }
+        }
     }
 
     // One round's tick: seek, trip the fuze on a near non-owning entity (or
@@ -90,31 +121,45 @@ System {
         missile.commandedSteer = Math.max(-1, Math.min(1, error / root.cutAngle));
     }
 
-    // Consumes raised launch intents: a guided round refuses (keeping its
-    // charge) without an illuminated return to lock, but still leaves the rail
-    // down the nose and homes from there; an unguided round just flies where it
-    // was pointed. The spawned missile takes its whole flight envelope from its
-    // database row and inherits the launcher's side.
+    // Consumes launches: a slot fires on a raised intent or on a shot held
+    // armed, and only where the survey above says every check passes — a
+    // guided round with nothing to lock keeps its charge and stays armed
+    // instead, waiting for the pilot to fix what the scope is showing them.
+    // One arming is one round, so a launch stands the slot back down. The
+    // spawned missile takes its whole flight envelope from its database row
+    // and inherits the launcher's side.
     function consumeLaunches() {
         const roster = root.world.entities.slice();
         for (let i = 0; i < roster.length; ++i) {
             const launcher = roster[i];
             for (let j = 0; j < launcher.abilities.length; ++j) {
                 const slot = launcher.abilities[j];
-                if (!(slot.def instanceof AbilityLaunch) || !slot.pending)
+                if (!(slot.def instanceof AbilityLaunch))
                     continue;
-                slot.pending = false;
-                if (!slot.ready)
+                const row = slot.round;
+                if (row === null) {
+                    // A launch naming a kind the database does not carry can
+                    // never fire; it must not sit armed forever pretending it
+                    // might.
+                    slot.pending = false;
+                    slot.armed = false;
                     continue;
-                const row = Database.weaponDataFor(slot.def.weapon);
-                if (row === null)
-                    continue;
-                let target = null;
-                if (row.guided) {
-                    target = root.bestReturn(launcher, launcher, launcher.side, row.seekerRange);
-                    if (target === null)
-                        continue;
                 }
+                const raised = slot.pending || slot.armed;
+                slot.pending = false;
+                if (!raised)
+                    continue;
+                if (!slot.valid) {
+                    // The press was judged against the survey of the tick
+                    // before this one, and the shot can go stale in between.
+                    // It is held armed rather than dropped: a press must never
+                    // be spent on nothing, which is the whole complaint the
+                    // arming state answers.
+                    slot.armed = true;
+                    continue;
+                }
+                slot.armed = false;
+                const target = row.guided ? slot.lock : null;
                 const missile = root.world.spawn("MSL", row.classification, {
                     side: launcher.side,
                     owner: launcher,

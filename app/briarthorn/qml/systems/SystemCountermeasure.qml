@@ -29,11 +29,22 @@ System {
             const carrier = roster[i];
             for (let j = 0; j < carrier.abilities.length; ++j) {
                 const slot = carrier.abilities[j];
-                if (!(slot.def instanceof AbilityCountermeasure) || !slot.pending)
+                if (!(slot.def instanceof AbilityCountermeasure))
                     continue;
+                // A pop reads the raised intent and a shot held armed the same
+                // way the launch path does: a pod that cannot fire yet holds
+                // its decoy rather than losing the press. The stock pod cools
+                // in zero seconds and so never sits armed, but the rule is the
+                // slot's, not the pod's.
+                const raised = slot.pending || slot.armed;
                 slot.pending = false;
-                if (!slot.ready)
+                if (!raised)
                     continue;
+                if (!slot.valid) {
+                    slot.armed = true;
+                    continue;
+                }
+                slot.armed = false;
                 // A pop spends both, as a launch does; the flare pod happens to
                 // cool in zero seconds, but the slot is what holds the rule.
                 slot.charges = slot.charges > 0 ? slot.charges - 1 : slot.charges;

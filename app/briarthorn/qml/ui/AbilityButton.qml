@@ -1,12 +1,16 @@
 import QtQuick
+import "../model"
 import "../themes"
 
 // One ability control: a square button captioned with what it invokes, counting
 // off what it has left, and topped with the key or controller button that fires
 // it. A bar across its foot is the readiness dial — it fills back up as a
 // cooldown runs off — and the whole control dims while a press would do
-// nothing, so a thumb is never left waiting on a spent one. Shared by the touch
-// rack and the desktop row, so an ability reads the same however it is flown.
+// nothing, naming in a word what it is waiting on, so a thumb is never left
+// guessing at a control that answers nothing. A shot held armed breathes in the
+// arming colour until it flies; a press that could never have fired flashes
+// once instead. Shared by the touch rack and the desktop row, so an ability
+// reads the same however it is flown.
 Item {
     id: root
 
@@ -14,9 +18,15 @@ Item {
     property string label: ""
     property int charges: -1
 
-    // Whether a press would fire, and how much of the cooldown is still to run
-    // — 1 the moment it pops, 0 once the control is ready again.
-    property bool ready: true
+    // Whether a press would fire this instant, whether one is being held
+    // against a check that has not passed yet, and what that check is — the
+    // three facts the control colours and captions itself from.
+    property bool valid: true
+    property bool armed: false
+    property int impediment: AbilitySlot.Impediment.None
+
+    // How much of the cooldown is still to run — 1 the moment it pops, 0 once
+    // the control is ready again.
     property real cooling: 0
 
     // The control that fires this ability, as the cap over the caption draws
@@ -36,12 +46,33 @@ Item {
     // True while the control is held.
     readonly property alias held: handler.active
 
-    // One tint carries the state: bright under the thumb, plain when the
-    // control would fire, muted while it is cooling or spent.
+    // One tint carries the state: the arming colours while a shot is held,
+    // bright under the thumb, plain when the control would fire, muted while
+    // it is cooling, spent or without a lock.
     readonly property color tint: {
+        if (root.armed)
+            return root.valid ? Style.theme.armValid : Style.theme.armInvalid;
         if (root.held)
             return Style.theme.accentBright;
-        return root.ready ? Style.theme.accent : Style.theme.textMuted;
+        return root.valid ? Style.theme.accent : Style.theme.textMuted;
+    }
+
+    // The one word the control reads out in place of its count: what the
+    // press is waiting on, or that it is waiting at all. A cooldown says
+    // nothing here — the dial across the foot already draws it.
+    readonly property string status: {
+        if (root.armed)
+            return qsTr("ARMED");
+        switch (root.impediment) {
+        case AbilitySlot.Impediment.Empty:
+            return qsTr("EMPTY");
+        case AbilitySlot.Impediment.NoLock:
+            return qsTr("NO LOCK");
+        case AbilitySlot.Impediment.Distant:
+            return qsTr("RANGE");
+        default:
+            return "";
+        }
     }
 
     // Fired on press rather than on release: a control that answers as the
@@ -55,17 +86,64 @@ Item {
     implicitWidth: 74
     implicitHeight: implicitWidth
 
+    // A press that could never have fired — an empty rack — beats the panel in
+    // the caution colour, so a dead control answers rather than swallowing it.
+    function refuse() {
+        refusal.restart();
+    }
+
     // A filled panel, so the control reads against the scope behind it.
     Rectangle {
         anchors.fill: parent
         radius: Style.theme.panelRadius
         color: Style.theme.panelBackground
         opacity: root.held ? 1 : 0.85
-        border.width: root.held ? 2 : 1
+        border.width: root.held || root.armed ? 2 : 1
         border.color: root.tint
 
         Behavior on opacity {
             NumberAnimation { duration: 120 }
+        }
+    }
+
+    // The armed breathing: a wash of the arming colour over the whole panel
+    // while a shot is held, so a rack the player is not looking at still says
+    // it is waiting. Its opacity is the animation's alone — a binding here
+    // would fight the value source.
+    Rectangle {
+        id: glow
+
+        anchors.fill: parent
+        visible: root.armed
+        radius: Style.theme.panelRadius
+        color: Qt.alpha(root.tint, 0.22)
+
+        SequentialAnimation on opacity {
+            running: glow.visible
+            loops: Animation.Infinite
+
+            NumberAnimation { from: 1; to: 0.15; duration: 320 }
+            NumberAnimation { from: 0.15; to: 1; duration: 320 }
+        }
+    }
+
+    // The refusal beat, raised by refuse(): three quick pulses and gone. Shown
+    // only while it runs, so the wash never needs a resting value the
+    // animation would have to hold the property at.
+    Rectangle {
+        anchors.fill: parent
+        visible: refusal.running
+        radius: Style.theme.panelRadius
+        color: Style.theme.armInvalid
+
+        SequentialAnimation on opacity {
+            id: refusal
+
+            running: false
+            loops: 3
+
+            NumberAnimation { from: 0; to: 0.5; duration: 80 }
+            NumberAnimation { from: 0.5; to: 0; duration: 120 }
         }
     }
 
@@ -102,18 +180,26 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: root.label
-            color: root.ready ? Style.theme.textPrimary : Style.theme.textMuted
+            color: root.valid ? Style.theme.textPrimary : Style.theme.textMuted
             font { pixelSize: Math.max(9, root.span * 0.15); bold: true; letterSpacing: root.span * 0.015; family: Style.monospace }
         }
 
-        // The rounds left, where the control counts them at all; an empty rack
-        // reads in the warn colour rather than quietly showing a zero.
+        // The rounds left, or — where the control has something to say about
+        // why a press would not fire — that state in a word instead. One row
+        // either way, so a rack of small buttons never grows to carry it.
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.charges >= 0
-            text: root.charges
-            color: root.charges === 0 ? Style.theme.warn : Style.theme.textLabel
-            font.pixelSize: Math.max(9, root.span * 0.14)
+            visible: root.status !== "" || root.charges >= 0
+            width: root.span * 0.94
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            text: root.status !== "" ? root.status : root.charges
+            color: {
+                if (root.status !== "")
+                    return root.armed ? root.tint : Style.theme.armInvalid;
+                return Style.theme.textLabel;
+            }
+            font.pixelSize: Math.max(8, root.span * (root.status !== "" ? 0.12 : 0.14))
             font.family: Style.monospace
         }
     }

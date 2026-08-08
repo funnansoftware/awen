@@ -56,6 +56,15 @@ Window {
     // frame and the end screen takes the input until the player moves on.
     readonly property bool ended: !root.inMenu && mission.status !== SystemMission.Status.Ongoing
 
+    // The shot the player is holding armed, if any. Every arming cue reads off
+    // this one slot: the scope paints the envelope its round can reach and
+    // brackets the return its seeker is holding, and the readout says what it
+    // is waiting on. Null — the disarmed case — leaves all three off.
+    readonly property AbilitySlot armed: game.ownship.armedAbility
+    readonly property real armedReach: root.armed ? root.armed.reach : 0
+    readonly property bool armedValid: root.armed !== null && root.armed.valid
+    readonly property string lockedContact: root.armed && root.armed.lock ? root.armed.lock.callsign : ""
+
     width: 1280
     height: 720
     visible: true
@@ -466,6 +475,9 @@ Window {
             obstacles: root.world.obstacles
             symbolSize: height * 0.04
             trailsRunning: !settings.open && !root.inMenu && !root.paused && !root.ended
+            armedReach: root.armedReach
+            armedValid: root.armedValid
+            lockedContact: root.lockedContact
 
             anchors {
                 left: parent.left
@@ -506,6 +518,28 @@ Window {
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: topBar.bottom
+                topMargin: 12
+            }
+        }
+
+        // The arming readout, stacked under the missile warning in the same
+        // top-centre alert channel: while a weapon is held armed, what it is
+        // waiting on in words. It shares the channel rather than sitting by
+        // the rack, because a touch player's rack is under their own thumb and
+        // a desktop player's is in the far corner — the alert band is the one
+        // place both are already looking. Rides below the warning where both
+        // are up, so neither ever covers the other.
+        ViewArming {
+            id: armingAlert
+
+            visible: !root.inMenu && armingAlert.active
+            ownship: game.ownship
+            // Never off the edge of a phone: the reason elides instead.
+            maximumWidth: root.width - 32
+
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: threatAlert.visible ? threatAlert.bottom : topBar.bottom
                 topMargin: 12
             }
         }
@@ -643,6 +677,11 @@ Window {
 
             radiusFraction: 0.45
             symbolSize: height * 0.08
+            // The envelope mirrors onto the overview with everything else the
+            // minimap keeps; the lock bracket does not, because a mark drawn
+            // this small has no room to stand one off.
+            armedReach: root.armedReach
+            armedValid: root.armedValid
             backgroundColor: Style.theme.windowBackground
             gutterClamp: true
             closedRings: true

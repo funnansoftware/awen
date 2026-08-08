@@ -129,3 +129,15 @@ the database imports nothing back.
   builds one axis, key binding, pad binding and command per carried slot off the
   loadout, so it needs no edit at all — and `qml/input/Keymap.qml` is what the
   controls page rebinds, seeded from those defaults and stored as a diff.
+- **A press never fails silently — it arms.** `AbilitySlot` rates its own
+  invocation: `valid` is the whole "this would fire right now" test and
+  `impediment` names the one thing stopping it. A press that passes fires, a
+  press that could yet pass holds the shot `armed` until the consuming system
+  sees it pass, and a press that never could (an empty rack) raises `refused`
+  for the control to flash. The launch check has exactly one definition —
+  `SystemWeapon.survey()` writes each slot's `lock` and `distant` every tick
+  from the same `bestReturn` the launch itself uses — so the rack's word, the
+  scope's envelope and the trigger can never disagree. `Entity.invoke()` is
+  the press path (one armed slot at a time, second press stands it down);
+  `AbilitySlot.activate()` is the raised-intent primitive behaviour systems
+  use and is idempotent.

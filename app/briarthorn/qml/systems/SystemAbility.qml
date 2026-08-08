@@ -14,8 +14,14 @@ System {
         for (let i = 0; i < root.world.entities.length; ++i) {
             const slots = root.world.entities[i].abilities;
             for (let j = 0; j < slots.length; ++j) {
-                if (slots[j].cooldownRemaining > 0)
-                    slots[j].cooldownRemaining = Math.max(0, slots[j].cooldownRemaining - dt);
+                const slot = slots[j];
+                if (slot.cooldownRemaining > 0)
+                    slot.cooldownRemaining = Math.max(0, slot.cooldownRemaining - dt);
+                // A shot held on an empty rack is waiting on a check that can
+                // never pass again, so it stands down rather than leaving a
+                // lit control over a magazine with nothing in it.
+                if (slot.armed && slot.charges === 0)
+                    slot.armed = false;
             }
         }
     }

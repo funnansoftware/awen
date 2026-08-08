@@ -154,6 +154,48 @@ QtObject {
     // the whole rack.
     property list<AbilitySlot> abilities: root.def ? root.slotsFor(root.def.abilities) : []
 
+    // The slot holding a shot armed, or null. invoke() keeps it to one, so
+    // every arming cue — the rack's button, the scope's envelope, the lock
+    // bracket and the arming readout — always speaks for the same weapon.
+    readonly property AbilitySlot armedAbility: {
+        for (let i = 0; i < root.abilities.length; ++i) {
+            if (root.abilities[i].armed)
+                return root.abilities[i];
+        }
+        return null;
+    }
+
+    // A pilot's press on one ability: the second press on an armed slot stands
+    // it down, and arming a slot stands every other one down first. The bare
+    // slot's activate() is the raised-intent primitive behaviour systems use;
+    // this is the only caller that means "again".
+    function invoke(name: string) {
+        let picked = null;
+        for (let i = 0; i < root.abilities.length; ++i) {
+            const slot = root.abilities[i];
+            if (slot.def !== null && slot.def.name === name) {
+                picked = slot;
+                break;
+            }
+        }
+        if (picked === null)
+            return;
+        if (picked.armed) {
+            picked.armed = false;
+            return;
+        }
+        picked.activate();
+        // Only one weapon is ever held armed, so the cues always speak for the
+        // same one. A press that fired outright armed nothing and stands
+        // nothing down — popping a flare must not drop a held missile shot.
+        if (!picked.armed)
+            return;
+        for (let i = 0; i < root.abilities.length; ++i) {
+            if (root.abilities[i] !== picked)
+                root.abilities[i].armed = false;
+        }
+    }
+
     // One live slot per named ability. An unregistered name is dropped with a
     // warning: silently it costs a missing ability, a missing binding and a
     // missing settings row, with nothing anywhere to notice it by.
