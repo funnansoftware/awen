@@ -98,7 +98,9 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemPersonality.qml
         qml/systems/SystemThreat.qml
         qml/systems/SystemWeapon.qml
-        qml/themes/Aurora.qml
+        qml/themes/Theme.qml
+        qml/themes/ThemeAurora.qml
+        qml/themes/ThemeCatppuccinMocha.qml
         qml/ui/AbilityButton.qml
         qml/ui/ControlCap.qml
         qml/ui/Joystick.qml

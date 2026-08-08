@@ -56,6 +56,12 @@ Window {
     // frame and the end screen takes the input until the player moves on.
     readonly property bool ended: !root.inMenu && mission.status !== SystemMission.Status.Ongoing
 
+    // The duel actually under the player's hands: running, with no overlay over
+    // it. The scene's focus, its key handlers, the wheel's ranging, the trails
+    // and the top bar's own button all follow this one predicate rather than
+    // each spelling the mode set out again.
+    readonly property bool live: !root.inMenu && !root.paused && !root.ended && !settings.open
+
     // The shot the player is holding armed, if any. Every arming cue reads off
     // this one slot: the scope paints the envelope its round can reach and
     // brackets the return its seeker is holding, and the readout says what it
@@ -106,11 +112,19 @@ Window {
         // illegible — a single property, so the pair stays a pair structurally.
         readonly property real instrumentSide: Math.max(110, Math.min(root.width, root.height) * 0.22)
 
+        // The top band's height, and through it every size drawn in the band: a
+        // fraction of the smaller window side, as the corner instruments are.
+        // The fraction puts it at 64 on the 1280x720 window it was drawn for.
+        // Floored at a thumb's target, because the band is the settings
+        // button's whole hit area, and capped so a tall display does not give a
+        // status strip a tenth of the picture.
+        readonly property real bandHeight: Math.max(44, Math.min(96, Math.min(root.width, root.height) * 0.089))
+
         anchors.fill: parent
-        // The window's keys go here unless the controls page or one of the
+        // The window's keys go here unless the settings page or one of the
         // overlay menus has them — each declares its own focus, and the
         // bindings trade it as those states flip.
-        focus: !settings.open && !root.inMenu && !root.paused && !root.ended
+        focus: root.live
 
         // Gamepad input via awen.gamepad; these fire regardless of focus. On wasm
         // the browser refreshes gamepad state once per frame, so poll at 16ms there.
@@ -124,8 +138,11 @@ Window {
             if (event.isAutoRepeat)
                 return;
             // A backstop only: the scene holds the keys in no other mode, and
-            // the overlays are siblings, so nothing of theirs reaches here.
-            if (root.inMenu || root.paused || root.ended)
+            // the overlays are siblings, so nothing of theirs reaches here. It
+            // guards on the same predicate as the focus above rather than a
+            // near-copy, so anything inside the scene that ever takes focus
+            // cannot open a mode this handler still answers in.
+            if (!root.live)
                 return;
             // Any key at all hands the HUD back to the keyboard, bound or not:
             // a player reaching for keys wants the key caps, not the pad's.
@@ -138,7 +155,7 @@ Window {
             event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
-            if (!event.isAutoRepeat && !root.inMenu && !root.paused && !root.ended)
+            if (!event.isAutoRepeat && root.live)
                 event.accepted = actions.keyReleased(event.key);
         }
 
@@ -147,8 +164,8 @@ Window {
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
             root.device.moved(value);
             if (settings.open)
-                return;
-            if (root.inMenu)
+                settings.axisMoved(axis, value);
+            else if (root.inMenu)
                 menu.axisMoved(axis, value);
             else if (root.ended)
                 endPage.axisMoved(axis, value);
@@ -318,7 +335,7 @@ Window {
 
             property real banked: 0
 
-            enabled: !settings.open && !root.inMenu && !root.paused && !root.ended
+            enabled: root.live
             onWheel: event => {
                 // The mouse belongs to the desktop set, so a scroll counts as
                 // keyboard play for the HUD's captions.
@@ -349,7 +366,7 @@ Window {
         // carrying its aspect; the scenarios only shape the world and never
         // load systems of their own.
         Systems {
-            // The controls page, the pause menu and a decided duel all stop
+            // The settings page, the pause menu and a decided duel all stop
             // the sim rather than letting it run on behind the player.
             // dropInput() posts the zeroed axes before these flip, and
             // nothing clears the queue, so they publish on resume.
@@ -442,14 +459,28 @@ Window {
             }
         }
 
-        // The full-width top band: persistent meta-game state (the credit purse)
-        // and the build version. It owns the top strip; the scope sits below it.
+        // The full-width top band: persistent meta-game state (the credit
+        // purse), the build version and the way into the settings page. It owns
+        // the top strip; the scope sits below it.
+        //
+        // Its button pauses on the way in rather than opening over a running
+        // duel: the page stops the sim either way, so this is the difference
+        // between coming back to a RESUME and being dropped into the fight
+        // mid-frame — and it is the state the pause menu's own route into the
+        // page arrives from. Dead while an overlay is up, so the page can never
+        // re-enter itself.
         ViewTopBar {
             id: topBar
 
             visible: !root.inMenu
+            enabled: root.live
+            height: scene.bandHeight
             credits: game.credits
             version: "v" + BuildInfo.version
+            onSettingsRequested: {
+                root.openPause();
+                root.openSettings();
+            }
 
             anchors {
                 left: parent.left
@@ -474,7 +505,7 @@ Window {
             detonations: weapons.detonations
             obstacles: root.world.obstacles
             symbolSize: height * 0.04
-            trailsRunning: !settings.open && !root.inMenu && !root.paused && !root.ended
+            trailsRunning: root.live
             armedReach: root.armedReach
             armedValid: root.armedValid
             lockedContact: root.lockedContact
@@ -741,14 +772,14 @@ Window {
     }
 
     // Every overlay screen is a sibling of the scene rather than a child, for
-    // the reason spelled out on the controls page below: a key one of them
+    // the reason spelled out on the settings page below: a key one of them
     // declines must bubble to the window, not sideways into the game's handler.
     // They stack in declaration order over the scene, exactly as they did as its
     // last children.
 
     // The launch screen itself, transparent over the demo scope. It holds
     // the keys while up — its own handlers drive the cursor — and hands
-    // them to the controls page when that stacks on top.
+    // them to the settings page when that stacks on top.
     ViewMenu {
         id: menu
 
@@ -756,13 +787,13 @@ Window {
         focus: root.inMenu && !settings.open
         device: root.device
         onDuel: root.startDuel()
-        onControls: root.openSettings()
+        onSettingsRequested: root.openSettings()
         onExitGame: Qt.quit()
 
         anchors.fill: parent
     }
 
-    // The pause menu, over the frozen scope and HUD; the controls page
+    // The pause menu, over the frozen scope and HUD; the settings page
     // stacks on top of it and hands the keys back on close.
     ViewPause {
         id: pausePage
@@ -771,7 +802,7 @@ Window {
         focus: root.paused && !settings.open
         device: root.device
         onResumed: root.resumeDuel()
-        onControls: root.openSettings()
+        onSettingsRequested: root.openSettings()
         onToMenu: root.startMenu()
         onExitGame: Qt.quit()
 
@@ -783,7 +814,11 @@ Window {
         id: endPage
 
         visible: root.ended
-        focus: root.ended
+        // Yields to the settings page as the other two overlays do. Out of
+        // reach today — the page stops the sim, so no duel can be decided
+        // behind it — but a page left visible with the keyboard taken from it
+        // under C++ would never get its focus binding back.
+        focus: root.ended && !settings.open
         device: root.device
         mission: mission
         onFlyAgain: root.startDuel()
@@ -793,7 +828,7 @@ Window {
         anchors.fill: parent
     }
 
-    // The controls page, a sibling of the scene rather than a child: it paints
+    // The settings page, a sibling of the scene rather than a child: it paints
     // over the whole HUD, and a key it declines bubbles to the window instead of
     // falling sideways into the game's handler. An overlay's entries act inside
     // the very key handler that reads them — starting the duel, unpausing — so a

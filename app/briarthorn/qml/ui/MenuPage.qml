@@ -117,10 +117,12 @@ Item {
             navAxis.invoke(value);
     }
 
-    // The scrim: dims the frozen scene and swallows every pointer event.
+    // The scrim: dims the frozen scene and swallows every pointer event. The
+    // window colour at four fifths, so it dims whatever palette is in force
+    // rather than laying the shipped one's near-black over another.
     Rectangle {
         anchors.fill: parent
-        color: "#CC05080D"
+        color: Qt.alpha(Style.theme.windowBackground, 0.8)
 
         MouseArea {
             anchors.fill: parent

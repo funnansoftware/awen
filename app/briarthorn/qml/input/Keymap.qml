@@ -203,8 +203,9 @@ QtObject {
         return table;
     }
 
-    // Persists only what differs from the shipped table, written through at
-    // once: a web build's tab can close without ever running a destructor.
+    // Persists only what differs from the shipped table, synced at once rather
+    // than left for the store's own destructor: a web build's tab can close
+    // without ever running one.
     function save() {
         const shipped = root.defaults();
         const diff = {};
@@ -215,6 +216,7 @@ QtObject {
                 diff[name] = [pair.key, pair.button];
         }
         root.store.setValue("abilities", JSON.stringify(diff));
+        root.store.sync();
     }
 
     // The shipped table with the saved differences overlaid row by row, so one
