@@ -23,6 +23,10 @@ Shape {
     property alias strokeWidth: path.strokeWidth
     property alias strokeStyle: path.strokeStyle
     property alias dashPattern: path.dashPattern
+
+    // Where the dash pattern starts, in the same stroke-width units. Animating
+    // it walks the dashes along the link — decreasing crawls them toward to.
+    property alias dashOffset: path.dashOffset
     property alias capStyle: path.capStyle
 
     // The glow understroke's color; transparent draws none. It strokes the
