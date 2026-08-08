@@ -10,7 +10,9 @@ import "../model"
 // classification, side, heading and hull condition, anything else stays
 // Unknown with the heading held at its last seen value and no hull reading.
 // The observer's own launches (missiles, decoys) are datalinked: always
-// resolved, no radar volume needed.
+// resolved, no radar volume needed. A decoy of any side classifies without the
+// sweep — it burns, so it plots as a flare wherever it is — but keeps its side
+// unresolved, so the scope reads the burn rather than who dropped it.
 // Tracks update in place — the list itself changes only when a contact first
 // appears, so views keyed on it stay stable.
 System {
@@ -53,7 +55,11 @@ System {
             track.range = Geo.distance(root.observer, entity);
             track.azimuth = Geo.wrap360(Geo.bearing(root.observer, entity));
             const seen = entity.owner === root.observer || root.detected(track, entity);
-            track.classification = seen ? entity.classification : Classification.Kind.Unknown;
+            // A decoy is built to be seen: it burns, and a burning flare is
+            // its own emitter on every scope, radar or none. So its kind
+            // resolves for any observer while the rest of the contact still
+            // rides on the sweep — the burn reads without whose it is.
+            track.classification = seen || entity.decoy ? entity.classification : Classification.Kind.Unknown;
             track.side = seen ? entity.side : Side.Kind.Unknown;
             // Condition rides with the resolution: lose the contact and the
             // hull reading goes with it rather than freezing on the scope.

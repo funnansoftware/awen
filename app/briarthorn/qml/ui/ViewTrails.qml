@@ -125,10 +125,11 @@ Item {
 
     // One sampling pass: every live object records its current world position
     // into its wake, and wakes whose track has gone are pruned with it.
-    // Munitions and unresolved contacts carry no wake — a sky full of rounds
-    // and maybe-rounds each towing a tail buries the craft picture the trails
-    // exist to read — so only a contact identified as a craft trails, and one
-    // losing that identification sheds its wake in the same pass.
+    // Munitions, decoys and unresolved contacts carry no wake — a sky full of
+    // rounds, flares and maybe-rounds each towing a tail buries the craft
+    // picture the trails exist to read — so only a contact identified as a
+    // craft trails, and one losing that identification sheds its wake in the
+    // same pass.
     function sample() {
         if (!root.observer)
             return;
@@ -141,7 +142,7 @@ Item {
         const present = new Set();
         for (let i = 0; i < root.tracks.length; ++i) {
             const track = root.tracks[i];
-            if (track.classification === Classification.Kind.Unknown || Database.weaponDataFor(track.classification) !== null)
+            if (!root.trails(track.classification))
                 continue;
             present.add(track.contactId);
             let wake = root.held[track.contactId];
@@ -159,6 +160,16 @@ Item {
                 delete root.held[contactId];
             }
         }
+    }
+
+    // Whether a classification tows a tail: only a resolved craft does. An
+    // unresolved contact has no spawnable row at all, a round is ordnance, and
+    // a decoy is a burn sitting where it was dropped — and one classifies off
+    // any observer's scope without the sweep, so trailing decoys would hang a
+    // tail on every flare popped anywhere on the picture.
+    function trails(classification: int): bool {
+        const row = Database.entityDataFor(classification);
+        return row !== null && !row.decoy && Database.weaponDataFor(classification) === null;
     }
 
     // Drops every wake — the whole picture, not one contact's history.
