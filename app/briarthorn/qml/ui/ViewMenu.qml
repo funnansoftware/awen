@@ -144,9 +144,13 @@ Item {
     }
 
     // Swallows pointer events across the whole screen, so a click on the
-    // scope area can't reach the game controls underneath.
+    // scope area can't reach the game controls underneath — hover included,
+    // which a MouseArea otherwise lets through. Declared before the rail and
+    // the card, so it blocks what is under the menu without taking hover from
+    // the buttons on top of it.
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
     }
 
     // The narrow fallback's scrim: lifts the card's contrast over the live

@@ -136,8 +136,13 @@ Item {
         anchors.fill: parent
         color: Qt.alpha(Style.theme.windowBackground, 0.8)
 
+        // hoverEnabled, or the scrim stops presses and lets hover through to
+        // the HUD it is covering — and the top bar's settings button sounds a
+        // cue on hover, from behind a pause menu, for a control the player
+        // cannot reach.
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
         }
     }
 

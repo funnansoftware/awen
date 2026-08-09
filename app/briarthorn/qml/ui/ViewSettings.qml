@@ -155,8 +155,15 @@ Item {
         anchors.fill: parent
         color: Style.theme.windowBackground
 
+        // hoverEnabled is what makes "every pointer event" true of hover as
+        // well. A MouseArea takes presses whatever its hover setting, but
+        // leaves hover to fall through to whatever is underneath — and opening
+        // this page from the launch screen leaves the menu underneath, visible
+        // and merely covered, so the buttons went on sounding for a mouse
+        // crossing a rail the player can no longer see.
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
         }
     }
 
