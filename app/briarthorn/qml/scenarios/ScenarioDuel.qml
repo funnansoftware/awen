@@ -19,9 +19,12 @@ Scenario {
     required property Entity ownship
 
     // Where the player opens the duel: due south of the merge, mirroring the
-    // bandit's seat, so the two start the same distance off the origin.
-    readonly property real ownshipPosX: 3000
-    readonly property real ownshipPosY: 75000
+    // bandit's seat, so the two start the same distance off the origin. The
+    // 85 km split seats each craft 13 km beyond the other's 72 km radar, so
+    // the contact opens Unknown and resolves about twenty seconds in rather
+    // than after two minutes of empty sky.
+    readonly property real ownshipPosX: 12000
+    readonly property real ownshipPosY: 42500
     readonly property real ownshipHeading: 0
 
     // The downrated airframe, so the duel is winnable, with its rack's flare
@@ -32,9 +35,13 @@ Scenario {
         callsign: "BANDIT 1"
         classification: Classification.Kind.AircraftFighterLight
         side: Side.Kind.Hostile
-        // Seated a shade east of true north: the closing line to the merge
-        // then passes the north pillar with kilometres to spare, where the
-        // axis itself would fly the pursuit straight into it.
+        // Seated 12 km east of true north, mirroring the player. Both closing
+        // lines then clear every pillar: 12 km abeam the 6 km cardinals and
+        // 9 km abeam the 3 km intercardinals, against the 2 km SystemAvoidance
+        // holds outside a wall. That margin has to come from the seat, because
+        // avoidance skips an entity with no maneuvers — the player's craft —
+        // so a lane the bandit would be steered around is one the player flies
+        // into.
         posX: root.ownshipPosX
         posY: -root.ownshipPosY
         heading: 180
@@ -63,15 +70,14 @@ Scenario {
     entities: [root.bandit]
 
     // The arena: four large pillars boxing the fight at 60 km on the
-    // cardinals, a picket of smaller ones every 45 degrees at 120 km, and
-    // four more on the intercardinals at 30 km — off the cardinal axes, so
-    // the opening lane from the north stays flyable. Static terrain, so
-    // reset() never touches it.
+    // cardinals and four smaller ones on the intercardinals at 30 km, so the
+    // north-south opening lane stays flyable. Static terrain, so reset()
+    // never touches it.
     readonly property Component pillarFactory: Component {
         Obstacle {}
     }
 
-    obstacles: [...root.pillarRing(4, 0, 60000, 6000), ...root.pillarRing(8, 0, 120000, 3000), ...root.pillarRing(4, 45, 30000, 3000)]
+    obstacles: [...root.pillarRing(4, 0, 60000, 6000), ...root.pillarRing(4, 45, 30000, 3000)]
 
     // count pillars of one radius, evenly spaced around the origin at range,
     // the first seated at startBearing.
