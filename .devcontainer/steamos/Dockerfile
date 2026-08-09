@@ -61,24 +61,24 @@ ENV CC=gcc-14 \
 # EGL, xkbcommon) and its meta-build needs the autotools family. Same set as the
 # main Dockerfile, plus the last three below.
 #
-# Those three are for QtMultimedia, which briarthorn's interface cues play
-# through. It needs the pulseaudio port for a linux audio sink, and unlike the
-# main image this one cannot borrow pulse from the official Qt binaries —
-# steamos builds Qt from source to hold the glibc floor, so the backend is built
-# here too. Pulseaudio reaches 39 ports, and three of them want something apt
-# has to provide, each naming it in its own build failure or warning:
-#   libltdl-dev     — libxcrypt refuses to configure without ltdl.
-#   python3-venv    — libsystemd sets up a venv, and Debian splits venv out of
-#                     python3, so `python3 -m venv` simply fails without it.
+# The last three are for QtMultimedia, which briarthorn's interface cues play
+# through. It needs an audio sink built from source here — unlike the main image
+# this one cannot borrow one from the official Qt binaries, because steamos
+# builds Qt itself to hold the Deck's glibc floor. Each is named by the port
+# that asks apt for it:
+#   libltdl-dev     — vcpkg-make refuses to run without ltdl, and libxcrypt with
+#                     it, by name in a fatal error.
 #   libselinux1-dev — glib warns its build may fail when SELinux is missing.
+#   python3-venv    — Debian splits venv out of python3, so any port that
+#                     provisions one fails at `python3 -m venv` without it.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf \
     autoconf-archive \
     automake \
     libtool \
     libltdl-dev \
-    python3-venv \
     libselinux1-dev \
+    python3-venv \
     '^libxcb.*-dev' \
     libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev \
     libxkbcommon-x11-dev libegl1-mesa-dev \

@@ -37,14 +37,15 @@
                     "platform": "!emscripten"
                 },
                 {
-                    "$comment": "QtMultimedia backs briarthorn's interface cues through QSoundEffect, which lives in the module's core and decodes WAV itself. default-features off drops ffmpeg and the multimedia widgets with it: no media backend is needed to play an uncompressed effect, and ffmpeg is by far the heaviest thing in this manifest. pulseaudio is the audio sink on linux — the port offers no ALSA, so without it QAudioSink has no device to open. Excluded on emscripten to match the prebuilt path, which has no choice: Qt ships QtMultimedia for the multithreaded wasm kit only and this build is single-threaded, so the browser takes the silent Cue either way.",
+                    "$comment": "QtMultimedia backs briarthorn's interface cues through QSoundEffect, which lives in the module's core and decodes WAV itself. default-features off drops ffmpeg and the multimedia widgets with it: no media backend is needed to play an uncompressed effect, and ffmpeg is by far the heaviest thing in this manifest. Excluded on emscripten to match the prebuilt path, which has no choice: Qt ships QtMultimedia for the multithreaded wasm kit only and this build is single-threaded, so the browser takes the silent Cue either way.",
                     "name": "qtmultimedia",
                     "default-features": false,
                     "platform": "!emscripten",
                     "features": [
                         "qml",
                         {
-                            "name": "pulseaudio",
+                            "$comment": "An audio sink for linux, where Qt ships no ALSA backend and QAudioSink would otherwise have no device to open. pipewire rather than pulseaudio: it is what SteamOS actually runs, and its port tree is 14 ports against pulseaudio's 39 — that tree reaches libsystemd, whose 260.2 sources do not compile against the Debian 11 headers the steamos image holds to for the Deck's glibc floor.",
+                            "name": "pipewire",
                             "platform": "linux"
                         }
                     ]
