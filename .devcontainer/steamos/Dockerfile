@@ -58,21 +58,27 @@ ENV CC=gcc-14 \
     CXX=g++-14
 
 # Qt build dependencies — vcpkg builds Qt from source on linux (xcb windowing,
-# EGL, xkbcommon) and its meta-build needs the autotools family. Same set as
-# the main Dockerfile, plus libltdl-dev.
+# EGL, xkbcommon) and its meta-build needs the autotools family. Same set as the
+# main Dockerfile, plus the last three below.
 #
-# libltdl-dev is for QtMultimedia, which briarthorn's interface cues play
-# through: it needs the pulseaudio port for a linux audio sink, which reaches
-# libxcrypt, which refuses to configure without ltdl from the system package
-# manager and says so by name. Unlike the main image this one cannot borrow
-# pulse from the official Qt binaries — steamos builds Qt from source to hold
-# the glibc floor, so the backend is built here too.
+# Those three are for QtMultimedia, which briarthorn's interface cues play
+# through. It needs the pulseaudio port for a linux audio sink, and unlike the
+# main image this one cannot borrow pulse from the official Qt binaries —
+# steamos builds Qt from source to hold the glibc floor, so the backend is built
+# here too. Pulseaudio reaches 39 ports, and three of them want something apt
+# has to provide, each naming it in its own build failure or warning:
+#   libltdl-dev     — libxcrypt refuses to configure without ltdl.
+#   python3-venv    — libsystemd sets up a venv, and Debian splits venv out of
+#                     python3, so `python3 -m venv` simply fails without it.
+#   libselinux1-dev — glib warns its build may fail when SELinux is missing.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf \
     autoconf-archive \
     automake \
     libtool \
     libltdl-dev \
+    python3-venv \
+    libselinux1-dev \
     '^libxcb.*-dev' \
     libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev \
     libxkbcommon-x11-dev libegl1-mesa-dev \
