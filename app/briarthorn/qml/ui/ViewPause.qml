@@ -1,12 +1,15 @@
 import QtQuick
 
 // The pause menu (Escape / pad Start mid-duel), over the frozen scope and
-// HUD. Resume leads; the way back to the launch screen and out of the game
-// sit below it. Ports briardart's PauseOverlay.
+// HUD. Resume leads and restart sits with it — a duel flown into a bad
+// opening is abandoned far more often than it is quit — with the way back to
+// the launch screen and out of the game below them. Ports briardart's
+// PauseOverlay.
 MenuPage {
     id: root
 
     signal resumed
+    signal restarted
     signal settingsRequested
     signal toMenu
     signal exitGame
@@ -22,6 +25,11 @@ MenuPage {
                 label: qsTr("RESUME"),
                 primary: true,
                 act: () => root.resumed()
+            },
+            {
+                label: qsTr("RESTART"),
+                primary: false,
+                act: () => root.restarted()
             },
             {
                 label: qsTr("SETTINGS"),

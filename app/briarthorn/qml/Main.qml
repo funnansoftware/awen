@@ -806,6 +806,7 @@ Window {
         focus: root.paused && !settings.open
         device: root.device
         onResumed: root.resumeDuel()
+        onRestarted: root.startDuel()
         onSettingsRequested: root.openSettings()
         onToMenu: root.startMenu()
         onExitGame: Qt.quit()
@@ -889,8 +890,11 @@ Window {
 
     // New game: rebuild both craft factory-fresh, sweep the whole world —
     // the demo's leavings and the spent craft alike — and enroll the new
-    // pair on the game range step.
+    // pair on the game range step. Clears the pause the way startMenu() does,
+    // so a restart taken from the pause page leaves the fresh duel running
+    // rather than frozen behind the overlay it was ordered from.
     function startDuel() {
+        root.paused = false;
         demo.reset();
         game.reset();
         scenario.reset();
