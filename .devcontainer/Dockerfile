@@ -69,6 +69,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Prebuilt-Qt support: pip runs aqtinstall in CI (the image's python is
 # "externally managed", hence the override), and the official Qt binaries link
 # runtime libraries the source build got from vcpkg instead.
+#
+# libpulse0 is for QtMultimedia, which briarthorn's interface cues play through:
+# the official libQt6Multimedia.so carries a hard NEEDED on libpulse.so.0 (that
+# is the audio sink on linux — Qt ships no ALSA backend), so without it the link
+# fails outright, not just the sound.
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
@@ -79,4 +84,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libegl1 \
     libopengl0 \
+    libpulse0 \
     && rm -rf /var/lib/apt/lists/*

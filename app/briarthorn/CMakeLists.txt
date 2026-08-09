@@ -1,6 +1,19 @@
 project(briarthorn)
 
+# The cue voices, one implementation per platform, both named Cue.qml so the
+# type name is the same and Sfx never learns which it got. The browser build
+# takes the silent one: the wasm Qt kit carries no QtMultimedia (Qt ships it for
+# the multithreaded kit only, and this build is single-threaded), and an
+# `import QtMultimedia` that resolves to nothing does not degrade — it stops
+# Main.qml loading.
+if(EMSCRIPTEN)
+    set(QML_CUE qml/audio/wasm/Cue.qml)
+else()
+    set(QML_CUE qml/audio/Cue.qml)
+endif()
+
 set(QML_SINGLETONS
+    qml/audio/Sfx.qml
     qml/commands/Verbs.qml
     qml/database/Abilities.qml
     qml/database/Database.qml
@@ -25,6 +38,7 @@ awen_add_executable(${PROJECT_NAME}
     MAIN main.cpp
     QML_FILES
         qml/Main.qml
+        ${QML_CUE}
         qml/commands/CommandAbility.qml
         qml/commands/CommandSteer.qml
         qml/commands/CommandThrottle.qml
@@ -140,6 +154,32 @@ awen_add_executable(${PROJECT_NAME}
     # generated briarthorn.html stays as a debug fallback.
     WEB_SHELL web/index.html
 )
+
+# What the sounding Cue plays through. QtMultimedia only for QSoundEffect, which
+# lives in the module's core and decodes WAV itself — no media backend is pulled
+# in. The wasm build has no QtMultimedia and no need of it: its Cue is silent.
+if(NOT EMSCRIPTEN)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Multimedia)
+endif()
+
+# A resource of their own rather than the QML module's RESOURCES, so a cue's URL
+# has one form and not two: a desktop debug build loads Main.qml from the source
+# tree (see below) and a relative path would then resolve outside the module.
+# BASE strips the directory, leaving qrc:/audio/<role>.wav on every config.
+#
+# Not shipped to the browser, where the silent Cue never resolves the urls Sfx
+# hands it: the web build is downloaded before it runs, so a cue it cannot play
+# is not merely dead weight in the binary, it is dead weight on the wire.
+if(NOT EMSCRIPTEN)
+    qt_add_resources(${PROJECT_NAME} briarthorn_audio
+        PREFIX "/audio"
+        BASE assets/audio
+        FILES
+            assets/audio/back.wav
+            assets/audio/navigate.wav
+            assets/audio/press.wav
+    )
+endif()
 
 # qmlpreview live-reload: a desktop debug build loads Main.qml from the source
 # tree instead of the compiled module, because the engine only reloads QML that

@@ -58,13 +58,27 @@ ENV CC=gcc-14 \
     CXX=g++-14
 
 # Qt build dependencies — vcpkg builds Qt from source on linux (xcb windowing,
-# EGL, xkbcommon) and its meta-build needs the autotools family. Same set as
-# the main Dockerfile.
+# EGL, xkbcommon) and its meta-build needs the autotools family. Same set as the
+# main Dockerfile, plus the last three below.
+#
+# The last three are for QtMultimedia, which briarthorn's interface cues play
+# through. It needs an audio sink built from source here — unlike the main image
+# this one cannot borrow one from the official Qt binaries, because steamos
+# builds Qt itself to hold the Deck's glibc floor. Each is named by the port
+# that asks apt for it:
+#   libltdl-dev     — vcpkg-make refuses to run without ltdl, and libxcrypt with
+#                     it, by name in a fatal error.
+#   libselinux1-dev — glib warns its build may fail when SELinux is missing.
+#   python3-venv    — Debian splits venv out of python3, so any port that
+#                     provisions one fails at `python3 -m venv` without it.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf \
     autoconf-archive \
     automake \
     libtool \
+    libltdl-dev \
+    libselinux1-dev \
+    python3-venv \
     '^libxcb.*-dev' \
     libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev \
     libxkbcommon-x11-dev libegl1-mesa-dev \

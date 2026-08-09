@@ -52,7 +52,16 @@ include(cmake/qt-vcpkg-fixup.cmake)
 include(cmake/target/clang-format.cmake)
 include(cmake/target/clang-tidy.cmake)
 
-find_package(Qt6 6.11 CONFIG REQUIRED COMPONENTS Quick)
+set(AWEN_QT_COMPONENTS Quick)
+
+# QtMultimedia backs briarthorn's interface cues. Not on wasm: Qt ships it for
+# the multithreaded wasm kit only, and this build is single-threaded (see
+# cmake/qt-source.cmake), so the browser gets the silent Cue instead.
+if(NOT EMSCRIPTEN)
+    list(APPEND AWEN_QT_COMPONENTS Multimedia)
+endif()
+
+find_package(Qt6 6.11 CONFIG REQUIRED COMPONENTS ${AWEN_QT_COMPONENTS})
 
 qt_standard_project_setup(REQUIRES 6.11)
 

@@ -59,8 +59,10 @@ jobs:
           host: all_os
           target: wasm
           arch: wasm_singlethread
-          # QtWebSockets only: the wasm kit doesn't offer QtNetworkAuth, whose
-          # loopback OAuth can't run in the browser anyway.
+          # QtWebSockets only. No QtNetworkAuth: the kit doesn't offer it, and
+          # its loopback OAuth can't run in the browser anyway. No QtMultimedia
+          # either — Qt ships that for wasm_multithread alone, and the arch here
+          # is deliberate, so briarthorn's browser build takes the silent Cue.
           modules: qtwebsockets
           extra: --autodesktop
           install-deps: false
