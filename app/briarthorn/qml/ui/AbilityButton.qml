@@ -70,6 +70,8 @@ Item {
             return qsTr("NO LOCK");
         case AbilitySlot.Impediment.Distant:
             return qsTr("RANGE");
+        case AbilitySlot.Impediment.NoTarget:
+            return qsTr("NO TARGET");
         default:
             return "";
         }
@@ -225,6 +227,15 @@ Item {
             height: parent.height
             color: root.tint
         }
+    }
+
+    // The tap-sink (briardart's range-control lesson): the point handler
+    // below takes only a passive grab, and the scope's mark hit areas listen
+    // under the whole display — a control standing over the picture takes the
+    // tap's exclusive grab, or one press fires the button and designates the
+    // mark behind it.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
     }
 
     // A single point, grabbed on press and held until release — no drag

@@ -91,12 +91,26 @@ Window {
 
     // The shot the player is holding armed, if any. Every arming cue reads off
     // this one slot: the scope paints the envelope its round can reach and
-    // brackets the return its seeker is holding, and the readout says what it
-    // is waiting on. Null — the disarmed case — leaves all three off.
+    // the readout says what it is waiting on. Null — the disarmed case —
+    // leaves both off.
     readonly property AbilitySlot armed: game.ownship.armedAbility
     readonly property real armedReach: root.armed ? root.armed.reach : 0
     readonly property bool armedValid: root.armed !== null && root.armed.valid
-    readonly property string lockedContact: root.armed && root.armed.lock ? root.armed.lock.callsign : ""
+
+    // The pilot's designated contact, straight off the flown craft, and —
+    // where the survey validates it — the contact a guided launch would take
+    // right now. The scope's cursor stands on the first and turns its latched
+    // colour on the second; under designation the two can only ever name the
+    // same mark.
+    readonly property string selectedContact: game.ownship.targetContact
+    readonly property string shootableContact: {
+        for (let i = 0; i < game.ownship.abilities.length; ++i) {
+            const slot = game.ownship.abilities[i];
+            if (slot.guided && slot.lock !== null)
+                return slot.lock.callsign;
+        }
+        return "";
+    }
 
     width: 1280
     height: 720
@@ -192,8 +206,17 @@ Window {
             event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
-            if (!event.isAutoRepeat && root.live)
-                event.accepted = actions.keyReleased(event.key);
+            if (event.isAutoRepeat || !root.live)
+                return;
+            event.accepted = actions.keyReleased(event.key);
+            // Tab and Backtab are one physical key wearing the shift state of
+            // the moment, so a press can come down as one and its release
+            // come up as the other — release both, or the cycle key jams a
+            // held contribution it can never clear.
+            if (event.key === Qt.Key_Tab)
+                actions.keyReleased(Qt.Key_Backtab);
+            else if (event.key === Qt.Key_Backtab)
+                actions.keyReleased(Qt.Key_Tab);
         }
 
         // Controller events ignore focus entirely, so handing the page the
@@ -299,6 +322,16 @@ Window {
             }
         }
 
+        // The designation cycle: each step walks the selectable picture to the
+        // next contact. Frozen off the duel like the flight axes — cycling
+        // changes what a launch does, and a menu's Tab must never re-aim the
+        // craft behind it.
+        Axis {
+            id: axisTarget
+            enabled: root.live
+            onStepped: direction => root.cycleTarget(direction)
+        }
+
         Actions {
             id: actions
 
@@ -334,6 +367,18 @@ Window {
                 control: axisRange
                 positive: root.keymap.range.pad.positive
                 negative: root.keymap.range.pad.negative
+            }
+
+            ActionKey {
+                control: axisTarget
+                positive: root.keymap.target.key.positive
+                negative: root.keymap.target.key.negative
+            }
+
+            ActionButton {
+                control: axisTarget
+                positive: root.keymap.target.pad.positive
+                negative: root.keymap.target.pad.negative
             }
 
             ActionAxis {
@@ -402,6 +447,13 @@ Window {
         // object of its own and posts exactly the record a key press posts.
         CommandAbility {
             id: touched
+            queue: bus
+        }
+
+        // The designation's one path onto the bus: every selection source —
+        // the cycle, a scope tap, a track list's row — posts through this.
+        CommandTarget {
+            id: designate
             queue: bus
         }
 
@@ -591,7 +643,16 @@ Window {
             trailsRunning: root.running
             armedReach: root.armedReach
             armedValid: root.armedValid
-            lockedContact: root.lockedContact
+            shootableContact: root.shootableContact
+            selectedContact: root.selectedContact
+            // Live only: a tap on the frozen scope behind an overlay must not
+            // queue a designation that lands on resume.
+            selectionEnabled: root.live
+            // A tap toggles: tapping the selected contact stands it down. A
+            // thumb on the scope hands the HUD to the touch controls, as one
+            // on the rack does.
+            onTrackTapped: contactId => designate.post({ contact: contactId === game.ownship.targetContact ? "" : contactId })
+            onTrackTouched: root.device.kind = ActiveDevice.Touch
 
             anchors {
                 left: parent.left
@@ -800,8 +861,8 @@ Window {
             radiusFraction: 0.45
             symbolSize: height * 0.08
             // The envelope mirrors onto the overview with everything else the
-            // minimap keeps; the lock bracket does not, because a mark drawn
-            // this small has no room to stand one off.
+            // minimap keeps; the cursor does not, because a mark drawn this
+            // small has no room to stand one off.
             armedReach: root.armedReach
             armedValid: root.armedValid
             backgroundColor: Style.theme.windowBackground
@@ -1010,6 +1071,35 @@ Window {
     function judge() {
         if (root.decided && root.live)
             root.mode = Mode.Kind.End;
+    }
+
+    // The contacts the designation cycle walks, ordered clockwise off
+    // ownship's nose so the walk reads as a sweep across the heading-up scope.
+    function selectableTracks(): var {
+        const picked = detection.tracks.filter(t => t.selectable);
+        picked.sort((a, b) => Geo.wrap180(a.azimuth - game.ownship.heading) - Geo.wrap180(b.azimuth - game.ownship.heading));
+        return picked;
+    }
+
+    // One cycle press: the next selectable contact around the scope, wrapping,
+    // or the one nearest the nose where nothing is selected yet. An empty
+    // picture selects nothing and says nothing.
+    function cycleTarget(direction: int) {
+        const picked = root.selectableTracks();
+        if (picked.length === 0)
+            return;
+        const current = picked.findIndex(t => t.contactId === game.ownship.targetContact);
+        let chosen = picked[0];
+        if (current < 0) {
+            for (let i = 1; i < picked.length; ++i) {
+                const off = Math.abs(Geo.wrap180(picked[i].azimuth - game.ownship.heading));
+                if (off < Math.abs(Geo.wrap180(chosen.azimuth - game.ownship.heading)))
+                    chosen = picked[i];
+            }
+        } else {
+            chosen = picked[(current + direction + picked.length) % picked.length];
+        }
+        designate.post({ contact: chosen.contactId });
     }
 
     // New game: rebuild both craft factory-fresh, sweep the whole world —

@@ -68,6 +68,14 @@ Item {
     // which de-activates the handler and re-activates it under the one finger
     // — and this control steps a setting on that rising edge, so a single tap
     // would range twice and run the picture to its stop.
+
+    // The tap-sink: the point handler takes only a passive grab, and the
+    // scope's mark hit areas listen under the whole display — a ranging tap
+    // must not also designate the mark behind the disc.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+    }
+
     PointHandler {
         id: handler
         acceptedButtons: Qt.NoButton

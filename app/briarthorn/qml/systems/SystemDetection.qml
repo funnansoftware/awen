@@ -77,6 +77,11 @@ System {
                 changed = true;
             }
         }
+        // A designation naming no held track — its contact died, or a late
+        // record outran the picture — stands down here, where the track
+        // lifecycle already is.
+        if (root.observer.targetContact !== "" && root.held[root.observer.targetContact] === undefined)
+            root.observer.targetContact = "";
         if (changed)
             root.tracks = Object.values(root.held);
     }

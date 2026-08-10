@@ -22,6 +22,8 @@ Store {
         classification: Classification.Kind.AircraftFighter
         side: Side.Kind.Ownship
         radarFov: 60
+        // The pilot designates; the guided rack only takes the selected track.
+        selectsTarget: true
         // Spawned already at cruise: the lever at rest commands idle, not a
         // stop, and the first post overwrites this binding.
         commandedThrottle: GameRules.throttleIdle
@@ -51,6 +53,13 @@ Store {
     CommandHandler {
         name: Verbs.ability
         onHandle: payload => root.ownship.invoke(payload.ability)
+    }
+
+    // Designation routes straight onto the craft: the weapon survey is what
+    // judges whether the named contact is anything a seeker can take.
+    CommandHandler {
+        name: Verbs.target
+        onHandle: payload => root.ownship.targetContact = payload.contact
     }
 
     // Replaces the player's craft with a factory-fresh one — QML's

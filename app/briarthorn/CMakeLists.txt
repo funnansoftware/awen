@@ -41,6 +41,7 @@ awen_add_executable(${PROJECT_NAME}
         ${QML_CUE}
         qml/commands/CommandAbility.qml
         qml/commands/CommandSteer.qml
+        qml/commands/CommandTarget.qml
         qml/commands/CommandThrottle.qml
         qml/database/Ability.qml
         qml/database/AbilityCountermeasure.qml

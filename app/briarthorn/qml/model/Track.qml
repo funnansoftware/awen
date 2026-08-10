@@ -34,4 +34,11 @@ QtObject {
 
     // The hull reading as a fraction of full, 0..1; zero without a reading.
     readonly property real healthFrac: root.maxHealth > 0 ? Math.max(0, Math.min(1, root.health / root.maxHealth)) : 0
+
+    // Whether the pilot can designate this contact: a resolved hostile craft.
+    // Munitions and decoys plot but are passed over — a round aimed at either
+    // re-homes onto the loudest return anyway — and an unresolved contact
+    // reads Unknown, which no seeker opposes. The cycle, the scope's taps and
+    // the track list all read this one answer.
+    readonly property bool selectable: root.side === Side.Kind.Hostile && root.classification !== Classification.Kind.Decoy && Database.weaponDataFor(root.classification) === null
 }

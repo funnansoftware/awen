@@ -50,31 +50,67 @@ System {
     // The shot picture, published before anything launches: for every guided
     // launch slot in the world, the return it would take right now and —
     // where it has none — whether the radar is holding one anyway, out beyond
-    // what the round could fly to. The rack's readout, the scope's envelope
-    // and the launch below all read this one answer, so what the pilot is
-    // shown is exactly what the trigger does.
+    // what the round could fly to. A launcher that designates (the player,
+    // the demo's director) locks its designated contact or nothing; every
+    // other launcher keeps the automatic pick. The rack's readout, the
+    // scope's envelope and the launch below all read this one answer, so what
+    // the pilot is shown is exactly what the trigger does.
     function survey() {
         for (let i = 0; i < root.world.entities.length; ++i) {
             const launcher = root.world.entities[i];
+            const chosen = launcher.selectsTarget ? root.designated(launcher) : null;
             for (let j = 0; j < launcher.abilities.length; ++j) {
                 const slot = launcher.abilities[j];
                 if (!slot.guided)
                     continue;
-                const lock = root.bestReturn(launcher, launcher, launcher.side, slot.reach);
+                let lock = null;
+                let distant = false;
+                if (launcher.selectsTarget) {
+                    // The designation is judged by the same gates the auto
+                    // pick ranks over, against the one contact the pilot
+                    // named — and "too far for the round" keeps its own
+                    // answer, judged at the radar's own reach.
+                    if (chosen !== null && root.takeable(launcher, launcher, launcher.side, chosen)) {
+                        const d = Geo.distance(launcher, chosen);
+                        if (d <= slot.reach)
+                            lock = chosen;
+                        else
+                            distant = d <= launcher.detectionRange;
+                    }
+                } else {
+                    lock = root.bestReturn(launcher, launcher, launcher.side, slot.reach);
+                    // Nothing to take inside the envelope, but something out
+                    // past it: "close the range" and "point at something" are
+                    // different instructions, so the rack gets to tell them
+                    // apart.
+                    distant = lock === null && root.bestReturn(launcher, launcher, launcher.side, launcher.detectionRange) !== null;
+                }
                 // Written only where it changes: a lock repinned in place
                 // every tick flickers every binding on it, and restarts the
                 // animations gated by them — the same care SystemThreat's
                 // mark pass takes.
                 if (slot.lock !== lock)
                     slot.lock = lock;
-                // Nothing to take inside the envelope, but something out
-                // past it: "close the range" and "point at something" are
-                // different instructions, so the rack gets to tell them apart.
-                const distant = lock === null && root.bestReturn(launcher, launcher, launcher.side, launcher.detectionRange) !== null;
                 if (slot.distant !== distant)
                     slot.distant = distant;
+                const undesignated = launcher.selectsTarget && launcher.targetContact === "";
+                if (slot.undesignated !== undesignated)
+                    slot.undesignated = undesignated;
             }
         }
+    }
+
+    // The world entity a launcher's designation names, or null. Selection is
+    // of a track, so the id resolves against the live world each tick and a
+    // spent contact simply stops resolving — no stale lock can publish.
+    function designated(launcher: Entity): Entity {
+        if (launcher.targetContact === "")
+            return null;
+        for (let i = 0; i < root.world.entities.length; ++i) {
+            if (root.world.entities[i].callsign === launcher.targetContact)
+                return root.world.entities[i];
+        }
+        return null;
     }
 
     // One round's tick: seek, trip the fuze on a near non-owning entity (or
@@ -246,6 +282,23 @@ System {
         }
     }
 
+    // Whether one return passes every gate a seeker needs besides reach —
+    // live, opposed, illuminated by the radar cone and in line of sight. The
+    // one definition the automatic pick ranks over and a designation is
+    // judged by, so the two policies can never disagree about what is
+    // takeable; range stays with the caller, which needs the distance anyway.
+    function takeable(at: Entity, illuminator: Entity, side: int, contact: Entity): bool {
+        if (contact === at || contact === illuminator || contact.health <= 0)
+            return false;
+        if (!root.opposed(side, contact.side))
+            return false;
+        if (!root.illuminated(illuminator, contact))
+            return false;
+        // The seeker is a radar receiver too: a return behind a pillar
+        // reaches neither it nor the illuminator.
+        return Geo.lineOfSight(at, contact, root.world.obstacles);
+    }
+
     // The loudest opposed live return within range of at, gated by the
     // illuminator's radar cone; ties break to the nearest — the tie a craft
     // and its own flare are always in, so range alone decides between them
@@ -255,16 +308,8 @@ System {
         let bestDist = 0;
         for (let i = 0; i < root.world.entities.length; ++i) {
             const contact = root.world.entities[i];
-            if (contact === at || contact === illuminator || contact.health <= 0)
-                continue;
-            if (!root.opposed(side, contact.side))
-                continue;
             const d = Geo.distance(at, contact);
-            if (d > range || !root.illuminated(illuminator, contact))
-                continue;
-            // The seeker is a radar receiver too: a return behind a pillar
-            // reaches neither it nor the illuminator.
-            if (!Geo.lineOfSight(at, contact, root.world.obstacles))
+            if (d > range || !root.takeable(at, illuminator, side, contact))
                 continue;
             if (best === null || contact.stealth < best.stealth || (contact.stealth === best.stealth && d < bestDist)) {
                 best = contact;

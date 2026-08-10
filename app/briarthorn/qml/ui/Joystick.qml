@@ -111,6 +111,14 @@ Item {
     // tracking is also delivered as a synthetic left-button press, which
     // de-activates the handler under the held thumb — and a release is what
     // returns the stick to rest, so the ship would drop to neutral mid-turn.
+
+    // The tap-sink: the point handler takes only a passive grab, and the
+    // scope's mark hit areas listen under the whole display — a thumb landing
+    // here must not also designate a gutter-clamped mark behind the pad.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+    }
+
     PointHandler {
         id: handler
         acceptedButtons: Qt.NoButton

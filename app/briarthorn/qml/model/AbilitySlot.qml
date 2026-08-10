@@ -18,7 +18,8 @@ QtObject {
         Cooling,
         Empty,
         NoLock,
-        Distant
+        Distant,
+        NoTarget
     }
 
     // The ability definition this slot instantiates.
@@ -65,6 +66,11 @@ QtObject {
     property Entity lock: null
     property bool distant: false
 
+    // Whether the launcher designates its targets and has designated nothing:
+    // the impediment a press meets before any radar question is asked.
+    // SystemWeapon writes it with the lock.
+    property bool undesignated: false
+
     // Whether a launch would happen this instant: everything the consuming
     // system checks, in the one place the rack, the scope and the trigger all
     // read it from.
@@ -75,8 +81,11 @@ QtObject {
             return AbilitySlot.Impediment.Empty;
         if (root.cooldownRemaining > 0)
             return AbilitySlot.Impediment.Cooling;
-        if (root.guided && root.lock === null)
+        if (root.guided && root.lock === null) {
+            if (root.undesignated)
+                return AbilitySlot.Impediment.NoTarget;
             return root.distant ? AbilitySlot.Impediment.Distant : AbilitySlot.Impediment.NoLock;
+        }
         return AbilitySlot.Impediment.None;
     }
 

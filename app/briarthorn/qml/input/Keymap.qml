@@ -24,20 +24,12 @@ QtObject {
     // says so rather than lying about it.
     readonly property bool available: Qt.application.organization !== "" || Qt.application.domain !== ""
 
-    // Every registered ability's controls, name to { key, button }; -1 is
-    // unbound. Loaded in the initialiser and not at completion: an object held
-    // in a property completes after the file that holds it, so a deferred load
-    // leaves the whole first turn on defaults.
-    property var bindings: root.load()
-
-    // The ability whose binding the last bind() took away, and on which device.
-    // The settings page marks that cap, so a steal is never silent.
-    property string displaced: ""
-    property bool displacedPad: false
-
     // The flight controls, fixed. They are not rebindable, but they are listed
     // so a capture can refuse their codes: the router fans every event to every
-    // action, so an ability sharing W would thrust as well as fire.
+    // action, so an ability sharing W would thrust as well as fire. The fixed
+    // maps and the blocked lists sit above bindings for the same reason the
+    // store does: load() prunes a stale save through reserved(), which reads
+    // them all.
     readonly property var flight: ({
             steer: {
                 key: {
@@ -78,6 +70,20 @@ QtObject {
             }
         })
 
+    // The designation cycle, fixed like the range map: Tab and Shift+Tab walk
+    // the track picture, Y and LB do on the pad, and a capture must refuse
+    // the pad pair the way it refuses a flight control.
+    readonly property var target: ({
+            key: {
+                positive: [Qt.Key_Tab],
+                negative: [Qt.Key_Backtab]
+            },
+            pad: {
+                positive: [Gamepad.Button.North],
+                negative: [Gamepad.Button.LeftShoulder]
+            }
+        })
+
     // Keys a binding may never take: the way in and out of the page, its own
     // traversal keys, and the modifiers — a digital action has no modifier
     // concept and could only fold one as an ordinary key.
@@ -85,6 +91,17 @@ QtObject {
 
     // Buttons a binding may never take: the pad's way in and out of the page.
     readonly property list<int> blockedButtons: [Gamepad.Button.Start, Gamepad.Button.East]
+
+    // Every registered ability's controls, name to { key, button }; -1 is
+    // unbound. Loaded in the initialiser and not at completion: an object held
+    // in a property completes after the file that holds it, so a deferred load
+    // leaves the whole first turn on defaults.
+    property var bindings: root.load()
+
+    // The ability whose binding the last bind() took away, and on which device.
+    // The settings page marks that cap, so a steal is never silent.
+    property string displaced: ""
+    property bool displacedPad: false
 
     // Controller buttons name their position; the faces and shoulders read
     // better as what is printed on the pad in the player's hands.
@@ -125,7 +142,7 @@ QtObject {
         if ((pad ? root.blockedButtons : root.blockedKeys).includes(code))
             return true;
         const channel = pad ? "pad" : "key";
-        const fixed = [root.range];
+        const fixed = [root.range, root.target];
         for (const axis in root.flight)
             fixed.push(root.flight[axis]);
         for (let i = 0; i < fixed.length; ++i) {
@@ -235,12 +252,19 @@ QtObject {
             return table;
         for (const name in saved) {
             const pair = saved[name];
-            if (Array.isArray(pair) && pair.length === 2 && Number.isInteger(pair[0]) && Number.isInteger(pair[1]))
+            if (Array.isArray(pair) && pair.length === 2 && Number.isInteger(pair[0]) && Number.isInteger(pair[1])) {
+                // A code a fixed map has since claimed drops to unbound: the
+                // router fans every event to every action, so a stale save
+                // sharing the cycle pair would fire as well as cycle.
+                const key = root.reserved(false, pair[0]) ? -1 : pair[0];
+                const button = root.reserved(true, pair[1]) ? -1 : pair[1];
+                if (key !== pair[0] || button !== pair[1])
+                    console.warn("Keymap: dropping a saved control the game now reserves from \"" + name + "\"");
                 table[name] = {
-                    key: pair[0],
-                    button: pair[1]
+                    key: key,
+                    button: button
                 };
-            else
+            } else
                 console.warn("Keymap: ignoring a malformed binding for \"" + name + "\"");
         }
         return table;

@@ -36,6 +36,8 @@ Item {
             return qsTr("NO TARGET IN RADAR VOLUME");
         case AbilitySlot.Impediment.Distant:
             return qsTr("TARGET OUT OF MISSILE RANGE");
+        case AbilitySlot.Impediment.NoTarget:
+            return qsTr("NO TARGET SELECTED");
         default:
             return root.slot.lock !== null ? qsTr("LOCK %1").arg(root.slot.lock.callsign) : qsTr("CLEAR TO FIRE");
         }
@@ -108,5 +110,12 @@ Item {
 
         NumberAnimation { from: 1; to: 0.4; duration: 300 }
         NumberAnimation { from: 0.4; to: 1; duration: 300 }
+    }
+
+    // The tap-sink: the panel stands over the scope's upper sector, and the
+    // mark hit areas listen under the whole display — a press on the readout
+    // must not designate whatever flies behind it.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
     }
 }
