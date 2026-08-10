@@ -84,8 +84,10 @@ Item {
     // menu backdrop leave it off and carry no handlers at all.
     property bool selectionEnabled: false
 
-    // A tap on a selectable mark, by track id, forwarded off the track layer.
+    // A tap on a selectable mark, by track id, forwarded off the track layer;
+    // trackTouched rides with it when the tap came from a touchscreen.
     signal trackTapped(string contactId)
+    signal trackTouched
 
     // Heading-up turns the whole picture so ownship's nose is 12 o'clock; false
     // leaves it north-up. The rotation the track picture carries.
@@ -320,6 +322,7 @@ Item {
         shootableContact: root.shootableContact
         selectionEnabled: root.selectionEnabled
         onTrackTapped: contactId => root.trackTapped(contactId)
+        onTrackTouched: root.trackTouched()
         showLabels: root.showTrackLabels
         showHealth: root.showTrackHealth
         showRanges: root.showTrackRanges

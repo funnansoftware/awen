@@ -61,8 +61,11 @@ Item {
     property bool selectionEnabled: false
 
     // A tap on a selectable mark, by track id. The picture stays a display —
-    // the caller posts the designation, this only reports the tap.
+    // the caller posts the designation, this only reports the tap. A tap from
+    // a touchscreen raises trackTouched with it, so the HUD can hand the
+    // interface to the touch controls as the rack does.
     signal trackTapped(string contactId)
+    signal trackTouched
 
     // When positive, off-scale contacts clamp to this pixel radius (the outer
     // ring) instead of plotting beyond it, so ranging in seats a contact that
@@ -175,18 +178,23 @@ Item {
         // PointHandler: its grab makes the topmost mark the only winner where
         // two overlap, and it takes touch and mouse without the synthetic
         // double-fire. The track guard covers the teardown window, as the
-        // mark's own bindings do.
+        // mark's own bindings do. The selected mark stays tappable even
+        // unresolved — the designation survives losing the contact's picture,
+        // so the tap that stands it down must survive with it.
         Loader {
             anchors.centerIn: parent
             width: Math.max(44, mark.width * 1.4)
             height: width
-            active: root.selectionEnabled && mark.track !== null && mark.track.selectable
+            active: root.selectionEnabled && mark.track !== null && (mark.track.selectable || mark.selected)
             sourceComponent: Item {
                 TapHandler {
                     gesturePolicy: TapHandler.ReleaseWithinBounds
-                    onTapped: {
-                        if (mark.track !== null)
-                            root.trackTapped(mark.track.contactId);
+                    onTapped: eventPoint => {
+                        if (mark.track === null)
+                            return;
+                        if (eventPoint.device.type === PointerDevice.TouchScreen)
+                            root.trackTouched();
+                        root.trackTapped(mark.track.contactId);
                     }
                 }
             }

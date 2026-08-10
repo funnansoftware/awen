@@ -77,4 +77,11 @@ Item {
             duration: 320
         }
     }
+
+    // The tap-sink: the warning stands over the scope's upper sector, and the
+    // mark hit areas listen under the whole display — a press on it must not
+    // designate whatever flies behind it.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+    }
 }

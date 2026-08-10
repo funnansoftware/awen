@@ -648,8 +648,11 @@ Window {
             // Live only: a tap on the frozen scope behind an overlay must not
             // queue a designation that lands on resume.
             selectionEnabled: root.live
-            // A tap toggles: tapping the selected contact stands it down.
+            // A tap toggles: tapping the selected contact stands it down. A
+            // thumb on the scope hands the HUD to the touch controls, as one
+            // on the rack does.
             onTrackTapped: contactId => designate.post({ contact: contactId === game.ownship.targetContact ? "" : contactId })
+            onTrackTouched: root.device.kind = ActiveDevice.Touch
 
             anchors {
                 left: parent.left

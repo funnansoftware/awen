@@ -111,4 +111,11 @@ Item {
         NumberAnimation { from: 1; to: 0.4; duration: 300 }
         NumberAnimation { from: 0.4; to: 1; duration: 300 }
     }
+
+    // The tap-sink: the panel stands over the scope's upper sector, and the
+    // mark hit areas listen under the whole display — a press on the readout
+    // must not designate whatever flies behind it.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+    }
 }

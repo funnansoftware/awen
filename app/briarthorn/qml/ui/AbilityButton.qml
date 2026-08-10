@@ -229,6 +229,15 @@ Item {
         }
     }
 
+    // The tap-sink (briardart's range-control lesson): the point handler
+    // below takes only a passive grab, and the scope's mark hit areas listen
+    // under the whole display — a control standing over the picture takes the
+    // tap's exclusive grab, or one press fires the button and designates the
+    // mark behind it.
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+    }
+
     // A single point, grabbed on press and held until release — no drag
     // threshold, so the control fires the moment it is touched, and its own
     // point, so a thumb here and one on the stick work at the same time.
