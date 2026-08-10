@@ -206,8 +206,17 @@ Window {
             event.accepted = actions.keyPressed(event.key);
         }
         Keys.onReleased: event => {
-            if (!event.isAutoRepeat && root.live)
-                event.accepted = actions.keyReleased(event.key);
+            if (event.isAutoRepeat || !root.live)
+                return;
+            event.accepted = actions.keyReleased(event.key);
+            // Tab and Backtab are one physical key wearing the shift state of
+            // the moment, so a press can come down as one and its release
+            // come up as the other — release both, or the cycle key jams a
+            // held contribution it can never clear.
+            if (event.key === Qt.Key_Tab)
+                actions.keyReleased(Qt.Key_Backtab);
+            else if (event.key === Qt.Key_Backtab)
+                actions.keyReleased(Qt.Key_Tab);
         }
 
         // Controller events ignore focus entirely, so handing the page the
