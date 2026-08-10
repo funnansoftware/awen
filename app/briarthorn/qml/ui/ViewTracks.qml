@@ -42,6 +42,12 @@ Item {
     // minimap wants the plot, not the condition of everything on it.
     property bool showHealth: true
 
+    // Whether a resolved craft carries its range under its callsign. Every
+    // range decision the game asks for — arm now or keep closing, run or turn
+    // back in — is made against this number, and the scope is where it is
+    // already being read off. Rides showLabels, since it hangs off the label.
+    property bool showRanges: true
+
     // The contact an armed weapon's seeker is holding, by track id; empty
     // brackets nothing. Exactly one mark ever carries the reticle, so the
     // scope answers "which one is the shot going to" without a legend.
@@ -94,6 +100,12 @@ Item {
         readonly property real trueRange: mark.track ? mark.track.range * root.pxPerMeter : 0
         readonly property bool locked: root.lockedContact !== "" && mark.track !== null && mark.track.contactId === root.lockedContact
 
+        // Range under the callsign, on resolved craft only: maxHealth is the
+        // one field the sweep leaves at zero for a contact it has not resolved
+        // and that a munition or a decoy never carries, so it says "a craft,
+        // and we know what it is" without a second test for either.
+        readonly property string rangeCaption: root.showRanges && mark.track !== null && mark.track.maxHealth > 0 ? qsTr("%1 KM").arg((mark.track.range / 1000).toFixed(1)) : ""
+
         // Beyond the scale, and so clamped: the symbol steps out to its
         // seat past the clamp radius rather than plotting where it truly
         // is. A contact still on the scale is never pushed anywhere.
@@ -110,6 +122,7 @@ Item {
                 side: mark.track ? mark.track.side : Side.Kind.Unknown
                 showLabel: root.showLabels
                 label: !mark.track || mark.track.classification === Classification.Kind.Unknown ? "" : mark.track.contactId
+                caption: mark.rangeCaption
                 hasHealth: root.showHealth && mark.track && mark.track.maxHealth > 0
                 healthFrac: mark.track ? mark.track.healthFrac : 1
             }

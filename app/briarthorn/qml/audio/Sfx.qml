@@ -54,6 +54,35 @@ QtObject {
         volume: 0.45
     }
 
+    // The duel's four. These are synthesised rather than cut from the pack —
+    // a lock tone and a threat warble are tones — and build-combat.py beside
+    // the wavs is the recipe. Mixed under the menu cues: a fight sounds these
+    // in overlapping bursts where a menu sounds one at a time.
+
+    // A round leaving ownship's rail.
+    readonly property Cue launchCue: Cue {
+        source: "qrc:/audio/launch.wav"
+        volume: 0.4
+    }
+
+    // A seeker taking a return: the shot the pilot was waiting for is on.
+    readonly property Cue lockCue: Cue {
+        source: "qrc:/audio/lock.wav"
+        volume: 0.3
+    }
+
+    // A homing round marked inbound on ownship.
+    readonly property Cue threatCue: Cue {
+        source: "qrc:/audio/threat.wav"
+        volume: 0.35
+    }
+
+    // Ownship's hull taking damage.
+    readonly property Cue impactCue: Cue {
+        source: "qrc:/audio/impact.wav"
+        volume: 0.5
+    }
+
     // Whether this build can sound anything: the browser's Cue is a stub, and a
     // settings page that offered a switch there would be offering to silence
     // silence. Read off one cue because all three are the same implementation —
@@ -75,6 +104,26 @@ QtObject {
             root.backCue.play();
     }
 
+    function launch() {
+        if (root.enabled)
+            root.launchCue.play();
+    }
+
+    function lock() {
+        if (root.enabled)
+            root.lockCue.play();
+    }
+
+    function threat() {
+        if (root.enabled)
+            root.threatCue.play();
+    }
+
+    function impact() {
+        if (root.enabled)
+            root.impactCue.play();
+    }
+
     // Puts the choice in force and remembers it, as Style.select() does —
     // written through at once and synced, because a web build's tab can close
     // without ever running a destructor.
@@ -93,5 +142,9 @@ QtObject {
         root.navigateCue.warm();
         root.pressCue.warm();
         root.backCue.warm();
+        root.launchCue.warm();
+        root.lockCue.warm();
+        root.threatCue.warm();
+        root.impactCue.warm();
     }
 }

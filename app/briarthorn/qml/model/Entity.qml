@@ -83,6 +83,13 @@ QtObject {
     // not; both the flare reflex and SystemPersonality read this one fact.
     property Entity threatInbound: null
 
+    // The pillar standing in this entity's path, marked by SystemAvoidance
+    // each tick, or null for a clear run. Written for everything that flies,
+    // including the craft that steer themselves around it — the mark is what
+    // the wall is, not what is being done about it, and the player's craft
+    // flies no maneuvers and so is warned rather than steered.
+    property Obstacle terrainAhead: null
+
     // SystemFuel drains the tank; the launch screen's demo craft clears this
     // so an endless showing never runs dry.
     property bool burnsFuel: true

@@ -103,6 +103,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemAvoidance.qml
         qml/systems/SystemCollision.qml
         qml/systems/SystemCountermeasure.qml
+        qml/systems/SystemCue.qml
         qml/systems/SystemDetection.qml
         qml/systems/SystemEngage.qml
         qml/systems/SystemFuel.qml
@@ -137,6 +138,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml
         qml/ui/ViewStatus.qml
+        qml/ui/ViewTerrain.qml
         qml/ui/ViewThreat.qml
         qml/ui/ViewTopBar.qml
         qml/ui/ViewTracks.qml
@@ -176,8 +178,12 @@ if(NOT EMSCRIPTEN)
         BASE assets/audio
         FILES
             assets/audio/back.wav
+            assets/audio/impact.wav
+            assets/audio/launch.wav
+            assets/audio/lock.wav
             assets/audio/navigate.wav
             assets/audio/press.wav
+            assets/audio/threat.wav
     )
 endif()
 

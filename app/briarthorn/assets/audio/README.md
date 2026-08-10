@@ -1,4 +1,36 @@
-# Interface cues
+# Cues
+
+Seven in all, built by two scripts. The three the menus speak through are cut
+from a pack; the four the duel speaks through are synthesised. Everything below
+about how Qt plays a cue — and the 1.2 s of silence every one of them carries —
+applies to all seven.
+
+## Combat cues
+
+`build-combat.py` generates these outright, standard library only. There is
+nothing to download, nothing to resample and no third party in the licence,
+because a lock tone and a threat warble *are* tones and a launch and an impact
+are shaped noise — the source is the code, and retuning one is editing the
+function that builds it.
+
+| file         | what it is                               | ms  | fires on                                  |
+| ------------ | ---------------------------------------- | --- | ----------------------------------------- |
+| `launch.wav` | noise transient over a 70 Hz thump       | 340 | a round leaving ownship's rail            |
+| `lock.wav`   | two 1180 Hz pips                         | 165 | a guided rack taking a return             |
+| `threat.wav` | 500/660 Hz warble, odd harmonics         | 400 | a homing round marked inbound on ownship  |
+| `impact.wav` | dark noise over a 55 Hz thump            | 420 | ownship's hull taking damage              |
+
+The lock and the threat are the pair that must never be confused, so they are
+kept apart deliberately: the lock is two clean high pips and the threat sits a
+fifth below it with harmonics on, which still reads as two different sounds
+when both fire inside a second. `qml/systems/SystemCue.qml` is what decides
+when each one speaks, and the mix is the four `volume` values in
+`qml/audio/Sfx.qml`.
+
+Tones get a 3-4 ms attack and the noise bursts get none — see *Choosing a cue*
+below for why that asymmetry is the right way round.
+
+## Interface cues
 
 Three short cues the menus speak through, from Kenney's **Interface Sounds**
 pack (<https://kenney.nl/assets/interface-sounds>), released under
