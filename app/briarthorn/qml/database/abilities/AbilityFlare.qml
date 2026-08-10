@@ -15,7 +15,7 @@ AbilityCountermeasure {
     ejectRange: 2000
     defaultKey: Qt.Key_F
     defaultButton: Gamepad.Button.South
-    // A dispenser pair aft, not a pip per round: the pod is a magazine, and
-    // ten glyphs would out-clutter the racks beside it.
-    stations: [Qt.point(-0.06, 0.42), Qt.point(0.06, 0.42)]
+    // A dispenser pair at the body's aft end, not a pip per round: the pod
+    // is a magazine, and ten glyphs would out-clutter the racks beside it.
+    stations: [Qt.point(-0.045, 0.13), Qt.point(0.045, 0.13)]
 }

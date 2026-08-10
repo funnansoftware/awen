@@ -13,6 +13,7 @@ AbilityLaunch {
     weapon: Classification.Kind.MissileGuided
     defaultKey: Qt.Key_Space
     defaultButton: Gamepad.Button.RightShoulder
-    // One station per round along the swept wings, outboard to inboard.
-    stations: [Qt.point(-0.36, 0.27), Qt.point(-0.26, 0.2), Qt.point(-0.16, 0.13), Qt.point(0.16, 0.13), Qt.point(0.26, 0.2), Qt.point(0.36, 0.27)]
+    // One station per round along the swept wings, outboard to inboard, on
+    // the scope symbol's own delta.
+    stations: [Qt.point(-0.31, 0.3), Qt.point(-0.23, 0.2), Qt.point(-0.14, 0.1), Qt.point(0.14, 0.1), Qt.point(0.23, 0.2), Qt.point(0.31, 0.3)]
 }

@@ -14,5 +14,5 @@ AbilityLaunch {
     defaultKey: Qt.Key_E
     defaultButton: Gamepad.Button.West
     // One station per slug on the fuselage cheeks.
-    stations: [Qt.point(-0.1, -0.05), Qt.point(-0.1, 0.07), Qt.point(0.1, -0.05), Qt.point(0.1, 0.07)]
+    stations: [Qt.point(-0.1, -0.08), Qt.point(-0.1, 0.02), Qt.point(0.1, -0.08), Qt.point(0.1, 0.02)]
 }

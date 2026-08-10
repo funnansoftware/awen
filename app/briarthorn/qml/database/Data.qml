@@ -14,11 +14,6 @@ QtObject {
     property string label: ""
     property real symbolScale: 1
 
-    // A denser top-down outline for instrument-size drawings (the stores
-    // page's plan view), in the same unit-box frame as outline. Empty falls
-    // back to outline, so every kind has a silhouette without authoring one.
-    property list<point> silhouette
-
     // Whether a resolved mark of this kind carries a hull gauge on its left.
     // An airframe's condition is worth reading straight off the picture; a
     // round in flight, a lure and an unresolved return all plot bare.

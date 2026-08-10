@@ -36,15 +36,18 @@ Item {
         return total;
     }
 
-    // The airframe, centred in what the buttons and tally leave.
-    SymbolAirframe {
+    // The airframe, centred in what the buttons and tally leave: the very
+    // symbol the scope plots ownship with, drawn large — so the stores page
+    // and the picture can never disagree about what the craft looks like.
+    Symbol {
         id: airframe
 
-        readonly property real side: Math.max(60, Math.min(root.width * 0.7, root.height - buttons.height - away.height - 28))
+        readonly property real extent: Math.max(60, Math.min(root.width * 0.7, root.height - buttons.height - away.height - 28))
 
-        def: root.ownship ? root.ownship.def : null
-        width: airframe.side
-        height: airframe.side
+        symbolSize: airframe.extent
+        classification: root.ownship ? root.ownship.classification : Classification.Kind.AircraftFighter
+        side: root.ownship ? root.ownship.side : Side.Kind.Ownship
+        showLabel: false
         anchors.horizontalCenter: parent.horizontalCenter
         y: 2
     }

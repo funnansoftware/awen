@@ -163,8 +163,8 @@ Item {
 
         ViewSituationOverview {
             anchors.fill: parent
-            // Inset so the disc and its north marker seat inside the frame
-            // rather than clipping against it.
+            // Inset so the picture and its north marker seat inside the
+            // frame rather than clipping against it.
             anchors.margins: 8
             projection: root.projection
             observer: root.ownship
@@ -172,6 +172,10 @@ Item {
             obstacles: root.obstacles
             armedReach: root.armedReach
             armedValid: root.armedValid
+            // No masking disc here: the preset's disc exists to hide the
+            // scope a floating minimap sits over, and this one sits in its
+            // own frame with the tile's clip doing that job.
+            backgroundColor: "transparent"
         }
 
         // The controller lamp, seated in the disc's free corner so the
