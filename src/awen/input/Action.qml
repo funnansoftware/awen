@@ -22,6 +22,14 @@ QtObject {
         root.value = 0;
     }
 
+    // Re-states what the source is saying right now, with no event to prompt
+    // it — for a handover where the router goes on listening and rest would be
+    // a lie about a control the player is still holding. Nothing by default:
+    // a digital source speaks in edges, and an edge that has already been and
+    // gone cannot be read back off the device, which is exactly why reset() is
+    // the honest answer for one. An absolute source overrides this.
+    function resync() {}
+
     function keyPressed(key: int): bool {
         return false;
     }

@@ -237,6 +237,85 @@ TEST(Actions, ResetDropsAllHeldState)
     EXPECT_DOUBLE_EQ(steer(*map), 0.0);
 }
 
+TEST(Actions, ResyncRestatesAStickThatNeverMoved)
+{
+    auto engine = QQmlEngine{};
+    const auto map = load(engine, Harness);
+    ASSERT_NE(map, nullptr);
+
+    // A stick pushed to its stop reports once and then says nothing at all for
+    // as long as it is held there, so a reset is the last word the axis has —
+    // and rest is not where the control is.
+    EXPECT_TRUE(move(*map, 0, 0.7));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.7);
+
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "reset"));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.0);
+
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "resync"));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.7);
+}
+
+TEST(Actions, ResyncLeavesDroppedKeysAtRest)
+{
+    auto engine = QQmlEngine{};
+    const auto map = load(engine, Harness);
+    ASSERT_NE(map, nullptr);
+
+    // The release of a held key behind an overlay never arrives, so the drop
+    // has to stand: a digital source cannot be read back off the device the
+    // way a stick's position can.
+    EXPECT_TRUE(route(*map, "keyPressed", Qt::Key_D));
+    EXPECT_DOUBLE_EQ(steer(*map), 1.0);
+
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "reset"));
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "resync"));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.0);
+}
+
+TEST(Actions, ResyncKeepsTheStickAndDropsTheKeyTogether)
+{
+    auto engine = QQmlEngine{};
+    const auto map = load(engine, Harness);
+    ASSERT_NE(map, nullptr);
+
+    // Both sources on one axis: only the half that can be re-read comes back.
+    EXPECT_TRUE(route(*map, "keyPressed", Qt::Key_W));
+    EXPECT_TRUE(move(*map, 1, -0.4));
+    EXPECT_DOUBLE_EQ(throttle(*map), 1.0);
+
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "reset"));
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "resync"));
+    EXPECT_DOUBLE_EQ(throttle(*map), 0.4);
+}
+
+TEST(Actions, ResyncHonoursTheDeadzone)
+{
+    auto engine = QQmlEngine{};
+    const auto map = load(engine, Harness);
+    ASSERT_NE(map, nullptr);
+
+    // A stick resting off centre must not be re-stated as a real deflection —
+    // resync goes through the same mapping the move did.
+    EXPECT_TRUE(move(*map, 0, 0.1));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.0);
+
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "reset"));
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "resync"));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.0);
+}
+
+TEST(Actions, ResyncOnAnUntouchedMapChangesNothing)
+{
+    auto engine = QQmlEngine{};
+    const auto map = load(engine, Harness);
+    ASSERT_NE(map, nullptr);
+
+    EXPECT_TRUE(QMetaObject::invokeMethod(map.get(), "resync"));
+    EXPECT_DOUBLE_EQ(steer(*map), 0.0);
+    EXPECT_DOUBLE_EQ(throttle(*map), 0.0);
+}
+
 TEST(Actions, SharedInputReachesEveryBinding)
 {
     auto engine = QQmlEngine{};

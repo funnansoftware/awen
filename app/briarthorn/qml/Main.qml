@@ -212,6 +212,13 @@ Window {
             if (!root.active)
                 return;
             root.device.moved(value);
+            // The flight axes hear the stick in every mode, not just the duel's.
+            // A stick states a level and states it only when it moves, so the
+            // one way to know where it is on the way back into the fight is to
+            // have gone on listening while the overlay had the input. Their
+            // fold is frozen off the duel (see axisSteer below), so listening
+            // drives nothing — it only keeps the record honest.
+            actions.axisMoved(axis, value);
             switch (root.mode) {
             case Mode.Kind.Settings:
                 settings.axisMoved(axis, value);
@@ -224,9 +231,6 @@ Window {
                 break;
             case Mode.Kind.Pause:
                 pausePage.axisMoved(axis, value);
-                break;
-            case Mode.Kind.Duel:
-                actions.axisMoved(axis, value);
                 break;
             }
         }
@@ -262,12 +266,22 @@ Window {
 
         // The input layer: keys, controller and (later) touch all fold into
         // these axes through the action bindings below.
+        //
+        // Both are frozen off the duel rather than silenced: their sources go
+        // on recording while an overlay holds the input — which is what lets a
+        // stick be re-read on the way back — and the fold catches up with the
+        // controls in one step on re-enable. Frozen rather than merely
+        // ignored because the launch screen's demo is a running simulation
+        // driving the very craft these command, and a stick nudged while
+        // reading a menu must not fly it.
         Axis {
             id: axisSteer
+            enabled: root.live
         }
 
         Axis {
             id: axisThrottle
+            enabled: root.live
         }
 
         // The scope's range control, the one object every ranging source —
@@ -433,7 +447,7 @@ Window {
         // load systems of their own.
         Systems {
             // Only the two modes with nothing over the world integrate — see
-            // root.running. dropInput() posts the zeroed axes before this
+            // root.running. resyncInput() posts the settled axes before this
             // flips, and nothing clears the queue, so they publish on resume.
             running: root.running
 
@@ -934,11 +948,25 @@ Window {
 
     // Returns every input source to rest: the action bindings, and the stick's
     // own axis slots, which it contributes under the axis itself and so the
-    // router cannot reach.
+    // router cannot reach. For leaving — the window going inactive, where the
+    // pad route shuts down with it and nothing is heard again until it comes
+    // back, so rest is the only honest reading of controls nobody is watching.
     function dropInput() {
         actions.reset();
         axisSteer.invoke(0);
         axisThrottle.invoke(0);
+    }
+
+    // For a handover between screens, where the router goes on listening.
+    // The same drop, because a key or a pad button released behind an overlay
+    // never reports its release and would otherwise stay held for good — and
+    // then the analogue controls re-state themselves, because a stick says
+    // nothing while it is held still, and dropping it leaves the player
+    // holding a lever the game has stopped reading. One is honest about a lost
+    // edge; the other would be inventing a centred stick.
+    function resyncInput() {
+        root.dropInput();
+        actions.resync();
     }
 
     // The launch screen: the demo scenario populates the world itself, one
@@ -952,8 +980,11 @@ Window {
     // startDuel() that rearms it, and it does so before entering the duel, so
     // no decided latch can outlive the screen it belongs to.
     function startMenu() {
-        root.dropInput();
+        root.resyncInput();
         demo.restart();
+        // The blasts go out with the fight that lit them; the demo's own
+        // rounds light their own.
+        weapons.reset();
         // The demo plays an open sky: the duel's arena leaves with the duel.
         root.world.obstacles = [];
         projection.step = 1;
@@ -963,13 +994,13 @@ Window {
     // Escape or Start mid-duel: freeze the sim behind the pause menu. Held
     // input is dropped while the bus still runs, exactly as the page does.
     function openPause() {
-        root.dropInput();
+        root.resyncInput();
         root.mode = Mode.Kind.Pause;
     }
 
     function resumeDuel() {
         root.mode = Mode.Kind.Duel;
-        root.dropInput();
+        root.resyncInput();
     }
 
     // The duel's decision. The judge latches from live model state inside the
@@ -993,6 +1024,9 @@ Window {
         game.reset();
         scenario.reset();
         mission.reset();
+        // The blasts burn on simulation time, so the one that decided the last
+        // duel is still lit when this one opens.
+        weapons.reset();
         root.world.clear(null);
         root.world.add(game.ownship);
         for (let i = 0; i < scenario.entities.length; ++i)
@@ -1000,7 +1034,7 @@ Window {
         root.world.obstacles = scenario.obstacles;
         projection.step = 2;
         root.mode = Mode.Kind.Duel;
-        root.dropInput();
+        root.resyncInput();
     }
 
     // The page stops the sim whatever it is opened over, so a duel it is
@@ -1010,19 +1044,19 @@ Window {
     // was opened from is what DONE returns to, and this is that field's only
     // writer, so the page always has somewhere to go back to.
     //
-    // Held input is released while the bus is still running, so the zeroed
+    // Held input is released while the bus is still running, so the settled
     // steer and throttle post before the simulation stops. Both verbs
-    // coalesce, so they publish on resume and the ship never carries its
-    // pre-pause command out of the page — which is also why nothing clears
-    // the queue.
+    // coalesce, so they publish on resume and the ship never carries a command
+    // out of the page that its controls have stopped giving — which is also
+    // why nothing clears the queue.
     function openSettings() {
-        root.dropInput();
+        root.resyncInput();
         root.settingsFrom = root.live ? Mode.Kind.Pause : root.mode;
         root.mode = Mode.Kind.Settings;
     }
 
     function closeSettings() {
         root.mode = root.settingsFrom;
-        root.dropInput();
+        root.resyncInput();
     }
 }
