@@ -461,6 +461,15 @@ Window {
                 entities: root.entities
                 obstacles: root.world.obstacles
             }
+
+            // Last, so every cue speaks for the tick that has just finished.
+            // Disabled on the launch screen: the demo dogfight is scenery, and
+            // scenery that fires missile warnings at a player reading a menu
+            // is scenery that has misunderstood its job.
+            SystemCue {
+                enabled: !root.inMenu
+                ownship: game.ownship
+            }
         }
 
         // The full-width top band: persistent meta-game state (the credit
@@ -540,42 +549,50 @@ Window {
             }
         }
 
-        // The missile warning, top-centre under the band: flashes the moment
-        // a homing round is marked inbound on ownship, with its bearing and
-        // closing range — the reaction window the scope alone buries in a
-        // small mark.
-        ViewThreat {
-            id: threatAlert
-
-            visible: !root.inMenu && threatAlert.active
-            ownship: game.ownship
+        // The alert channel, top-centre under the band. Three readouts share
+        // it rather than sitting by the controls they speak for, because a
+        // touch player's rack is under their own thumb and a desktop player's
+        // is in the far corner — this band is the one place both are already
+        // looking.
+        //
+        // They stack in the order the pilot has to act: terrain first, because
+        // a missile can be beaten and a wall cannot; the missile warning next;
+        // the arming readout last, since it answers a press the other two
+        // interrupt. A Column rather than a chain of anchors, so an alert that
+        // is not up takes no room and the ones below close over it.
+        Column {
+            spacing: 12
 
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: topBar.bottom
                 topMargin: 12
             }
-        }
 
-        // The arming readout, stacked under the missile warning in the same
-        // top-centre alert channel: while a weapon is held armed, what it is
-        // waiting on in words. It shares the channel rather than sitting by
-        // the rack, because a touch player's rack is under their own thumb and
-        // a desktop player's is in the far corner — the alert band is the one
-        // place both are already looking. Rides below the warning where both
-        // are up, so neither ever covers the other.
-        ViewArming {
-            id: armingAlert
+            ViewTerrain {
+                id: terrainAlert
 
-            visible: !root.inMenu && armingAlert.active
-            ownship: game.ownship
-            // Never off the edge of a phone: the reason elides instead.
-            maximumWidth: root.width - 32
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.inMenu && terrainAlert.active
+                ownship: game.ownship
+            }
 
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                top: threatAlert.visible ? threatAlert.bottom : topBar.bottom
-                topMargin: 12
+            ViewThreat {
+                id: threatAlert
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.inMenu && threatAlert.active
+                ownship: game.ownship
+            }
+
+            ViewArming {
+                id: armingAlert
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: !root.inMenu && armingAlert.active
+                ownship: game.ownship
+                // Never off the edge of a phone: the reason elides instead.
+                maximumWidth: root.width - 32
             }
         }
 
@@ -727,6 +744,7 @@ Window {
             showOwnshipPulse: false
             showTrackLabels: false
             showTrackHealth: false
+            showTrackRanges: false
             showEngagements: false
             showTrails: false
 
@@ -769,6 +787,9 @@ Window {
             verticalShift: 0.18
             horizontalShift: 0.25
             symbolSize: height * 0.04
+            // A backdrop behind the title, not an instrument: the demo's marks
+            // keep their callsigns and drop the ranges nobody is flying on.
+            showTrackRanges: false
             trailsRunning: root.inMenu && !settings.open
 
             anchors.fill: parent

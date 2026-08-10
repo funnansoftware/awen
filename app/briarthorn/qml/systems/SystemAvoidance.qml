@@ -27,13 +27,21 @@ System {
     // tighter than a maneuver's, since a wall does not wait.
     readonly property real cutAngle: 20
 
+    // Marking and steering are separate passes over the same answer: every
+    // live mover gets its blocker written to terrainAhead, and only the ones
+    // that fly maneuvers get the stick taken off them for it. The player's
+    // craft carries no maneuvers, so it is marked and never steered — the
+    // warning is the HUD's to raise and the turn is the pilot's to make.
     function update(dt: real) {
         for (let i = 0; i < root.entities.length; ++i) {
             const entity = root.entities[i];
-            if (entity.health <= 0 || entity.maneuvers.length === 0 || entity.speed <= 0)
+            if (entity.health <= 0 || entity.speed <= 0) {
+                entity.terrainAhead = null;
                 continue;
+            }
             const pillar = root.blocker(entity);
-            if (pillar !== null)
+            entity.terrainAhead = pillar;
+            if (pillar !== null && entity.maneuvers.length > 0)
                 root.avoid(entity, pillar);
         }
     }

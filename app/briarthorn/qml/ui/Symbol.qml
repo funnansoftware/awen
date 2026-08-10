@@ -38,6 +38,11 @@ Item {
     property string label: ""
     property bool showLabel: true
 
+    // A second line under the label, which the scopes put a contact's range in.
+    // Empty draws nothing, and it rides showLabel with the label it sits under —
+    // a caption with no callsign over it captions nothing.
+    property string caption: ""
+
     // Hull condition: whether the caller holds a reading for this contact at
     // all, and the reading itself as a fraction of full hull. Whether that
     // reading is worth drawing is the kind's call, not the caller's — only a
@@ -154,6 +159,8 @@ Item {
         }
 
         Text {
+            id: callsign
+
             visible: root.showLabel
             text: root.label !== "" ? root.label : root.def.label
             color: Style.theme.textLabel
@@ -169,6 +176,25 @@ Item {
                 horizontalCenter: parent.horizontalCenter
                 top: parent.bottom
                 topMargin: root.labelGap + (root.showHealth ? root.gaugeOverhang : 0)
+            }
+        }
+
+        // The range line, hung off the label rather than the mark, so a gauged
+        // mark's caption clears the arc exactly as its callsign does. Brighter
+        // than the callsign because it is the live number of the two.
+        Text {
+            visible: root.showLabel && root.caption !== ""
+            text: root.caption
+            color: Style.theme.textBright
+
+            font {
+                pixelSize: Math.max(7, root.symbolSize * 0.3)
+                family: Style.monospace
+            }
+
+            anchors {
+                horizontalCenter: callsign.horizontalCenter
+                top: callsign.bottom
             }
         }
     }

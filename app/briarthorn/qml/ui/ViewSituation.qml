@@ -102,6 +102,7 @@ Item {
     property bool showOwnshipPulse: true
     property bool showTrackLabels: true
     property bool showTrackHealth: true
+    property bool showTrackRanges: true
     property bool showNorth: false
     property bool closedRings: false
 
@@ -309,6 +310,7 @@ Item {
         lockedContact: root.lockedContact
         showLabels: root.showTrackLabels
         showHealth: root.showTrackHealth
+        showRanges: root.showTrackRanges
         clampRadius: root.gutterClamp ? root.outerRadius : 0
         clampMargin: root.gutterClampMargin
     }
