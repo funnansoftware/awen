@@ -657,6 +657,36 @@ Window {
             }
         }
 
+        // The tiled composition, same contract, same routes.
+        Loader {
+            active: Style.hudTiled
+            visible: root.inDuel
+            anchors.fill: parent
+            sourceComponent: ViewHudTiled {
+                ownship: game.ownship
+                keymap: root.keymap
+                device: root.device
+                projection: projection
+                tracks: detection.tracks
+                entities: root.entities
+                detonations: weapons.detonations
+                obstacles: root.world.obstacles
+                bandHeight: scene.bandHeight
+                live: root.live
+                racks: root.racks
+                running: root.running
+                padConnected: scene.padConnected
+                armedReach: root.armedReach
+                armedValid: root.armedValid
+                selectedContact: root.selectedContact
+                shootableContact: root.shootableContact
+                onInvoked: ability => touched.post({ ability: ability })
+                onTouched: root.device.kind = ActiveDevice.Touch
+                onContactChosen: contactId => designate.post({ contact: contactId === game.ownship.targetContact ? "" : contactId })
+                onContactTouched: root.device.kind = ActiveDevice.Touch
+            }
+        }
+
         // The on-screen stick: another source folding into the same axes — its x
         // steers, forward throttles. It contributes under the axis key, summed
         // with keys and the pad, so release must zero it back out.

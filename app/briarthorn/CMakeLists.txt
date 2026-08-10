@@ -121,6 +121,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/AbilityButton.qml
         qml/ui/ControlCap.qml
         qml/ui/Joystick.qml
+        qml/ui/Tile.qml
         qml/ui/MenuButton.qml
         qml/ui/MenuPage.qml
         qml/ui/RangeRing.qml
@@ -135,6 +136,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
         qml/ui/ViewHudOverlay.qml
+        qml/ui/ViewHudTiled.qml
         qml/ui/ViewMenu.qml
         qml/ui/ViewObstacles.qml
         qml/ui/ViewPause.qml
