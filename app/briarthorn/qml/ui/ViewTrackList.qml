@@ -13,11 +13,14 @@ import "../themes"
 Item {
     id: root
 
-    // The picture, the designation to highlight, and the pick going out.
+    // The picture, the designation to highlight, and the pick going out —
+    // with the touch report beside it, so a thumb landing on a row hands the
+    // HUD over exactly as one landing on the rack does.
     property list<Track> tracks
     property string selectedContact: ""
 
     signal chosen(string contactId)
+    signal touched
 
     // The listed tracks: craft and unresolved returns — munitions and decoys
     // plot on the scope but would swamp the two rows that matter here. This
@@ -111,9 +114,17 @@ Item {
         border.width: row.selected ? 1 : 0
         border.color: Style.theme.accent
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.chosen(row.track.contactId)
+        // The pick, gated exactly as the scope's tap is: only a contact the
+        // designation rules can take, or the row already designated so the
+        // toggle-off stays reachable — the list must not out-pick the radar.
+        TapHandler {
+            enabled: row.track.selectable || row.selected
+            gesturePolicy: TapHandler.ReleaseWithinBounds
+            onTapped: eventPoint => {
+                if (eventPoint.device.type === PointerDevice.TouchScreen)
+                    root.touched();
+                root.chosen(row.track.contactId);
+            }
         }
 
         Text {

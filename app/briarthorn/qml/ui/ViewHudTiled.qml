@@ -88,6 +88,7 @@ Item {
             tracks: root.tracks
             selectedContact: root.selectedContact
             onChosen: contactId => root.contactChosen(contactId)
+            onTouched: root.contactTouched()
         }
     }
 
@@ -171,6 +172,19 @@ Item {
             obstacles: root.obstacles
             armedReach: root.armedReach
             armedValid: root.armedValid
+        }
+
+        // The controller lamp, seated in the disc's free corner so the
+        // gamepad path stays visible in this layout too.
+        Text {
+            z: 1
+            visible: root.padConnected
+            text: qsTr("controller connected")
+            color: Style.theme.textLabel
+            elide: Text.ElideRight
+            width: Math.min(implicitWidth, map.width - 52)
+            font { pixelSize: 10; family: Style.monospace }
+            anchors { right: parent.right; bottom: parent.bottom; margins: 2 }
         }
     }
 

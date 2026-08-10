@@ -179,7 +179,11 @@ Item {
 
         visible: !root.device.touch && root.racks
         buttonSize: 64
-        maximumWidth: root.width
+        // The rack keeps clear of the tile's own legend, and its floor drops
+        // below the thumb size — nothing here is pressed by one, and a wide
+        // loadout must shrink rather than run out of the frame.
+        maximumWidth: root.width - 34
+        minimumButtonSize: 36
         keymap: root.keymap
         loadout: root.ownship.abilities
         device: root.device
