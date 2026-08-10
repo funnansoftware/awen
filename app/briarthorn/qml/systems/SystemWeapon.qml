@@ -221,6 +221,17 @@ System {
         }
     }
 
+    // Puts every blast out. They burn down on simulation time, so the one lit
+    // on the frame a duel is decided never runs down at all — the sim stops
+    // with it — and would otherwise be handed to the next game to finish
+    // burning at a world position nothing is standing at any more.
+    function reset() {
+        const lit = root.detonations.slice();
+        root.detonations = [];
+        for (let i = 0; i < lit.length; ++i)
+            lit[i].destroy();
+    }
+
     function ageDetonations(dt: real) {
         let expired = false;
         for (let i = 0; i < root.detonations.length; ++i) {

@@ -36,6 +36,20 @@ QtObject {
         }
     }
 
+    // Has every action re-state what its source is saying now — call after a
+    // reset() that was a handover rather than a departure, where the router
+    // goes on listening. The digital bindings stay at rest, since a release
+    // that never arrived cannot be read back; the analogue ones re-report
+    // themselves, since a control the player is still holding is not at rest
+    // however long it has been silent.
+    function resync() {
+        for (let i = 0; i < root.actions.length; ++i) {
+            const action = root.actions[i];
+            if (action !== null)
+                action.resync();
+        }
+    }
+
     // Delivers one event to every action without short-circuiting, so shared
     // inputs reach every binding. A destroyed action leaves a null slot behind,
     // and skipping it keeps one dead binding from taking the router down.

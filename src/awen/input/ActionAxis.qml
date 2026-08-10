@@ -14,10 +14,24 @@ Action {
     // Positions closer to rest than this fold to zero, absorbing stick jitter.
     property real deadzone: 0.15
 
-    function axisMoved(moved: int, position: real): bool {
+    // Where the source last reported itself. A stick states a level rather
+    // than an edge, and states it only when it moves — a stick pushed to its
+    // stop and held there emits nothing at all — so this is the whole record
+    // of where the control is, and the only thing resync() can read it back
+    // from.
+    property real position: 0
+
+    function axisMoved(moved: int, reading: real): bool {
         if (moved !== root.axis)
             return false;
-        root.value = (Math.abs(position) < root.deadzone ? 0 : position) * root.scale;
+        root.position = reading;
+        root.resync();
         return true;
+    }
+
+    // The one place the raw position becomes a contribution, so re-stating the
+    // stick and hearing it move cannot map it two different ways.
+    function resync() {
+        root.value = (Math.abs(root.position) < root.deadzone ? 0 : root.position) * root.scale;
     }
 }
