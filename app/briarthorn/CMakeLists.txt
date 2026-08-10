@@ -121,6 +121,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/AbilityButton.qml
         qml/ui/ControlCap.qml
         qml/ui/Joystick.qml
+        qml/ui/Tile.qml
         qml/ui/MenuButton.qml
         qml/ui/MenuPage.qml
         qml/ui/RangeRing.qml
@@ -129,20 +130,27 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/TouchAbilities.qml
         qml/ui/TouchArrow.qml
         qml/ui/ViewAbilities.qml
+        qml/ui/ViewAlerts.qml
         qml/ui/ViewArming.qml
         qml/ui/ViewEnd.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
+        qml/ui/ViewHudOverlay.qml
+        qml/ui/ViewHudTiled.qml
         qml/ui/ViewMenu.qml
         qml/ui/ViewObstacles.qml
         qml/ui/ViewPause.qml
         qml/ui/ViewSettings.qml
         qml/ui/ViewSituation.qml
         qml/ui/ViewSituationAttack.qml
+        qml/ui/ViewSituationOverview.qml
         qml/ui/ViewStatus.qml
+        qml/ui/ViewStatusBars.qml
+        qml/ui/ViewStores.qml
         qml/ui/ViewTerrain.qml
         qml/ui/ViewThreat.qml
         qml/ui/ViewTopBar.qml
+        qml/ui/ViewTrackList.qml
         qml/ui/ViewTracks.qml
         qml/ui/ViewTrails.qml
         ${QML_SINGLETONS}

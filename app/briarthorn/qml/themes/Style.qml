@@ -33,6 +33,13 @@ QtObject {
 
     readonly property Theme theme: root.themeFor(root.themeName)
 
+    // Which HUD composition the duel draws: the shipped overlay, or the tiled
+    // portal layout. Stored as a name rather than a flag, so a third layout —
+    // the deferred narrow-screen collapse — is a new value, not a second bool.
+    // Written through selectHud(), like the palette.
+    property string hudName: root.store.value("hud", "overlay")
+    readonly property bool hudTiled: root.hudName === "tiled"
+
     // The instrument typeface: the first of these the system actually has.
     // Naming Consolas alone kept windows right but left macOS and linux to
     // substitute a face on their own, warning about the missing family and
@@ -53,6 +60,13 @@ QtObject {
     function select(name: string) {
         root.themeName = name;
         root.store.setValue("theme", name);
+        root.store.sync();
+    }
+
+    // Puts a HUD layout in force and remembers it, same shape as select().
+    function selectHud(name: string) {
+        root.hudName = name;
+        root.store.setValue("hud", name);
         root.store.sync();
     }
 
