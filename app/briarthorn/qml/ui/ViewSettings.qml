@@ -56,29 +56,40 @@ Item {
             list.push({
                 theme: Style.themes[i],
                 slot: null,
-                audio: false
+                audio: false,
+                hud: false
             });
+        list.push({
+            theme: null,
+            slot: null,
+            audio: false,
+            hud: true
+        });
         if (Sfx.available)
             list.push({
                 theme: null,
                 slot: null,
-                audio: true
+                audio: true,
+                hud: false
             });
         for (let i = 0; i < root.loadout.length; ++i)
             list.push({
                 theme: null,
                 slot: root.loadout[i],
-                audio: false
+                audio: false,
+                hud: false
             });
         return list;
     }
 
     // Where each section starts, so its delegate can name its own place in the
-    // flat list: every palette, then the single audio switch, then the bindings.
-    // The browser has no audio to switch, so there the section is absent and the
-    // bindings move up — one expression for both, rather than a row that is
-    // merely invisible and still holds an index the cursor can land on.
-    readonly property int audioRow: Style.themes.length
+    // flat list: every palette, the HUD layout, then the single audio switch,
+    // then the bindings. The browser has no audio to switch, so there the
+    // section is absent and the bindings move up — one expression for both,
+    // rather than a row that is merely invisible and still holds an index the
+    // cursor can land on.
+    readonly property int hudRow: Style.themes.length
+    readonly property int audioRow: root.hudRow + 1
     readonly property int bindingBase: root.audioRow + (Sfx.available ? 1 : 0)
 
     // The ability under the cursor, empty on a display row: every verb that acts
@@ -252,6 +263,11 @@ Item {
                     theme: modelData
                     rowIndex: index
                 }
+            }
+
+            HudRow {
+                width: column.width
+                rowIndex: root.hudRow
             }
 
             Section {
@@ -441,6 +457,34 @@ Item {
         color: swatch.tint
     }
 
+    // The duel's HUD composition — the shipped overlay or the tiled portal
+    // layout — the same shape of choice the audio switch is.
+    component HudRow: PageRow {
+        id: row
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                root.select(row.rowIndex);
+                root.toggleHud();
+            }
+        }
+
+        Text {
+            text: qsTr("HUD LAYOUT")
+            color: row.selected ? Style.theme.textBright : Style.theme.textPrimary
+            anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+            font { pixelSize: 14; bold: true; letterSpacing: Style.theme.capsTracking }
+        }
+
+        Text {
+            text: Style.hudTiled ? qsTr("TILED") : qsTr("OVERLAY")
+            color: Style.hudTiled ? Style.theme.accent : Style.theme.textPrimary
+            anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
+            font { pixelSize: 14; bold: true; letterSpacing: Style.theme.capsTracking; family: Style.monospace }
+        }
+    }
+
     // The interface's own voice, on or off — the same shape of choice a palette
     // is, and so the same shape of row. It sits above the bindings because the
     // cues it governs are what every row on this page answers with.
@@ -591,12 +635,21 @@ Item {
         if (row.theme) {
             Sfx.press();
             Style.select(row.theme.name);
+        } else if (row.hud) {
+            root.toggleHud();
         } else if (row.audio) {
             root.toggleAudio();
         } else {
             Sfx.press();
             root.capture(root.ability, pad);
         }
+    }
+
+    // Flips the duel between the overlay HUD and the tiled one; the swap
+    // itself lands next time the duel draws, since this page stands over it.
+    function toggleHud() {
+        Sfx.press();
+        Style.selectHud(Style.hudTiled ? "overlay" : "tiled");
     }
 
     // Sounded after the flip rather than before it: switching on is the one
