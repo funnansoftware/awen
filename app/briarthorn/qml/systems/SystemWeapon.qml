@@ -70,9 +70,13 @@ System {
                     // pick ranks over, against the one contact the pilot
                     // named — and "too far for the round" keeps its own
                     // answer, judged at the radar's own reach.
-                    if (chosen !== null && root.takeable(launcher, launcher, launcher.side, chosen, slot.reach))
-                        lock = chosen;
-                    distant = lock === null && chosen !== null && root.takeable(launcher, launcher, launcher.side, chosen, launcher.detectionRange);
+                    if (chosen !== null && root.takeable(launcher, launcher, launcher.side, chosen)) {
+                        const d = Geo.distance(launcher, chosen);
+                        if (d <= slot.reach)
+                            lock = chosen;
+                        else
+                            distant = d <= launcher.detectionRange;
+                    }
                 } else {
                     lock = root.bestReturn(launcher, launcher, launcher.side, slot.reach);
                     // Nothing to take inside the envelope, but something out
@@ -278,17 +282,17 @@ System {
         }
     }
 
-    // Whether one return passes every gate a seeker needs — live, opposed,
-    // inside range, illuminated by the radar cone and in line of sight. The
+    // Whether one return passes every gate a seeker needs besides reach —
+    // live, opposed, illuminated by the radar cone and in line of sight. The
     // one definition the automatic pick ranks over and a designation is
     // judged by, so the two policies can never disagree about what is
-    // takeable.
-    function takeable(at: Entity, illuminator: Entity, side: int, contact: Entity, range: real): bool {
+    // takeable; range stays with the caller, which needs the distance anyway.
+    function takeable(at: Entity, illuminator: Entity, side: int, contact: Entity): bool {
         if (contact === at || contact === illuminator || contact.health <= 0)
             return false;
         if (!root.opposed(side, contact.side))
             return false;
-        if (Geo.distance(at, contact) > range || !root.illuminated(illuminator, contact))
+        if (!root.illuminated(illuminator, contact))
             return false;
         // The seeker is a radar receiver too: a return behind a pillar
         // reaches neither it nor the illuminator.
@@ -304,9 +308,9 @@ System {
         let bestDist = 0;
         for (let i = 0; i < root.world.entities.length; ++i) {
             const contact = root.world.entities[i];
-            if (!root.takeable(at, illuminator, side, contact, range))
-                continue;
             const d = Geo.distance(at, contact);
+            if (d > range || !root.takeable(at, illuminator, side, contact))
+                continue;
             if (best === null || contact.stealth < best.stealth || (contact.stealth === best.stealth && d < bestDist)) {
                 best = contact;
                 bestDist = d;
