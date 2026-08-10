@@ -13,7 +13,7 @@ Text {
     // craft on entirely different controls.
     required property ActiveDevice device
 
-    text: root.device.pad ? qsTr("LEFT STICK fly · D-PAD range · START pause") : qsTr("W/S throttle · A/D turn · WHEEL range · ESC pause")
+    text: root.device.pad ? qsTr("LEFT STICK fly · D-PAD range · Y/LB target · START pause") : qsTr("W/S throttle · A/D turn · TAB target · WHEEL range · ESC pause")
     color: Style.theme.textMuted
     elide: Text.ElideRight // the caller caps width where the line would collide
     font { pixelSize: 12; family: Style.monospace }

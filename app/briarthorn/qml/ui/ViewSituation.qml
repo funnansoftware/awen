@@ -78,6 +78,10 @@ Item {
     // brackets nothing.
     property string lockedContact: ""
 
+    // The pilot's designated contact, by track id; the cursor stands on that
+    // one mark. Empty selects nothing.
+    property string selectedContact: ""
+
     // Heading-up turns the whole picture so ownship's nose is 12 o'clock; false
     // leaves it north-up. The rotation the track picture carries.
     property bool headingUp: true
@@ -308,6 +312,7 @@ Item {
         symbolSize: root.symbolSize
         symbolStrokeWidth: root.symbolStrokeWidth
         lockedContact: root.lockedContact
+        selectedContact: root.selectedContact
         showLabels: root.showTrackLabels
         showHealth: root.showTrackHealth
         showRanges: root.showTrackRanges

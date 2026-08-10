@@ -53,6 +53,10 @@ Item {
     // scope answers "which one is the shot going to" without a legend.
     property string lockedContact: ""
 
+    // The pilot's designated contact, by track id; the cursor stands on that
+    // one mark. Empty selects nothing.
+    property string selectedContact: ""
+
     // When positive, off-scale contacts clamp to this pixel radius (the outer
     // ring) instead of plotting beyond it, so ranging in seats a contact that
     // no longer fits at the edge rather than losing it off the display.
@@ -85,6 +89,18 @@ Item {
         }
     }
 
+    // The designation cursor: a screen-upright reticle on the contact the
+    // pilot has selected, in the hunting colour — the lock bracket, not this,
+    // says a shot would take it.
+    readonly property Component selectMark: Component {
+        ShapeReticle {
+            gap: width * 0.26
+            armLength: width * 0.18
+            strokeColor: Style.theme.cursorFree
+            strokeWidth: Math.max(1.5, root.symbolStrokeWidth)
+        }
+    }
+
     // One contact's mark: the classification symbol, plus the lock bracket on
     // the one contact carrying it. An Item rather than the bare Loader the
     // symbol loads into, because a Loader's default property is the component
@@ -99,6 +115,7 @@ Item {
         readonly property real azimuth: mark.track ? mark.track.azimuth : 0
         readonly property real trueRange: mark.track ? mark.track.range * root.pxPerMeter : 0
         readonly property bool locked: root.lockedContact !== "" && mark.track !== null && mark.track.contactId === root.lockedContact
+        readonly property bool selected: root.selectedContact !== "" && mark.track !== null && mark.track.contactId === root.selectedContact
 
         // Range under the callsign, on resolved craft only: maxHealth is the
         // one field the sweep leaves at zero for a contact it has not resolved
@@ -160,6 +177,18 @@ Item {
             rotation: -root.viewRotation
             active: mark.locked
             sourceComponent: root.lockMark
+        }
+
+        // The cursor, standing a little wider than the bracket so the two
+        // read apart on a mark carrying both, and loaded only on the
+        // selected mark.
+        Loader {
+            anchors.centerIn: parent
+            width: mark.width * 2.6
+            height: width
+            rotation: -root.viewRotation
+            active: mark.selected
+            sourceComponent: root.selectMark
         }
     }
 

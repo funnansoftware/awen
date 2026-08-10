@@ -74,6 +74,17 @@ QtObject {
     property real engageTimer: 0
     property bool engageHold: false
 
+    // Whether this entity's guided locks come from its designated track
+    // rather than the radar's automatic pick. The player's craft carries it;
+    // the menu demo's director designates through the same property the
+    // pilot does.
+    property bool selectsTarget: false
+
+    // The designated contact, by track id (the contact's callsign); empty is
+    // none. Player intent lands here off the bus, and SystemDetection stands
+    // down a designation naming no held track.
+    property string targetContact: ""
+
     // SystemThreat pops this entity's flares at inbound guided rounds; the
     // timer spaces the pops so each decoy gets its chance to seduce.
     property bool threatReflex: false
