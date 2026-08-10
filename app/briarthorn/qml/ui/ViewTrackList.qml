@@ -119,7 +119,9 @@ Item {
         Text {
             x: 4
             y: 3
-            text: row.track.contactId
+            // An unresolved return keeps its callsign to itself, exactly as
+            // the scope's mark does — the list must not out-know the radar.
+            text: row.track.classification === Classification.Kind.Unknown ? qsTr("——") : row.track.contactId
             color: row.side
             font { pixelSize: 11; bold: true; letterSpacing: Style.theme.capsTracking; family: Style.monospace }
         }

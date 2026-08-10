@@ -152,6 +152,9 @@ Item {
 
         ViewSituationOverview {
             anchors.fill: parent
+            // Inset so the disc and its north marker seat inside the frame
+            // rather than clipping against it.
+            anchors.margins: 8
             projection: root.projection
             observer: root.ownship
             tracks: root.tracks
