@@ -920,9 +920,7 @@ Window {
         game.reset();
         scenario.reset();
         mission.reset();
-        const roster = root.world.entities.slice();
-        for (let i = 0; i < roster.length; ++i)
-            root.world.despawn(roster[i]);
+        root.world.clear(null);
         root.world.add(game.ownship);
         for (let i = 0; i < scenario.entities.length; ++i)
             root.world.add(scenario.entities[i]);
