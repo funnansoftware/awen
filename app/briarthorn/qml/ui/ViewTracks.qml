@@ -57,6 +57,14 @@ Item {
     // one mark. Empty selects nothing.
     property string selectedContact: ""
 
+    // Whether a tap on a selectable mark designates it. Off by default, so
+    // the minimap and the menu backdrop carry no handlers at all.
+    property bool selectionEnabled: false
+
+    // A tap on a selectable mark, by track id. The picture stays a display —
+    // the caller posts the designation, this only reports the tap.
+    signal trackTapped(string contactId)
+
     // When positive, off-scale contacts clamp to this pixel radius (the outer
     // ring) instead of plotting beyond it, so ranging in seats a contact that
     // no longer fits at the edge rather than losing it off the display.
@@ -189,6 +197,28 @@ Item {
             rotation: -root.viewRotation
             active: mark.selected
             sourceComponent: root.selectMark
+        }
+
+        // The mark's hit area, floored at a thumb target — the symbols draw
+        // far smaller than a finger. A TapHandler rather than the rack's
+        // PointHandler: its grab makes the topmost mark the only winner where
+        // two overlap, and it takes touch and mouse without the synthetic
+        // double-fire. The track guard covers the teardown window, as the
+        // mark's own bindings do.
+        Loader {
+            anchors.centerIn: parent
+            width: Math.max(44, mark.width * 1.4)
+            height: width
+            active: root.selectionEnabled && mark.track !== null && mark.track.selectable
+            sourceComponent: Item {
+                TapHandler {
+                    gesturePolicy: TapHandler.ReleaseWithinBounds
+                    onTapped: {
+                        if (mark.track !== null)
+                            root.trackTapped(mark.track.contactId);
+                    }
+                }
+            }
         }
     }
 

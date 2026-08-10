@@ -626,6 +626,11 @@ Window {
             armedValid: root.armedValid
             lockedContact: root.lockedContact
             selectedContact: root.selectedContact
+            // Live only: a tap on the frozen scope behind an overlay must not
+            // queue a designation that lands on resume.
+            selectionEnabled: root.live
+            // A tap toggles: tapping the selected contact stands it down.
+            onTrackTapped: contactId => designate.post({ contact: contactId === game.ownship.targetContact ? "" : contactId })
 
             anchors {
                 left: parent.left

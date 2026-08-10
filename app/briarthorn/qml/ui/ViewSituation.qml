@@ -82,6 +82,13 @@ Item {
     // one mark. Empty selects nothing.
     property string selectedContact: ""
 
+    // Whether a tap on a selectable mark designates it; the minimap and the
+    // menu backdrop leave it off and carry no handlers at all.
+    property bool selectionEnabled: false
+
+    // A tap on a selectable mark, by track id, forwarded off the track layer.
+    signal trackTapped(string contactId)
+
     // Heading-up turns the whole picture so ownship's nose is 12 o'clock; false
     // leaves it north-up. The rotation the track picture carries.
     property bool headingUp: true
@@ -313,6 +320,8 @@ Item {
         symbolStrokeWidth: root.symbolStrokeWidth
         lockedContact: root.lockedContact
         selectedContact: root.selectedContact
+        selectionEnabled: root.selectionEnabled
+        onTrackTapped: contactId => root.trackTapped(contactId)
         showLabels: root.showTrackLabels
         showHealth: root.showTrackHealth
         showRanges: root.showTrackRanges
