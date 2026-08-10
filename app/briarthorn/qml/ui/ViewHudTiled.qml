@@ -112,7 +112,17 @@ Item {
             entities: root.entities
             detonations: root.detonations
             obstacles: root.obstacles
-            radiusFraction: Math.min(0.48, (width / 2 - symbolSize * 2.2) / Math.min(width, height))
+            // Capped so gutter-clamped symbols stay inside the near-square
+            // frame, floored for legibility — and guarded against the
+            // moment of construction, when the item is still sizeless and
+            // the division would send NaN into the ring arcs (a debug
+            // build asserts on it).
+            radiusFraction: {
+                const short = Math.min(width, height);
+                if (short <= 0)
+                    return 0.4;
+                return Math.max(0.2, Math.min(0.48, (width / 2 - symbolSize * 2.2) / short));
+            }
             verticalShift: 0.2
             symbolSize: height * 0.04
             trailsRunning: root.running
