@@ -71,6 +71,11 @@ QtObject {
     // SystemWeapon writes it with the lock.
     property bool undesignated: false
 
+    // Rounds from this slot currently in the air. SystemWeapon recomputes it
+    // from the roster every tick rather than counting launches, so every
+    // despawn path — detonation, a world sweep — self-heals to the truth.
+    property int away: 0
+
     // Whether a launch would happen this instant: everything the consuming
     // system checks, in the one place the rack, the scope and the trigger all
     // read it from.

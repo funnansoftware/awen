@@ -24,4 +24,10 @@ QtObject {
     // these, so arming a new ability needs no entry in a binding table.
     property int defaultKey: -1
     property int defaultButton: -1
+
+    // Where this ability's stores sit on the carrier's silhouette, in the
+    // same unit-box frame the silhouette is drawn in — one point per station
+    // glyph on the stores page; empty draws none. Visual metadata like the
+    // default controls, never a stat.
+    property list<point> stations
 }

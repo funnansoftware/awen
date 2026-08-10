@@ -12,8 +12,11 @@ QtObject {
         Fuzing
     }
 
-    // The weapon row this round was spawned from.
+    // The weapon row this round was spawned from, and the rail it left —
+    // SystemWeapon sets both at launch, and the slot is what lets the stores
+    // page count its own rounds in the air.
     property DataWeapon def: null
+    property AbilitySlot slot: null
 
     // The seeker's current lock; null on unguided rounds and while no return
     // is illuminated.

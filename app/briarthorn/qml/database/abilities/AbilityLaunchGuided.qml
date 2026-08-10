@@ -13,4 +13,6 @@ AbilityLaunch {
     weapon: Classification.Kind.MissileGuided
     defaultKey: Qt.Key_Space
     defaultButton: Gamepad.Button.RightShoulder
+    // One station per round along the swept wings, outboard to inboard.
+    stations: [Qt.point(-0.36, 0.27), Qt.point(-0.26, 0.2), Qt.point(-0.16, 0.13), Qt.point(0.16, 0.13), Qt.point(0.26, 0.2), Qt.point(0.36, 0.27)]
 }

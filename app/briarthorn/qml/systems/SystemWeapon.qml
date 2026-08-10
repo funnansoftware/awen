@@ -56,11 +56,22 @@ System {
     // scope's envelope and the launch below all read this one answer, so what
     // the pilot is shown is exactly what the trigger does.
     function survey() {
+        // The rounds-in-the-air tally, recomputed from the roster so no
+        // despawn path needs a decrement; write-on-change like the lock.
+        const flying = new Map();
+        for (let i = 0; i < root.world.entities.length; ++i) {
+            const w = root.world.entities[i].weapon;
+            if (w !== null && w.slot !== null)
+                flying.set(w.slot, (flying.get(w.slot) ?? 0) + 1);
+        }
         for (let i = 0; i < root.world.entities.length; ++i) {
             const launcher = root.world.entities[i];
             const chosen = launcher.selectsTarget ? root.designated(launcher) : null;
             for (let j = 0; j < launcher.abilities.length; ++j) {
                 const slot = launcher.abilities[j];
+                const away = flying.get(slot) ?? 0;
+                if (slot.away !== away)
+                    slot.away = away;
                 if (!slot.guided)
                     continue;
                 let lock = null;
@@ -215,7 +226,8 @@ System {
                 });
                 missile.weapon = root.weaponFactory.createObject(missile, {
                     def: row,
-                    target: target
+                    target: target,
+                    slot: slot
                 });
                 slot.charges = slot.charges > 0 ? slot.charges - 1 : slot.charges;
                 slot.cooldownRemaining = slot.def.cooldown;

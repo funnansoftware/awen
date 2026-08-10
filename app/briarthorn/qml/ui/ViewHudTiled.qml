@@ -162,9 +162,8 @@ Item {
     }
 
     // The stores tile, filling the right column below the map: the one
-    // state-driven frame — armed colours while a shot is held — with the
-    // ability buttons seated at its foot, the best reach the right thumb
-    // has. The stores picture itself lands with ViewStores.
+    // state-driven frame — armed colours while a shot is held — carrying the
+    // stores page, whose ability buttons land in the corner under the thumb.
     Tile {
         id: stores
 
@@ -178,21 +177,15 @@ Item {
         borderColor: stores.armedSlot ? (stores.armedSlot.valid ? Style.theme.armValid : Style.theme.armInvalid) : Style.theme.rangeRing
         borderWidth: stores.armedSlot ? 2 : 1
 
-        ViewAbilities {
-            visible: !root.device.touch && root.racks
-            buttonSize: 64
-            maximumWidth: stores.contentItem.width
+        ViewStores {
+            anchors.fill: parent
+            anchors.margins: 4
+            ownship: root.ownship
             keymap: root.keymap
-            loadout: root.ownship.abilities
             device: root.device
+            racks: root.racks
             onInvoked: ability => root.invoked(ability)
             onTouched: root.touched()
-
-            anchors {
-                right: parent.right
-                bottom: parent.bottom
-                bottomMargin: 12
-            }
         }
     }
 }
