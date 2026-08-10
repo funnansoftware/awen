@@ -48,4 +48,19 @@ QtObject {
         if (root.spawned.delete(entity))
             entity.destroy();
     }
+
+    // Sweeps the roster back to one survivor — @p keep stays enrolled, every
+    // other entity leaves and the spawned ones are destroyed — and rewinds the
+    // callsign serial, so a new game numbers its missiles from one again rather
+    // than carrying the last game's count. The count only rewinds once nothing
+    // generated is left to collide with, since tracks are keyed by callsign.
+    function clear(keep: Entity) {
+        const roster = root.entities.slice();
+        for (let i = 0; i < roster.length; ++i) {
+            if (roster[i] !== keep)
+                root.despawn(roster[i]);
+        }
+        if (root.spawned.size === 0)
+            root.serial = 0;
+    }
 }

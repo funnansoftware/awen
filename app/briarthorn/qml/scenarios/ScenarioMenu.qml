@@ -181,11 +181,7 @@ Scenario {
     // the next engagement. In menu mode every other entity is demo-spawned,
     // so the sweep owns exactly what the demo made.
     function restart() {
-        const roster = root.world.entities.slice();
-        for (let i = 0; i < roster.length; ++i) {
-            if (roster[i] !== root.ownship)
-                root.world.despawn(roster[i]);
-        }
+        root.world.clear(root.ownship);
         root.ownship.posX = 0;
         root.ownship.posY = 0;
         root.ownship.heading = 0;
