@@ -48,14 +48,13 @@ Item {
     // already being read off. Rides showLabels, since it hangs off the label.
     property bool showRanges: true
 
-    // The contact an armed weapon's seeker is holding, by track id; empty
-    // brackets nothing. Exactly one mark ever carries the reticle, so the
-    // scope answers "which one is the shot going to" without a legend.
-    property string lockedContact: ""
-
-    // The pilot's designated contact, by track id; the cursor stands on that
-    // one mark. Empty selects nothing.
+    // The pilot's designated contact and the contact a guided launch would
+    // take right now, both by track id. Exactly one mark ever carries the
+    // cursor — hunting-coloured while the selection cannot yet be taken,
+    // latched where the two ids agree — so the scope answers "which one is
+    // the shot going to" without a legend.
     property string selectedContact: ""
+    property string shootableContact: ""
 
     // Whether a tap on a selectable mark designates it. Off by default, so
     // the minimap and the menu backdrop carry no handlers at all.
@@ -85,29 +84,6 @@ Item {
         angle: root.viewRotation
     }
 
-    // The seeker's lock bracket: a screen-upright reticle standing off the one
-    // mark an armed weapon is holding, in the same colour the scope paints
-    // that weapon's envelope with.
-    readonly property Component lockMark: Component {
-        ShapeReticle {
-            gap: width * 0.3
-            armLength: width * 0.15
-            strokeColor: Style.theme.armValid
-            strokeWidth: Math.max(1.5, root.symbolStrokeWidth)
-        }
-    }
-
-    // The designation cursor: a screen-upright reticle on the contact the
-    // pilot has selected, in the hunting colour — the lock bracket, not this,
-    // says a shot would take it.
-    readonly property Component selectMark: Component {
-        ShapeReticle {
-            gap: width * 0.26
-            armLength: width * 0.18
-            strokeColor: Style.theme.cursorFree
-            strokeWidth: Math.max(1.5, root.symbolStrokeWidth)
-        }
-    }
 
     // One contact's mark: the classification symbol, plus the lock bracket on
     // the one contact carrying it. An Item rather than the bare Loader the
@@ -122,8 +98,8 @@ Item {
 
         readonly property real azimuth: mark.track ? mark.track.azimuth : 0
         readonly property real trueRange: mark.track ? mark.track.range * root.pxPerMeter : 0
-        readonly property bool locked: root.lockedContact !== "" && mark.track !== null && mark.track.contactId === root.lockedContact
         readonly property bool selected: root.selectedContact !== "" && mark.track !== null && mark.track.contactId === root.selectedContact
+        readonly property bool latched: mark.selected && mark.track.contactId === root.shootableContact
 
         // Range under the callsign, on resolved craft only: maxHealth is the
         // one field the sweep leaves at zero for a contact it has not resolved
@@ -175,28 +151,23 @@ Item {
             sourceComponent: mark.track && mark.track.classification === Classification.Kind.Decoy ? mark.flareMark : mark.symbolMark
         }
 
-        // The bracket, counter-rotated so it stands square to the screen the
-        // way the symbol's own label does, and loaded only on the locked mark
-        // — a dogfight plots far more contacts than it locks.
+        // The cursor: a screen-upright reticle counter-rotated the way the
+        // symbol's own label is, loaded only on the selected mark — a
+        // dogfight plots far more contacts than the pilot designates. Its
+        // colour is the designation's whole state: hunting while the rack
+        // cannot yet take the contact, latched the moment a launch would.
         Loader {
             anchors.centerIn: parent
             width: mark.width * 2.1
             height: width
             rotation: -root.viewRotation
-            active: mark.locked
-            sourceComponent: root.lockMark
-        }
-
-        // The cursor, standing a little wider than the bracket so the two
-        // read apart on a mark carrying both, and loaded only on the
-        // selected mark.
-        Loader {
-            anchors.centerIn: parent
-            width: mark.width * 2.6
-            height: width
-            rotation: -root.viewRotation
             active: mark.selected
-            sourceComponent: root.selectMark
+            sourceComponent: ShapeReticle {
+                gap: width * 0.3
+                armLength: width * 0.15
+                strokeColor: mark.latched ? Style.theme.cursorLatched : Style.theme.cursorFree
+                strokeWidth: Math.max(1.5, root.symbolStrokeWidth)
+            }
         }
 
         // The mark's hit area, floored at a thumb target — the symbols draw

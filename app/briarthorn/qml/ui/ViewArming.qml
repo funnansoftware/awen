@@ -36,6 +36,8 @@ Item {
             return qsTr("NO TARGET IN RADAR VOLUME");
         case AbilitySlot.Impediment.Distant:
             return qsTr("TARGET OUT OF MISSILE RANGE");
+        case AbilitySlot.Impediment.NoTarget:
+            return qsTr("NO TARGET SELECTED");
         default:
             return root.slot.lock !== null ? qsTr("LOCK %1").arg(root.slot.lock.callsign) : qsTr("CLEAR TO FIRE");
         }

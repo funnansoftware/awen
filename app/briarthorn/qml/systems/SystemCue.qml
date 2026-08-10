@@ -27,10 +27,12 @@ System {
 
     // Last tick's readings, so each cue fires on the edge and not the level.
     // Only a fall sounds: a factory-fresh craft restores the hull and refills
-    // the racks, and a restart must not fire the whole set at once.
+    // the racks, and a restart must not fire the whole set at once. The lock
+    // is tracked by identity rather than as a flag, so re-designating from
+    // one shootable contact straight onto another still re-cues.
     property real lastHealth: 0
     property int lastRounds: 0
-    property bool hadLock: false
+    property string lastLock: ""
     property bool hadThreat: false
 
     function update(dt: real) {
@@ -39,21 +41,21 @@ System {
 
         const health = root.ownship.health;
         const rounds = root.roundsLeft();
-        const holdsLock = root.holdsLock();
+        const lock = root.shootableLock();
         const threatened = root.ownship.threatInbound !== null;
 
         if (health < root.lastHealth)
             Sfx.impact();
         if (rounds < root.lastRounds)
             Sfx.launch();
-        if (holdsLock && !root.hadLock)
+        if (lock !== "" && lock !== root.lastLock)
             Sfx.lock();
         if (threatened && !root.hadThreat)
             Sfx.threat();
 
         root.lastHealth = health;
         root.lastRounds = rounds;
-        root.hadLock = holdsLock;
+        root.lastLock = lock;
         root.hadThreat = threatened;
     }
 
@@ -70,14 +72,15 @@ System {
         return total;
     }
 
-    // Whether any guided rack is holding a return: the moment the shot the
-    // pilot has been waiting on becomes available.
-    function holdsLock(): bool {
+    // The contact some guided rack would take right now, by callsign — the
+    // moment it changes is the moment worth a tone, whether it arrived from
+    // nothing or from a different designation.
+    function shootableLock(): string {
         for (let i = 0; i < root.ownship.abilities.length; ++i) {
             const slot = root.ownship.abilities[i];
             if (slot.guided && slot.lock !== null)
-                return true;
+                return slot.lock.callsign;
         }
-        return false;
+        return "";
     }
 }

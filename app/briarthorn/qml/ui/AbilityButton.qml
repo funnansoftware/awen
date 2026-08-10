@@ -70,6 +70,8 @@ Item {
             return qsTr("NO LOCK");
         case AbilitySlot.Impediment.Distant:
             return qsTr("RANGE");
+        case AbilitySlot.Impediment.NoTarget:
+            return qsTr("NO TARGET");
         default:
             return "";
         }

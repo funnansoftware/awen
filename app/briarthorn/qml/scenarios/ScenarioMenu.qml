@@ -89,6 +89,7 @@ Scenario {
             root.quarry = null;
             root.evade.target = null;
             root.ownship.engageTarget = null;
+            root.ownship.targetContact = "";
             // With no aspect steering it, ownship flies straight and level
             // toward the next engagement.
             root.ownship.commandedSteer = 0;
@@ -105,6 +106,10 @@ Scenario {
             root.quarry = foes[Math.floor(Math.random() * foes.length)];
         root.evade.target = root.quarry;
         root.ownship.engageTarget = root.quarry;
+        // The director designates through the pilot's own property, so the
+        // demo's guided rack fires under the same selection rule the
+        // player's does.
+        root.ownship.targetContact = root.quarry.callsign;
     }
 
     // The demo must never end: the hull stays topped (SystemWeapon must keep
@@ -170,6 +175,7 @@ Scenario {
         root.evade.target = null;
         root.ownship.maneuvers = [];
         root.ownship.engageTarget = null;
+        root.ownship.targetContact = "";
         root.ownship.engageHold = false;
         root.clearTimer = 0;
         root.showTimer = 0;

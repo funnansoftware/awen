@@ -74,13 +74,11 @@ Item {
     property real armedReach: 0
     property bool armedValid: false
 
-    // The contact the armed weapon's seeker is holding, by track id; empty
-    // brackets nothing.
-    property string lockedContact: ""
-
-    // The pilot's designated contact, by track id; the cursor stands on that
-    // one mark. Empty selects nothing.
+    // The pilot's designated contact, by track id, and the contact a guided
+    // launch would take right now. The cursor stands on the first and turns
+    // its latched colour where the second agrees; both empty mark nothing.
     property string selectedContact: ""
+    property string shootableContact: ""
 
     // Whether a tap on a selectable mark designates it; the minimap and the
     // menu backdrop leave it off and carry no handlers at all.
@@ -318,8 +316,8 @@ Item {
         tracks: root.tracks
         symbolSize: root.symbolSize
         symbolStrokeWidth: root.symbolStrokeWidth
-        lockedContact: root.lockedContact
         selectedContact: root.selectedContact
+        shootableContact: root.shootableContact
         selectionEnabled: root.selectionEnabled
         onTrackTapped: contactId => root.trackTapped(contactId)
         showLabels: root.showTrackLabels

@@ -91,16 +91,26 @@ Window {
 
     // The shot the player is holding armed, if any. Every arming cue reads off
     // this one slot: the scope paints the envelope its round can reach and
-    // brackets the return its seeker is holding, and the readout says what it
-    // is waiting on. Null — the disarmed case — leaves all three off.
+    // the readout says what it is waiting on. Null — the disarmed case —
+    // leaves both off.
     readonly property AbilitySlot armed: game.ownship.armedAbility
     readonly property real armedReach: root.armed ? root.armed.reach : 0
     readonly property bool armedValid: root.armed !== null && root.armed.valid
-    readonly property string lockedContact: root.armed && root.armed.lock ? root.armed.lock.callsign : ""
 
-    // The pilot's designated contact, straight off the flown craft; the
-    // scope's cursor stands on that one mark.
+    // The pilot's designated contact, straight off the flown craft, and —
+    // where the survey validates it — the contact a guided launch would take
+    // right now. The scope's cursor stands on the first and turns its latched
+    // colour on the second; under designation the two can only ever name the
+    // same mark.
     readonly property string selectedContact: game.ownship.targetContact
+    readonly property string shootableContact: {
+        for (let i = 0; i < game.ownship.abilities.length; ++i) {
+            const slot = game.ownship.abilities[i];
+            if (slot.guided && slot.lock !== null)
+                return slot.lock.callsign;
+        }
+        return "";
+    }
 
     width: 1280
     height: 720
@@ -624,7 +634,7 @@ Window {
             trailsRunning: root.running
             armedReach: root.armedReach
             armedValid: root.armedValid
-            lockedContact: root.lockedContact
+            shootableContact: root.shootableContact
             selectedContact: root.selectedContact
             // Live only: a tap on the frozen scope behind an overlay must not
             // queue a designation that lands on resume.
@@ -839,8 +849,8 @@ Window {
             radiusFraction: 0.45
             symbolSize: height * 0.08
             // The envelope mirrors onto the overview with everything else the
-            // minimap keeps; the lock bracket does not, because a mark drawn
-            // this small has no room to stand one off.
+            // minimap keeps; the cursor does not, because a mark drawn this
+            // small has no room to stand one off.
             armedReach: root.armedReach
             armedValid: root.armedValid
             backgroundColor: Style.theme.windowBackground
