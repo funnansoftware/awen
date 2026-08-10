@@ -63,6 +63,13 @@ Item {
         y: root.gridTop
         width: root.leftWidth
         height: Math.max(120, root.columnHeight * 0.24)
+
+        ViewStatusBars {
+            anchors.fill: parent
+            anchors.margins: 4
+            anchors.bottomMargin: 12
+            ownship: root.ownship
+        }
     }
 
     // The track list tile, filling the left column below the condition bars.
@@ -74,6 +81,14 @@ Item {
         y: condition.y + condition.height + root.gutter
         width: root.leftWidth
         height: root.columnHeight - condition.height - root.gutter
+
+        ViewTrackList {
+            anchors.fill: parent
+            anchors.margins: 4
+            tracks: root.tracks
+            selectedContact: root.selectedContact
+            onChosen: contactId => root.contactChosen(contactId)
+        }
     }
 
     // The attack scope tile, centre: the full-feature situation display

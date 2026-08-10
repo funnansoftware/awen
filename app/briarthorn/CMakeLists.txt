@@ -145,9 +145,11 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewSituationAttack.qml
         qml/ui/ViewSituationOverview.qml
         qml/ui/ViewStatus.qml
+        qml/ui/ViewStatusBars.qml
         qml/ui/ViewTerrain.qml
         qml/ui/ViewThreat.qml
         qml/ui/ViewTopBar.qml
+        qml/ui/ViewTrackList.qml
         qml/ui/ViewTracks.qml
         qml/ui/ViewTrails.qml
         ${QML_SINGLETONS}
