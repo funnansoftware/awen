@@ -18,7 +18,8 @@ import "../themes"
 //
 // A sibling of the game scene rather than a child: a key it declines bubbles to
 // the window instead of falling sideways into the scene's handler. Main owns
-// opening and closing it, and focus follows open on both sides declaratively.
+// the mode this page is one of, and binds its visibility and focus to it — the
+// page carries no notion of being up beyond being shown.
 Item {
     id: root
 
@@ -31,9 +32,6 @@ Item {
     // Which device the player is driving with; the page's keys report in, as
     // the pad route already does, so a keyboard rebind swaps the HUD's caps.
     required property ActiveDevice device
-
-    // Whether the page is up. Main drives this; focus and the pause follow it.
-    property bool open: false
 
     // The ability waiting for a control and the device it waits on; the name is
     // empty when nothing is capturing.
@@ -91,10 +89,9 @@ Item {
         return row && row.slot && row.slot.def ? row.slot.def.name : "";
     }
 
-    visible: root.open
-    focus: root.open
-
-    onOpenChanged: {
+    // A page being (re)shown starts at the top with nothing armed, the same
+    // rule the launch and pause screens reset their cursors by.
+    onVisibleChanged: if (root.visible) {
         root.capturing = "";
         root.resetArmed = false;
         root.keymap.displaced = "";

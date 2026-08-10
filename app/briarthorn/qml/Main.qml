@@ -44,24 +44,50 @@ Window {
     // thumb rack and stick, key caps, or the pad's own button glyphs.
     readonly property ActiveDevice device: ActiveDevice {}
 
-    // The launch screen versus the duel: while up, the menu scenario plays
-    // its hands-off demo behind the overlay, the HUD stands down and every
-    // input route feeds the menu cursor instead of the game.
-    property bool inMenu: true
+    // Which screen the shell is showing, and so which one holds the input.
+    // One value, because these screens exclude each other: the pairs a set of
+    // flags admitted — a pause menu over the launch screen, a duel started
+    // with the settings page still up — are not states the game has any
+    // meaning for, and every question below is asked of this rather than of a
+    // combination each site spells out for itself.
+    property int mode: Mode.Kind.Menu
 
-    // The pause menu, duel only: the sim freezes behind it and the input
-    // routes feed its cursor, exactly as the launch screen's.
-    property bool paused: false
+    // Where the settings page was opened from, and so where it returns to and
+    // what stays drawn behind it. openSettings() is its only writer, so the
+    // page can never be standing over a screen it cannot go back to.
+    property int settingsFrom: Mode.Kind.Menu
 
-    // Whether the duel has been decided: the sim freezes on the deciding
-    // frame and the end screen takes the input until the player moves on.
-    readonly property bool ended: !root.inMenu && mission.status !== SystemMission.Status.Ongoing
+    // The screen on the stage. The settings page is a mode as far as the
+    // input is concerned — it holds the keys and stops the sim — but a layer
+    // as far as the picture is concerned: it is opened over something, and
+    // what it was opened over goes on showing behind it.
+    readonly property int stage: root.mode === Mode.Kind.Settings ? root.settingsFrom : root.mode
 
     // The duel actually under the player's hands: running, with no overlay over
     // it. The scene's focus, its key handlers, the wheel's ranging, the trails
-    // and the top bar's own button all follow this one predicate rather than
-    // each spelling the mode set out again.
-    readonly property bool live: !root.inMenu && !root.paused && !root.ended && !settings.open
+    // and the top bar's own button all follow this one predicate.
+    readonly property bool live: root.mode === Mode.Kind.Duel
+
+    // Whether the duel is the session on the stage, whatever screen is over
+    // it. The whole HUD, both scopes and the duel scenario follow this — a
+    // paused or decided duel still draws its instruments, and the launch
+    // screen's demo is what they give way to.
+    readonly property bool inDuel: root.stage !== Mode.Kind.Menu
+
+    // Whether the simulation integrates: no screen is up over the world, so
+    // either the duel is being flown or the launch screen's demo is playing
+    // behind it. The settings page, the pause menu and a decided duel all
+    // stop the sim rather than letting it run on behind the player.
+    readonly property bool running: root.mode === Mode.Kind.Menu || root.mode === Mode.Kind.Duel
+
+    // Whether the hand controls are drawn: the thumb stick and the ability
+    // racks, which the opaque settings page replaces rather than covers.
+    readonly property bool racks: root.inDuel && root.mode !== Mode.Kind.Settings
+
+    // Whether the duel's judge has latched an outcome. The end screen is a
+    // mode like any other, so it is entered by a transition off this rather
+    // than bound to it — see judge().
+    readonly property bool decided: mission.status !== SystemMission.Status.Ongoing
 
     // The shot the player is holding armed, if any. Every arming cue reads off
     // this one slot: the scope paints the envelope its round can reach and
@@ -85,6 +111,13 @@ Window {
     // Focus loss swallows key and touch releases, so drop all held input with it.
     onActiveChanged: if (!active)
         root.dropInput()
+
+    // Both edges into the end screen are watched, not just the latch's: a duel
+    // entered with an outcome already latched has to arrive at its result
+    // rather than run on undecided, and a transition that forgets to rearm the
+    // judge is exactly the mistake a bound `ended` used to make impossible.
+    onDecidedChanged: root.judge()
+    onLiveChanged: root.judge()
 
     // Only ownship enrolls at startup: the menu demo spawns its own waves,
     // and the duel's entities join when startDuel() enrolls them.
@@ -164,37 +197,66 @@ Window {
         }
 
         // Controller events ignore focus entirely, so handing the page the
-        // keyboard is not enough — the pad route is switched here instead.
+        // keyboard is not enough — the pad route is switched on the mode here
+        // instead.
+        //
+        // The window's own activation is tested first, and by all three, for
+        // the same reason: the source only lengthens its poll interval when the
+        // application deactivates, and SDL suppresses nothing for a process
+        // that opened no window of its own, so the events keep arriving from
+        // behind another window. Without this a pad knocked in the player's lap
+        // flies the craft and fires its rack through a game nobody is looking
+        // at — and answers the launch screen, where a press lands on whatever
+        // the cursor is resting on, up to and including EXIT GAME.
         Gamepad.onAxisChanged: (deviceId, axis, value) => {
+            if (!root.active)
+                return;
             root.device.moved(value);
-            if (settings.open)
+            switch (root.mode) {
+            case Mode.Kind.Settings:
                 settings.axisMoved(axis, value);
-            else if (root.inMenu)
+                break;
+            case Mode.Kind.Menu:
                 menu.axisMoved(axis, value);
-            else if (root.ended)
+                break;
+            case Mode.Kind.End:
                 endPage.axisMoved(axis, value);
-            else if (root.paused)
+                break;
+            case Mode.Kind.Pause:
                 pausePage.axisMoved(axis, value);
-            else
+                break;
+            case Mode.Kind.Duel:
                 actions.axisMoved(axis, value);
+                break;
+            }
         }
         Gamepad.onButtonPressed: (deviceId, button) => {
+            if (!root.active)
+                return;
             root.device.kind = ActiveDevice.Gamepad;
-            if (settings.open)
+            switch (root.mode) {
+            case Mode.Kind.Settings:
                 settings.padPressed(button);
-            else if (root.inMenu)
+                break;
+            case Mode.Kind.Menu:
                 menu.padPressed(button);
-            else if (root.ended)
+                break;
+            case Mode.Kind.End:
                 endPage.padPressed(button);
-            else if (root.paused)
+                break;
+            case Mode.Kind.Pause:
                 pausePage.padPressed(button);
-            else if (button === Gamepad.Button.Start)
-                root.openPause();
-            else
-                actions.buttonPressed(button);
+                break;
+            case Mode.Kind.Duel:
+                if (button === Gamepad.Button.Start)
+                    root.openPause();
+                else
+                    actions.buttonPressed(button);
+                break;
+            }
         }
         Gamepad.onButtonReleased: (deviceId, button) => {
-            if (!settings.open && !root.inMenu && !root.paused && !root.ended)
+            if (root.active && root.live)
                 actions.buttonReleased(button);
         }
 
@@ -370,11 +432,10 @@ Window {
         // carrying its aspect; the scenarios only shape the world and never
         // load systems of their own.
         Systems {
-            // The settings page, the pause menu and a decided duel all stop
-            // the sim rather than letting it run on behind the player.
-            // dropInput() posts the zeroed axes before these flip, and
-            // nothing clears the queue, so they publish on resume.
-            running: !settings.open && !root.paused && !root.ended
+            // Only the two modes with nothing over the world integrate — see
+            // root.running. dropInput() posts the zeroed axes before this
+            // flips, and nothing clears the queue, so they publish on resume.
+            running: root.running
 
             CommandQueue {
                 id: bus
@@ -387,14 +448,14 @@ Window {
 
             ScenarioMenu {
                 id: demo
-                enabled: root.inMenu
+                enabled: !root.inDuel
                 ownship: game.ownship
                 world: root.world
             }
 
             ScenarioDuel {
                 id: scenario
-                enabled: !root.inMenu
+                enabled: root.inDuel
                 ownship: game.ownship
             }
 
@@ -467,7 +528,7 @@ Window {
             // scenery that fires missile warnings at a player reading a menu
             // is scenery that has misunderstood its job.
             SystemCue {
-                enabled: !root.inMenu
+                enabled: root.inDuel
                 ownship: game.ownship
             }
         }
@@ -477,23 +538,18 @@ Window {
         // the top strip; the scope sits below it.
         //
         // Its button pauses on the way in rather than opening over a running
-        // duel: the page stops the sim either way, so this is the difference
-        // between coming back to a RESUME and being dropped into the fight
-        // mid-frame — and it is the state the pause menu's own route into the
-        // page arrives from. Dead while an overlay is up, so the page can never
-        // re-enter itself.
+        // duel — openSettings() owns that, so the bar simply asks for the page
+        // and cannot get the pair the wrong way round. Dead while an overlay is
+        // up, so the page can never re-enter itself.
         ViewTopBar {
             id: topBar
 
-            visible: !root.inMenu
+            visible: root.inDuel
             enabled: root.live
             height: scene.bandHeight
             credits: game.credits
             version: "v" + BuildInfo.version
-            onSettingsRequested: {
-                root.openPause();
-                root.openSettings();
-            }
+            onSettingsRequested: root.openSettings()
 
             anchors {
                 left: parent.left
@@ -509,7 +565,7 @@ Window {
         // plotting along the top edge clears the bar, and clips so nothing ever
         // renders up into it.
         ViewSituationAttack {
-            visible: !root.inMenu
+            visible: root.inDuel
             clip: true
             projection: projection
             observer: game.ownship
@@ -518,7 +574,7 @@ Window {
             detonations: weapons.detonations
             obstacles: root.world.obstacles
             symbolSize: height * 0.04
-            trailsRunning: root.live
+            trailsRunning: root.running
             armedReach: root.armedReach
             armedValid: root.armedValid
             lockedContact: root.lockedContact
@@ -536,7 +592,7 @@ Window {
         // fuel) on the shared instrument side, so it and the minimap opposite
         // read as a matched, compact pair. Dropped below the top band.
         ViewStatus {
-            visible: !root.inMenu
+            visible: root.inDuel
             width: scene.instrumentSide
             height: width
             ownship: game.ownship
@@ -573,7 +629,7 @@ Window {
                 id: terrainAlert
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible: !root.inMenu && terrainAlert.active
+                visible: root.inDuel && terrainAlert.active
                 ownship: game.ownship
             }
 
@@ -581,7 +637,7 @@ Window {
                 id: threatAlert
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible: !root.inMenu && threatAlert.active
+                visible: root.inDuel && threatAlert.active
                 ownship: game.ownship
             }
 
@@ -589,7 +645,7 @@ Window {
                 id: armingAlert
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible: !root.inMenu && armingAlert.active
+                visible: root.inDuel && armingAlert.active
                 ownship: game.ownship
                 // Never off the edge of a phone: the reason elides instead.
                 maximumWidth: root.width - 32
@@ -612,7 +668,7 @@ Window {
             // no further than the pulse's edge.
             readonly property real pulseReach: 48
 
-            visible: !root.device.touch && !settings.open && !root.inMenu
+            visible: !root.device.touch && root.racks
             // Smaller than a touch target: nothing here is ever pressed by a
             // thumb, because a touchscreen press hands the HUD to the arc rack
             // instead. Sized so the rack clears ownship's own bearing line as
@@ -666,7 +722,7 @@ Window {
             // Touch play only: the on-screen stick shows on phones, tablets and
             // touch browsers, and gives way the moment keys or a gamepad take
             // over — including on a laptop that has both.
-            visible: TouchScreen.available && root.device.touch && !settings.open && !root.inMenu
+            visible: TouchScreen.available && root.device.touch && root.racks
             onValueXChanged: axisSteer.invoke(valueX)
             // The stick's whole travel is the lever: pushed past centre
             // throttles up, pulled back brakes.
@@ -693,7 +749,7 @@ Window {
         // the key and pad bindings post, so touch adds no second invocation path.
         TouchAbilities {
             radius: Math.min(root.width, root.height) * 0.28
-            visible: TouchScreen.available && root.device.touch && !settings.open && !root.inMenu
+            visible: TouchScreen.available && root.device.touch && root.racks
             loadout: game.ownship.abilities
             onInvoked: ability => touched.post({ ability: ability })
             // The range pair at the rack's pivot steps the shared range axis,
@@ -718,7 +774,7 @@ Window {
         ViewSituation {
             id: minimap
 
-            visible: !root.inMenu
+            visible: root.inDuel
             width: scene.instrumentSide
             height: width
 
@@ -762,7 +818,7 @@ Window {
             text: qsTr("controller connected")
             color: Style.theme.textLabel
             font { pixelSize: 12; family: Style.monospace }
-            visible: scene.padConnected && !root.inMenu
+            visible: scene.padConnected && root.inDuel
 
             anchors {
                 right: parent.right
@@ -776,7 +832,7 @@ Window {
         // picture pushed right and down (briardart's menu-demo geometry) so
         // the demo dogfight plays clear of the title band and the action rail.
         ViewSituation {
-            visible: root.inMenu
+            visible: !root.inDuel
             projection: projection
             observer: game.ownship
             tracks: detection.tracks
@@ -790,7 +846,7 @@ Window {
             // A backdrop behind the title, not an instrument: the demo's marks
             // keep their callsigns and drop the ranges nobody is flying on.
             showTrackRanges: false
-            trailsRunning: root.inMenu && !settings.open
+            trailsRunning: root.running
 
             anchors.fill: parent
         }
@@ -808,8 +864,8 @@ Window {
     ViewMenu {
         id: menu
 
-        visible: root.inMenu
-        focus: root.inMenu && !settings.open
+        visible: !root.inDuel
+        focus: root.mode === Mode.Kind.Menu
         device: root.device
         onDuel: root.startDuel()
         onSettingsRequested: root.openSettings()
@@ -823,8 +879,8 @@ Window {
     ViewPause {
         id: pausePage
 
-        visible: root.paused
-        focus: root.paused && !settings.open
+        visible: root.stage === Mode.Kind.Pause
+        focus: root.mode === Mode.Kind.Pause
         device: root.device
         onResumed: root.resumeDuel()
         onRestarted: root.startDuel()
@@ -839,12 +895,12 @@ Window {
     ViewEnd {
         id: endPage
 
-        visible: root.ended
-        // Yields to the settings page as the other two overlays do. Out of
-        // reach today — the page stops the sim, so no duel can be decided
-        // behind it — but a page left visible with the keyboard taken from it
-        // under C++ would never get its focus binding back.
-        focus: root.ended && !settings.open
+        // Stands behind the settings page rather than vanishing under it, as
+        // the other two overlays do — out of reach today, since nothing on
+        // this screen opens the page, but it costs nothing to be the same
+        // shape as its siblings.
+        visible: root.stage === Mode.Kind.End
+        focus: root.mode === Mode.Kind.End
         device: root.device
         mission: mission
         onFlyAgain: root.startDuel()
@@ -860,12 +916,15 @@ Window {
     // the very key handler that reads them — starting the duel, unpausing — so a
     // key that fell through to the scene would be read by the game the overlay
     // had already switched to, one dispatch too late for the scene's mode guards
-    // to refuse it. Focus follows open on both sides declaratively — an
-    // imperative hand-off leaves the scene unfocused and the game permanently
-    // deaf the moment one exit path forgets to hand it back.
+    // to refuse it. Visibility and focus are bound to the mode here, exactly as
+    // the other three overlays' are — an imperative hand-off leaves the scene
+    // unfocused and the game permanently deaf the moment one exit path forgets
+    // to hand it back.
     ViewSettings {
         id: settings
 
+        visible: root.mode === Mode.Kind.Settings
+        focus: root.mode === Mode.Kind.Settings
         anchors.fill: parent
         keymap: root.keymap
         loadout: game.ownship.abilities
@@ -887,35 +946,49 @@ Window {
     // envelopes stay on the picture. Arriving from a paused or decided duel,
     // the demo's own restart sweeps the fight's leavings and reseats ownship
     // for the show.
+    // The mission latch is deliberately left alone: rearming it here would
+    // only trip again on the next tick, since the judge still reads the spent
+    // duel's bandit and the demo tops ownship's hull every frame. It is
+    // startDuel() that rearms it, and it does so before entering the duel, so
+    // no decided latch can outlive the screen it belongs to.
     function startMenu() {
         root.dropInput();
-        root.paused = false;
         demo.restart();
         // The demo plays an open sky: the duel's arena leaves with the duel.
         root.world.obstacles = [];
         projection.step = 1;
-        root.inMenu = true;
+        root.mode = Mode.Kind.Menu;
     }
 
     // Escape or Start mid-duel: freeze the sim behind the pause menu. Held
     // input is dropped while the bus still runs, exactly as the page does.
     function openPause() {
         root.dropInput();
-        root.paused = true;
+        root.mode = Mode.Kind.Pause;
     }
 
     function resumeDuel() {
-        root.paused = false;
+        root.mode = Mode.Kind.Duel;
         root.dropInput();
+    }
+
+    // The duel's decision. The judge latches from live model state inside the
+    // tick, so this is what turns that latch into the end screen; it runs on
+    // either edge, so entering a duel whose latch has not been rearmed lands
+    // on the result rather than flying a fight that is already over.
+    function judge() {
+        if (root.decided && root.live)
+            root.mode = Mode.Kind.End;
     }
 
     // New game: rebuild both craft factory-fresh, sweep the whole world —
     // the demo's leavings and the spent craft alike — and enroll the new
-    // pair on the game range step. Clears the pause the way startMenu() does,
-    // so a restart taken from the pause page leaves the fresh duel running
-    // rather than frozen behind the overlay it was ordered from.
+    // pair on the game range step. Whatever screen it was ordered from, the
+    // one mode write at the end is what leaves the fresh duel running rather
+    // than frozen behind that screen. The judge is rearmed before that write,
+    // and that order is load-bearing: entering the duel on a latch left
+    // standing would drop the player straight back onto the end screen.
     function startDuel() {
-        root.paused = false;
         demo.reset();
         game.reset();
         scenario.reset();
@@ -926,21 +999,30 @@ Window {
             root.world.add(scenario.entities[i]);
         root.world.obstacles = scenario.obstacles;
         projection.step = 2;
-        root.inMenu = false;
+        root.mode = Mode.Kind.Duel;
         root.dropInput();
     }
 
-    // Held input is released while the bus is still running, so the zeroed steer
-    // and throttle post before the simulation stops. Both verbs coalesce, so
-    // they publish on resume and the ship never carries its pre-pause command
-    // out of the page — which is also why nothing clears the queue.
+    // The page stops the sim whatever it is opened over, so a duel it is
+    // opened from is paused on the way in rather than dropped back into
+    // mid-frame on the way out — the difference between coming back to a
+    // RESUME and being handed a fight already in progress. Recording where it
+    // was opened from is what DONE returns to, and this is that field's only
+    // writer, so the page always has somewhere to go back to.
+    //
+    // Held input is released while the bus is still running, so the zeroed
+    // steer and throttle post before the simulation stops. Both verbs
+    // coalesce, so they publish on resume and the ship never carries its
+    // pre-pause command out of the page — which is also why nothing clears
+    // the queue.
     function openSettings() {
         root.dropInput();
-        settings.open = true;
+        root.settingsFrom = root.live ? Mode.Kind.Pause : root.mode;
+        root.mode = Mode.Kind.Settings;
     }
 
     function closeSettings() {
-        settings.open = false;
+        root.mode = root.settingsFrom;
         root.dropInput();
     }
 }
