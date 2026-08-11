@@ -1,13 +1,16 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Shapes
+import awen.shapes
 import "../database"
 import "../input"
 import "../model"
 import "../themes"
 
 // The stores page: ownship's plan view with every carried ability's stations
-// drawn at their places on the airframe — green where a press would take,
+// drawn at their places on the airframe, each wearing the outline of the round
+// it holds — green where a press would take,
 // caution-coloured where it cannot yet, hollow while a round is in the air,
 // muted once spent — the rounds-away tally beneath, and the ability buttons
 // seated at the foot, the best reach the right thumb has. State lives in
@@ -63,6 +66,11 @@ Item {
             required property AbilitySlot modelData
 
             readonly property var stations: rack.modelData.def ? rack.modelData.def.stations : []
+
+            // What those stations hold, drawn with the very outline the scope
+            // plots the round with — so a dart on the wing and the dart it
+            // becomes in the air can never look like different things.
+            readonly property Data glyph: Database.dataFor(rack.modelData.def ? rack.modelData.def.stationKind : Classification.Kind.Unknown)
 
             // Stations still loaded: per-round where one station carries one
             // round, a proportional magazine where a pod stands behind fewer
@@ -120,7 +128,7 @@ Item {
             Repeater {
                 model: rack.stations
 
-                Rectangle {
+                ShapePolygon {
                     id: pip
 
                     required property point modelData
@@ -133,20 +141,32 @@ Item {
                     // item, so a station point maps with the same factor.
                     readonly property real span: Math.min(rack.width, rack.height)
 
-                    x: rack.width / 2 + pip.modelData.x * pip.span - width / 2
-                    y: rack.height / 2 + pip.modelData.y * pip.span - height / 2
-                    width: Math.max(4, pip.span * 0.055)
-                    height: width * 2.1
-                    radius: width / 2
-                    color: {
+                    // The station's one colour: filled with it on the rail,
+                    // hollowed to it in the air. The refusal beat below
+                    // overrides both in the error colour.
+                    readonly property color tint: {
                         if (refusal.running)
                             return Style.theme.armInvalid;
                         if (pip.flying)
-                            return "transparent";
+                            return Style.theme.armValid;
                         return pip.loaded ? rack.loadedTint : Qt.alpha(Style.theme.textMuted, 0.35);
                     }
-                    border.width: pip.flying ? 1 : 0
-                    border.color: Style.theme.armValid
+
+                    points: rack.glyph.outline
+                    fillColor: pip.flying ? "transparent" : pip.tint
+                    strokeColor: pip.tint
+                    strokeWidth: Math.max(1, pip.width * 0.05)
+                    // Round joins, as the scope marks use: the missiles' acute
+                    // noses exceed the default miter limit and would chop flat.
+                    joinStyle: ShapePath.RoundJoin
+                    x: rack.width / 2 + pip.modelData.x * pip.span - width / 2
+                    y: rack.height / 2 + pip.modelData.y * pip.span - height / 2
+                    // Sized off the airframe and then by the kind's own symbol
+                    // scale, so a store reads at the size the scope plots it —
+                    // and small enough that the cheek pair of kinetic slugs,
+                    // seated a tenth of the span apart, stays two rounds.
+                    width: Math.max(6, pip.span * 0.16 * rack.glyph.symbolScale)
+                    height: width
                     opacity: refusal.running ? 0.4 + 0.6 * rack.flash : (rack.modelData.armed ? rack.breathe : 1)
                 }
             }
@@ -176,17 +196,20 @@ Item {
     }
 
     // The rack, in the corner under the thumb. Same component as the overlay
-    // HUD's, so an ability reads the same however the glass is arranged.
+    // HUD's, so an ability reads the same however the glass is arranged, and
+    // the same one every device drives — a thumb presses these buttons rather
+    // than a rack of its own.
     ViewAbilities {
         id: buttons
 
-        visible: !root.device.touch && root.racks
+        visible: root.racks
         buttonSize: 64
-        // The rack keeps clear of the tile's own legend, and its floor drops
-        // below the thumb size — nothing here is pressed by one, and a wide
-        // loadout must shrink rather than run out of the frame.
+        // The rack keeps clear of the tile's own legend, and a wide loadout
+        // shrinks rather than running out of the frame — down to a thumb's
+        // target and no further, since a thumb is one of the things pressing
+        // it.
         maximumWidth: root.width - 34
-        minimumButtonSize: 36
+        minimumButtonSize: 44
         keymap: root.keymap
         loadout: root.ownship.abilities
         device: root.device

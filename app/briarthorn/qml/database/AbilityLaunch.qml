@@ -6,4 +6,6 @@ Ability {
 
     // The weapon kind a launch spawns.
     property int weapon: Classification.Kind.Unknown
+
+    stationKind: root.weapon
 }

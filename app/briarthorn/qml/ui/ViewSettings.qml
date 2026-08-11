@@ -457,8 +457,8 @@ Item {
         color: swatch.tint
     }
 
-    // The duel's HUD composition — the shipped overlay or the tiled portal
-    // layout — the same shape of choice the audio switch is.
+    // The duel's HUD composition — the tiled portal layout or the floating
+    // overlay — the same shape of choice the audio switch is.
     component HudRow: PageRow {
         id: row
 

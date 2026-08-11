@@ -16,4 +16,6 @@ Ability {
     // round fuzes short of the decoy and the blast reaches further still — or
     // stealing the lock kills the deployer anyway.
     property real ejectRange: 2000
+
+    stationKind: root.decoy
 }

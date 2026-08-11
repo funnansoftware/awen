@@ -33,11 +33,11 @@ QtObject {
 
     readonly property Theme theme: root.themeFor(root.themeName)
 
-    // Which HUD composition the duel draws: the shipped overlay, or the tiled
-    // portal layout. Stored as a name rather than a flag, so a third layout —
-    // the deferred narrow-screen collapse — is a new value, not a second bool.
-    // Written through selectHud(), like the palette.
-    property string hudName: root.store.value("hud", "overlay")
+    // Which HUD composition the duel draws: the tiled portal layout it opens
+    // on, or the floating overlay. Stored as a name rather than a flag, so a
+    // third layout — the deferred narrow-screen collapse — is a new value, not
+    // a second bool. Written through selectHud(), like the palette.
+    property string hudName: root.store.value("hud", "tiled")
     readonly property bool hudTiled: root.hudName === "tiled"
 
     // The instrument typeface: the first of these the system actually has.

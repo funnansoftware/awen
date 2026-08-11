@@ -127,7 +127,6 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/RangeRing.qml
         qml/ui/Symbol.qml
         qml/ui/SymbolFlare.qml
-        qml/ui/TouchAbilities.qml
         qml/ui/TouchArrow.qml
         qml/ui/ViewAbilities.qml
         qml/ui/ViewAlerts.qml

@@ -4,14 +4,14 @@ import QtQuick
 import "../input"
 import "../model"
 
-// The desktop ability rack: one square button per ability the flown craft
-// carries, each topped with the control that fires it right now — a key cap
-// while the player is on the keyboard, the controller's own button glyph the
-// moment a pad takes over. The touch rack's counterpart, and shown in its place
-// wherever a keyboard or a controller is driving; the caller docks it in the
-// same corner the touch arc uses, so the abilities stay put as the HUD swaps
-// devices and the scope's centre column — ownship, its pulse, and the sector a
-// pursuer converges through — is never drawn over. Nothing here names an
+// The ability rack: one square button per ability the flown craft carries,
+// each topped with the control that fires it right now — a key cap while the
+// player is on the keyboard, the controller's own button glyph the moment a pad
+// takes over, and nothing at all under a thumb, which presses the button
+// itself. The one rack every device drives, so the abilities hold their places
+// as the HUD swaps devices rather than moving to a layout of their own. The
+// caller docks it in a corner, clear of the scope's centre column — ownship,
+// its pulse, and the sector a pursuer converges through. Nothing here names an
 // ability: the rack is the loadout, so a craft carrying a new one grows a
 // button for it.
 Row {
@@ -74,7 +74,10 @@ Row {
             cooling: button.modelData.cooling
 
             // The cap follows the device in the player's hands: the pad's own
-            // button while a controller is driving, the key otherwise.
+            // button while a controller is driving, the key otherwise — and no
+            // cap at all under a thumb, which has no binding to caption, so the
+            // button's own label re-centres in its place.
+            showControl: !root.device.touch
             pad: root.device.pad
             code: root.device.pad ? root.keymap.buttonFor(button.ability) : -1
             control: root.device.pad ? root.keymap.buttonLabel(root.keymap.buttonFor(button.ability)) : root.keymap.keyLabel(root.keymap.keyFor(button.ability))
