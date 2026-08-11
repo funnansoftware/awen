@@ -30,4 +30,10 @@ QtObject {
     // glyph on the stores page; empty draws none. Visual metadata like the
     // default controls, never a stat.
     property list<point> stations
+
+    // What one of those stations holds, as the classification whose outline
+    // the stores page draws the station with — the round a rack launches, the
+    // decoy a pod pops. Each family binds it from the kind it already names,
+    // so the page never asks what sort of ability it is drawing.
+    property int stationKind: Classification.Kind.Unknown
 }

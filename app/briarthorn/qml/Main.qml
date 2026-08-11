@@ -718,25 +718,39 @@ Window {
             }
         }
 
-        // The touch ability rack, bottom-right: one square button per carried
-        // ability on a quarter arc swept between the two edges, under the right
-        // thumb as the stick is under the left. It posts the same ability record
-        // the key and pad bindings post, so touch adds no second invocation path.
-        TouchAbilities {
-            radius: Math.min(root.width, root.height) * 0.28
+        // The touch range pair, stacked over the stick: up ranges in, down
+        // ranges out, the same way round as the wheel and the d-pad. It steps
+        // the shared range axis rather than posting anything — the scope is a
+        // display, so ranging it never goes near the bus. Seated under the
+        // left thumb because the right one now has the HUD's own ability rack,
+        // which touch shares with every other device rather than standing up a
+        // second one of its own.
+        Column {
+            id: ranging
+
+            readonly property real arrowSize: Math.max(44, Math.min(root.width, root.height) * 0.08)
+
             visible: TouchScreen.available && root.device.touch && root.racks
-            loadout: game.ownship.abilities
-            onInvoked: ability => touched.post({ ability: ability })
-            // The range pair at the rack's pivot steps the shared range axis,
-            // same as the wheel and the d-pad: the scope is a display, so
-            // ranging it never goes near the bus.
-            onRangedIn: axisRange.step(1)
-            onRangedOut: axisRange.step(-1)
+            spacing: ranging.arrowSize * 0.12
 
             anchors {
-                right: parent.right
-                bottom: parent.bottom
-                margins: 24
+                horizontalCenter: stick.horizontalCenter
+                bottom: stick.top
+                bottomMargin: 16
+            }
+
+            TouchArrow {
+                width: ranging.arrowSize
+                height: width
+                up: true
+                onTapped: axisRange.step(1)
+            }
+
+            TouchArrow {
+                width: ranging.arrowSize
+                height: width
+                up: false
+                onTapped: axisRange.step(-1)
             }
         }
 

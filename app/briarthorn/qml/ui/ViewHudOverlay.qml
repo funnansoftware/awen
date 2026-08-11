@@ -3,12 +3,12 @@ import "../input"
 import "../model"
 import "../themes"
 
-// The shipped duel HUD: instruments floated over a full-bleed attack scope —
+// The floating duel HUD: instruments floated over a full-bleed attack scope —
 // the round condition gauge and corner minimap as a matched pair, the ability
 // rack docked bottom-right, the flight hints along the bottom and the alert
 // channel top-centre. One of the two compositions Main loads under the top
-// bar; the tiled portal layout is the other. Views emit and Main posts — no
-// command bus is touched from here.
+// bar; the tiled portal layout is the other, and the one the game opens on.
+// Views emit and Main posts — no command bus is touched from here.
 Item {
     id: root
 
@@ -121,10 +121,10 @@ Item {
     // ability, capped with the key or pad button that fires it and posting
     // the same ability record those bindings post — no second invocation
     // path. A thumb landing on one hands the HUD back to the touch
-    // controls. Docked in the corner rather than centred: the scope's
-    // centre column carries ownship, its pulse, the decoys it pops and the
-    // pursuer's sector, and the rack is captions and clocks, so it is what
-    // gives way.
+    // controls and presses the very same button. Docked in the corner rather
+    // than centred: the scope's centre column carries ownship, its pulse, the
+    // decoys it pops and the pursuer's sector, and the rack is captions and
+    // clocks, so it is what gives way.
     ViewAbilities {
         id: abilities
 
@@ -133,11 +133,10 @@ Item {
         // no further than the pulse's edge.
         readonly property real pulseReach: 48
 
-        visible: !root.device.touch && root.racks
-        // Smaller than a touch target: nothing here is ever pressed by a
-        // thumb, because a touchscreen press hands the HUD to the arc rack
-        // instead. Sized so the rack clears ownship's own bearing line as
-        // well as its column on any window taller than about 720.
+        visible: root.racks
+        // Floored at a thumb's target, because a thumb is one of the things
+        // pressing it, and sized so the rack clears ownship's own bearing line
+        // as well as its column on any window taller than about 720.
         buttonSize: Math.max(44, Math.min(root.width, root.height) * 0.07)
         // A craft carrying six abilities shrinks its buttons rather than
         // growing across the scope centre.
@@ -160,10 +159,11 @@ Item {
     // hands. Centred on the window rather than hung off the rack — it
     // captions the flight controls, not the abilities — and seated at the
     // very bottom, which is what keeps it off the ownship symbol on a tall
-    // display. A touch device flies from the two corner controls instead
-    // and has nothing to caption, so the line gives way with the rack.
+    // display. A touch device flies from the stick and the rack under its
+    // thumbs and has no binding to caption, so the line gives way there even
+    // though the rack it sits beside does not.
     ViewHints {
-        visible: abilities.visible
+        visible: root.racks && !root.device.touch
         device: root.device
         // Centred, but never under the rack: capped so the line's right
         // edge stays clear of abilities' left and elides on a window too

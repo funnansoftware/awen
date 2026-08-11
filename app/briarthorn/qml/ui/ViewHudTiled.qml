@@ -7,9 +7,9 @@ import "../themes"
 // to edge — condition bars over the track list on the left, the attack
 // scope filling the centre with the alerts overlaid, and the minimap over
 // the stores tile on the right, whose ability buttons land in the corner
-// under the right thumb. The other of the two compositions Main loads under
-// the top bar; desktop-first, with the narrow-screen collapse deliberately
-// deferred to the overlay layout.
+// under the right thumb. The composition Main opens the duel on, the floating
+// overlay being the other; desktop-first, with the narrow-screen collapse
+// deliberately deferred to that overlay.
 Item {
     id: root
 
@@ -93,9 +93,9 @@ Item {
     }
 
     // The attack scope tile, centre: the full-feature situation display
-    // retuned for a bounded, near-square frame — the ring capped so
-    // gutter-clamped symbols stay inside it, ownship dropped toward the
-    // tile's foot so the forward sector still dominates.
+    // retuned for a bounded, near-square frame — the ring drawn out past the
+    // frame's flanks, ownship dropped toward the tile's foot so the forward
+    // sector dominates.
     Tile {
         id: attack
 
@@ -113,19 +113,14 @@ Item {
             entities: root.entities
             detonations: root.detonations
             obstacles: root.obstacles
-            // Capped so gutter-clamped symbols stay inside the near-square
-            // frame, floored for legibility — and guarded against the
-            // moment of construction, when the item is still sizeless and
-            // the division would send NaN into the ring arcs (a debug
-            // build asserts on it).
-            radiusFraction: {
-                const short = Math.min(width, height);
-                if (short <= 0)
-                    return 0.4;
-                return Math.max(0.2, Math.min(0.48, (width / 2 - symbolSize * 2.2) / short));
-            }
+            // The picture drawn half again as large as the frame would hold,
+            // so the forward sector fills the glass: the outer ring runs off
+            // the tile's flanks the way the rear already crops off its foot,
+            // and an off-scale contact out on the beam is read off the track
+            // list rather than the gutter.
+            radiusFraction: 0.62
             verticalShift: 0.2
-            symbolSize: height * 0.04
+            symbolSize: height * 0.06
             trailsRunning: root.running
             armedReach: root.armedReach
             armedValid: root.armedValid
