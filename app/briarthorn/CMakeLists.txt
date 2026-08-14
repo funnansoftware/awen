@@ -67,6 +67,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/entities/DataAircraftFighter.qml
         qml/database/entities/DataAircraftFighterLight.qml
         qml/database/entities/DataDecoy.qml
+        qml/database/entities/DataSiteAntiAir.qml
         qml/database/entities/DataUnknown.qml
         qml/database/personalities/PersonalityAggressive.qml
         qml/database/personalities/PersonalityDefensive.qml
@@ -113,6 +114,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/systems/SystemMission.qml
         qml/systems/SystemMovement.qml
         qml/systems/SystemPersonality.qml
+        qml/systems/SystemSentry.qml
         qml/systems/SystemThreat.qml
         qml/systems/SystemWeapon.qml
         qml/themes/Theme.qml
@@ -132,6 +134,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewAlerts.qml
         qml/ui/ViewArming.qml
         qml/ui/ViewEnd.qml
+        qml/ui/ViewEmplacements.qml
         qml/ui/ViewEngagements.qml
         qml/ui/ViewHints.qml
         qml/ui/ViewHudOverlay.qml
@@ -149,6 +152,7 @@ awen_add_executable(${PROJECT_NAME}
         qml/ui/ViewTerrain.qml
         qml/ui/ViewThreat.qml
         qml/ui/ViewTopBar.qml
+        qml/ui/ViewTracked.qml
         qml/ui/ViewTrackList.qml
         qml/ui/ViewTracks.qml
         qml/ui/ViewTrails.qml

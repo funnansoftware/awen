@@ -46,7 +46,10 @@ Item {
                 rows.push({
                     x: pillar.posX,
                     y: pillar.posY,
-                    r: pillar.radius
+                    r: pillar.radius,
+                    // Carried so a layer casting for someone else's sensor can
+                    // drop the pieces that sensor sees through.
+                    transparentTo: pillar.transparentTo
                 });
         }
         return rows;
@@ -114,6 +117,10 @@ Item {
     property bool showTrackLabels: true
     property bool showTrackHealth: true
     property bool showTrackRanges: true
+
+    // Whether the known emplacements draw their sweeping beams. Needs
+    // entities, so a display given none draws nothing either way.
+    property bool showEmplacements: true
     property bool showNorth: false
     property bool closedRings: false
 
@@ -287,6 +294,21 @@ Item {
         pxPerMeter: root.pxPerMeter
         viewRotation: root.viewRotation
         strokeWidth: root.ringStrokeWidth
+        cullRadius: root.backgroundColor.a > 0 ? root.discRadius : 0
+    }
+
+    // The sweeping beams of the arena's batteries, over the terrain they are
+    // dug into and under everything that flies.
+    ViewEmplacements {
+        anchors.fill: parent
+        visible: root.showEmplacements
+        observer: root.observer
+        entities: root.entities
+        occluders: root.occluderRows
+        centerX: root.centerX
+        centerY: root.centerY
+        pxPerMeter: root.pxPerMeter
+        viewRotation: root.viewRotation
         cullRadius: root.backgroundColor.a > 0 ? root.discRadius : 0
     }
 

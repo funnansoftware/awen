@@ -546,6 +546,11 @@ Window {
                 obstacles: root.world.obstacles
             }
 
+            SystemSentry {
+                entities: root.entities
+                obstacles: root.world.obstacles
+            }
+
             SystemEngage {
                 entities: root.entities
                 obstacles: root.world.obstacles

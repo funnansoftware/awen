@@ -61,6 +61,21 @@ Item {
             readonly property real screenX: root.observer ? root.centerX + (pillar.modelData.posX - root.observer.posX) * root.pxPerMeter : 0
             readonly property real screenY: root.observer ? root.centerY + (pillar.modelData.posY - root.observer.posY) * root.pxPerMeter : 0
 
+            // A screen wears the colour of the side it belongs to, plain rock
+            // the terrain colour: ground that only stands in some of the
+            // sky's way should not look like ground that stands in all of it.
+            readonly property color rim: {
+                switch (pillar.modelData.transparentTo) {
+                case Side.Kind.Hostile:
+                    return Style.theme.factionHostile;
+                case Side.Kind.Friendly:
+                case Side.Kind.Ownship:
+                    return Style.theme.factionFriendly;
+                default:
+                    return Style.theme.terrain;
+                }
+            }
+
             visible: root.draws(pillar.modelData.posX, pillar.modelData.posY, pillar.modelData.radius)
             x: pillar.screenX - pillar.edge
             y: pillar.screenY - pillar.edge
@@ -68,7 +83,7 @@ Item {
             height: width
             radius: width / 2
             color: Style.theme.terrainFill
-            border.color: Style.theme.terrain
+            border.color: pillar.rim
             border.width: root.strokeWidth
         }
     }

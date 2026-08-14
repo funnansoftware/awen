@@ -51,6 +51,14 @@ QtObject {
     // compute buys a guided seeker's acquisition range (m).
     readonly property real maxGuidedRange: 150000
 
+    // How much of its radar volume a battery will shoot into. A search set
+    // reaches far past what the round on the rail can catch — pure pursuit
+    // takes reach * speed / (speed^2 - target^2) seconds, so a 64 s round
+    // making 800 m/s runs out at 31 km against a craft fleeing at 500 —
+    // and a rack emptied at the rim is a battery that has disarmed itself.
+    // The rest of the volume is where a track is followed but not fired on.
+    readonly property real sentryFireFraction: 0.65
+
     // How far up its range a rating sits, clamped to [0, 1] — every rule
     // below is this fraction of the matching span.
     function fraction(stat: real): real {
@@ -90,6 +98,13 @@ QtObject {
 
     function detectionRangeFor(sensor: real): real {
         return root.maxDetectionRange * root.fraction(sensor);
+    }
+
+    // The range inside which a battery of a given radar volume opens fire —
+    // the ring the scope draws and the one SystemSentry gates the trigger on,
+    // so the picture and the rule can never disagree.
+    function sentryFireRangeFor(detectionRange: real): real {
+        return detectionRange * root.sentryFireFraction;
     }
 
     function guidedRangeFor(compute: real): real {

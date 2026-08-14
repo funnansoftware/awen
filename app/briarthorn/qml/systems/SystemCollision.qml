@@ -16,6 +16,10 @@ System {
             const pillar = root.world.obstacles[i];
             for (let j = 0; j < root.world.entities.length; ++j) {
                 const entity = root.world.entities[j];
+                // A piece a craft sees through is no wall to it either — a
+                // battery's own rounds leave the rail through its screens.
+                if (!pillar.opaqueTo(entity))
+                    continue;
                 if (entity.health > 0 && Geo.distanceFrom(entity.posX, entity.posY, pillar.posX, pillar.posY) <= pillar.radius)
                     entity.health = 0;
             }

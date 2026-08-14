@@ -14,6 +14,7 @@ QtObject {
         MissileKinetic,
         Decoy,
         AircraftFighterLight,
+        SiteAntiAir,
         Count
     }
 }
