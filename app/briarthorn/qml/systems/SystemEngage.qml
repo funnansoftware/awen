@@ -29,10 +29,14 @@ System {
     function update(dt: real) {
         for (let i = 0; i < root.entities.length; ++i) {
             const entity = root.entities[i];
-            if (entity.engageTarget === null || entity.engageHold)
+            if (entity.engageHold)
                 continue;
+            // The pacing runs in wall time, target or none — a sentry that
+            // fired just before losing its lock must telegraph a later
+            // re-engagement exactly like a first, not fire off the frozen
+            // remainder of the old holdoff.
             entity.engageTimer = Math.max(0, entity.engageTimer - dt);
-            if (entity.engageTimer > 0 || entity.engageTarget.health <= 0)
+            if (entity.engageTarget === null || entity.engageTimer > 0 || entity.engageTarget.health <= 0)
                 continue;
             if (Geo.distance(entity, entity.engageTarget) > root.engageRange)
                 continue;

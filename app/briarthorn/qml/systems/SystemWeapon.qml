@@ -154,10 +154,17 @@ System {
     // seekerRange, and on the nearest of the returns that are equally loud —
     // which is what a flare exploits, wearing its deployer's signature so the
     // round takes whichever of the two it is closer to. No return leaves the
-    // round flying straight; a destroyed owner drops the illumination gate
-    // (plain homing).
+    // round flying straight; a destroyed owner blinds the round the same way
+    // a killed one does — every briarthorn round launches with an owner, so
+    // a null here can only mean the launcher is gone, and the illumination
+    // must go with it whether the corpse object survives or not.
     function seek(missile: Entity) {
         const w = missile.weapon;
+        if (missile.owner === null) {
+            w.target = null;
+            missile.commandedSteer = 0;
+            return;
+        }
         const best = root.bestReturn(missile, missile.owner, missile.side, w.def.seekerRange);
         w.target = best;
         if (best === null) {
@@ -302,6 +309,11 @@ System {
     function takeable(at: Entity, illuminator: Entity, side: int, contact: Entity): bool {
         if (contact === at || contact === illuminator || contact.health <= 0)
             return false;
+        // A round in flight is a receiver's problem, never a return worth a
+        // rail — a rack must not spend a charge intercepting a missile.
+        // Decoys stay takeable, which is the whole seduction mechanic.
+        if (contact.weapon !== null)
+            return false;
         if (!root.opposed(side, contact.side))
             return false;
         if (!root.illuminated(illuminator, contact))
@@ -353,10 +365,14 @@ System {
 
     // Whether the illuminator's radar cone paints the contact — inside the
     // cone with a clear line past the arena's pillars; a missing illuminator
-    // is lenient, per briardart.
+    // is lenient, per briardart. A killed one is not: its dish froze pointed
+    // wherever it died, and rounds riding a corpse's wedge would otherwise
+    // keep full guidance — killing the shooter must actually blind its shots.
     function illuminated(illuminator: Entity, contact: Entity): bool {
         if (illuminator === null)
             return true;
+        if (illuminator.maxHealth > 0 && illuminator.health <= 0)
+            return false;
         const off = Geo.wrap180(Geo.bearing(illuminator, contact) - illuminator.heading);
         return Math.abs(off) <= illuminator.radarFov / 2 && Geo.lineOfSight(illuminator, contact, root.world.obstacles);
     }
