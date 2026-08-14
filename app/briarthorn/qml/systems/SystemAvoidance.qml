@@ -58,6 +58,10 @@ System {
         let nearestEntry = Infinity;
         for (let i = 0; i < root.obstacles.length; ++i) {
             const pillar = root.obstacles[i];
+            // Ground this craft passes through is nothing to turn for, and
+            // nothing to warn about either.
+            if (!pillar.opaqueTo(entity))
+                continue;
             const dx = pillar.posX - entity.posX;
             const dy = pillar.posY - entity.posY;
             const along = dx * ux + dy * uy;

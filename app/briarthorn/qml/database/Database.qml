@@ -20,6 +20,7 @@ QtObject {
         DataAircraftFighter {},
         DataAircraftFighterLight {},
         DataDecoy {},
+        DataSiteAntiAir {},
         // Munitions.
         DataMissileGuided {},
         DataMissileKinetic {}

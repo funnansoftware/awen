@@ -107,6 +107,7 @@ Item {
     // touch player and a desktop player are already looking.
     ViewAlerts {
         ownship: root.ownship
+        entities: root.entities
         // Never off the edge of a phone: the reason elides instead.
         maximumWidth: root.width - 32
 

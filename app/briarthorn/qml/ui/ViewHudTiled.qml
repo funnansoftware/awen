@@ -136,6 +136,7 @@ Item {
         ViewAlerts {
             z: 1
             ownship: root.ownship
+            entities: root.entities
             maximumWidth: attack.width - 32
 
             anchors {

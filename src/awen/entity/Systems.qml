@@ -12,10 +12,16 @@ QtObject {
     // Whether the per-frame loop is active.
     property bool running: true
 
+    // The longest step one frame may integrate, in seconds. A stalled frame —
+    // a dragged window, a suspended tab — resumes as one bounded tick rather
+    // than integrating the whole gap: entities must not teleport through
+    // walls, and no timer a system floored this tick may run out in it.
+    property real maxFrameTime: 0.1
+
     // The frame clock driving the loop, in sync with scene rendering.
     readonly property FrameAnimation clock: FrameAnimation {
         running: root.running
-        onTriggered: root.tick(frameTime)
+        onTriggered: root.tick(Math.min(frameTime, root.maxFrameTime))
     }
 
     // One update pass: forwards dt (seconds) to every enabled system.

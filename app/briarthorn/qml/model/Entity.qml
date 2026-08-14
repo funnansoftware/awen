@@ -85,6 +85,14 @@ QtObject {
     // down a designation naming no held track.
     property string targetContact: ""
 
+    // SystemSentry sweeps this entity's radar and locks what the volume
+    // catches: engageTarget becomes radar state, held while the volume holds
+    // and null while the antenna searches. A sentry must never also carry a
+    // director — it owns engageTarget too — nor a personality, whose
+    // maneuvers would fight the slew for commandedSteer and whose stances
+    // rewrite the engageHoldoff pacing.
+    property bool sentry: false
+
     // SystemThreat pops this entity's flares at inbound guided rounds; the
     // timer spaces the pops so each decoy gets its chance to seduce.
     property bool threatReflex: false

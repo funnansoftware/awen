@@ -64,9 +64,16 @@ QtObject {
     // pillar — the one radar line-of-sight test the sensor, seeker and
     // trigger gates all share. A pillar cuts the line when the segment's
     // closest point to its centre falls inside its radius.
+    //
+    // Judged from @p a, always: every caller passes the sensing party first —
+    // the observer, the illuminator, the seeker head, the craft being shot at
+    // — so a piece transparent to that side simply is not there, and the same
+    // ground can block one side's radar while the other shoots through it.
     function lineOfSight(a: Entity, b: Entity, obstacles: list<Obstacle>): bool {
         for (let i = 0; i < obstacles.length; ++i) {
             const o = obstacles[i];
+            if (!o.opaqueTo(a))
+                continue;
             const dx = b.posX - a.posX;
             const dy = b.posY - a.posY;
             const len2 = dx * dx + dy * dy;
