@@ -120,7 +120,7 @@ Item {
             // list rather than the gutter.
             radiusFraction: 0.62
             verticalShift: 0.2
-            symbolSize: height * 0.06
+            symbolSize: height * 0.04
             trailsRunning: root.running
             armedReach: root.armedReach
             armedValid: root.armedValid
