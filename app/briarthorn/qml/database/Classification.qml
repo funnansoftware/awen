@@ -15,6 +15,8 @@ QtObject {
         Decoy,
         AircraftFighterLight,
         SiteAntiAir,
+        Bullet,
+        Turret,
         Count
     }
 }

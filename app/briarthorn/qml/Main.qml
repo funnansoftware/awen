@@ -655,6 +655,7 @@ Window {
                 selectedContact: root.selectedContact
                 shootableContact: root.shootableContact
                 onInvoked: ability => touched.post({ ability: ability })
+                onReleased: ability => touched.post({ ability: ability, active: false })
                 onTouched: root.device.kind = ActiveDevice.Touch
                 // A tap toggles: tapping the selected contact stands it down.
                 onContactChosen: contactId => designate.post({ contact: contactId === game.ownship.targetContact ? "" : contactId })
@@ -686,6 +687,7 @@ Window {
                 selectedContact: root.selectedContact
                 shootableContact: root.shootableContact
                 onInvoked: ability => touched.post({ ability: ability })
+                onReleased: ability => touched.post({ ability: ability, active: false })
                 onTouched: root.device.kind = ActiveDevice.Touch
                 onContactChosen: contactId => designate.post({ contact: contactId === game.ownship.targetContact ? "" : contactId })
                 onContactTouched: root.device.kind = ActiveDevice.Touch

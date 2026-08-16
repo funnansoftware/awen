@@ -59,14 +59,16 @@ System {
         root.hadThreat = threatened;
     }
 
-    // Rounds left across the launch racks only. A flare pop spends a charge
-    // too, and a decoy going over the side is not a launch — the pod has its
-    // own sound to earn later, and it is not this one.
+    // Rounds left across the discrete launch racks only. A flare pop spends
+    // a charge too, and a decoy going over the side is not a launch — the pod
+    // has its own sound to earn later — and the gatling is excluded the same
+    // way: a launch whoosh per tracer at eight a second is a siren, and the
+    // gun's voice is its own to earn.
     function roundsLeft(): int {
         let total = 0;
         for (let i = 0; i < root.ownship.abilities.length; ++i) {
             const slot = root.ownship.abilities[i];
-            if (slot.round !== null && slot.charges >= 0)
+            if (slot.round !== null && slot.charges >= 0 && !slot.def.automatic)
                 total += slot.charges;
         }
         return total;

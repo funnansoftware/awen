@@ -5,7 +5,8 @@ import ".."
 // magazine ever streams. Beams genuine inbounds early enough to watch, flies
 // its flares off once one bites, breaks off dry, and opens a too-close merge
 // back out to launch distance rather than wasting a round that cannot make
-// its turn.
+// its turn — unless the merge has closed inside the gun's envelope, where it
+// takes the knife fight instead.
 Personality {
     name: Names.personality.duelist
 
@@ -25,6 +26,14 @@ Personality {
                     within: 0.45
                     dwell: 0.3
                     to: Names.stance.guard
+                },
+                // Inside the gun's envelope the knife fight beats everything
+                // offensive, so it outranks the exchange rhythm and the
+                // withdraw below.
+                SwitchRange {
+                    inside: true
+                    ability: "gun"
+                    to: Names.stance.brawl
                 },
                 SwitchOutbound {
                     present: true
@@ -51,9 +60,40 @@ Personality {
                     dwell: 0.3
                     to: Names.stance.guard
                 },
+                SwitchRange {
+                    inside: true
+                    ability: "gun"
+                    to: Names.stance.brawl
+                },
                 SwitchOutbound {
                     present: false
                     dwell: 0.5
+                    to: Names.stance.press
+                }
+            ]
+        },
+        // The knife fight: inside the gun's envelope missiles cannot make
+        // their turns, so ride the target's tail and hold the gatling down —
+        // an automatic trigger needs no holdoff, its own cycle is the rate
+        // of fire. Survival still outranks it (an inbound takes the beam),
+        // and the target opening back out past the envelope — a shade past,
+        // dwelled, so the edge never flaps — resumes the missile exchange.
+        Stance {
+            name: Names.stance.brawl
+            maneuver: Names.maneuver.pursue
+            ability: "gun"
+            switches: [
+                SwitchThreat {
+                    present: true
+                    within: 0.45
+                    dwell: 0.3
+                    to: Names.stance.guard
+                },
+                SwitchRange {
+                    inside: false
+                    ability: "gun"
+                    at: 1.1
+                    dwell: 0.75
                     to: Names.stance.press
                 }
             ]
@@ -116,6 +156,14 @@ Personality {
                     within: 0.45
                     dwell: 0.3
                     to: Names.stance.guard
+                },
+                // A pursuer that runs the extension down to gun range has
+                // taken the choice away: turn and fight rather than be shot
+                // in the back.
+                SwitchRange {
+                    inside: true
+                    ability: "gun"
+                    to: Names.stance.brawl
                 },
                 SwitchRange {
                     inside: false

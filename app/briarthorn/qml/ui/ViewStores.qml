@@ -26,8 +26,10 @@ Item {
     required property ActiveDevice device
     property bool racks: false
 
-    // The rack's press and its touch report, routed by the caller.
+    // The rack's press, its release and its touch report, routed by the
+    // caller.
     signal invoked(string ability)
+    signal released(string ability)
     signal touched
 
     // Rounds in the air across the whole loadout; which rack each came from
@@ -88,7 +90,7 @@ Item {
             // The user's colour language: green would take, caution cannot
             // yet, and the refusal beat below overrides both in the error
             // colour.
-            readonly property color loadedTint: rack.modelData.valid ? Style.theme.armValid : Style.theme.warn
+            readonly property color loadedTint: rack.modelData.willing ? Style.theme.armValid : Style.theme.warn
 
             // The armed breathing, shared by the slot's whole station group;
             // written only by the animation, never bound over.
@@ -214,6 +216,7 @@ Item {
         loadout: root.ownship.abilities
         device: root.device
         onInvoked: ability => root.invoked(ability)
+        onReleased: ability => root.released(ability)
         onTouched: root.touched()
 
         anchors {

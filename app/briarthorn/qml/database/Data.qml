@@ -18,4 +18,9 @@ QtObject {
     // An airframe's condition is worth reading straight off the picture; a
     // round in flight, a lure and an unresolved return all plot bare.
     property bool hullGauge: false
+
+    // Whether a resolved mark of this kind carries its contact label. A
+    // cannon stream would caption every tracer in it; a round that small
+    // plots as a bare streak instead.
+    property bool trackLabel: true
 }

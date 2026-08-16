@@ -1,3 +1,7 @@
+// The BarRow component reaches the file root's rows column; bound component
+// behaviour is what makes that resolve statically.
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import "../model"
 import "../themes"

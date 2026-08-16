@@ -81,6 +81,10 @@ Item {
     // thumb lands matches the rising edge a key or a pad button fires on.
     signal tapped
 
+    // The thumb coming back off — the falling edge an automatic ability's
+    // trigger stops on.
+    signal released
+
     // Fired with it when the press came from a touchscreen, so the HUD can hand
     // the interface back to the touch controls the moment a thumb lands on one.
     signal touched
@@ -250,10 +254,14 @@ Item {
         id: handler
 
         acceptedButtons: Qt.NoButton
-        onActiveChanged: if (handler.active) {
-            if (handler.point.device.type === PointerDevice.TouchScreen)
-                root.touched();
-            root.tapped();
+        onActiveChanged: {
+            if (handler.active) {
+                if (handler.point.device.type === PointerDevice.TouchScreen)
+                    root.touched();
+                root.tapped();
+            } else {
+                root.released();
+            }
         }
     }
 }

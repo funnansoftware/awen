@@ -50,9 +50,16 @@ Store {
     // Ability invocation routes to the named slot as a press: it fires where
     // every check passes, holds the shot armed where one does not yet, stands
     // an already-armed slot back down, and refuses an empty rack outright.
+    // The falling edge — active false, posted for automatic abilities — is
+    // the trigger letting go instead.
     CommandHandler {
         name: Verbs.ability
-        onHandle: payload => root.ownship.invoke(payload.ability)
+        onHandle: payload => {
+            if (payload.active === false)
+                root.ownship.release(payload.ability);
+            else
+                root.ownship.invoke(payload.ability);
+        }
     }
 
     // Designation routes straight onto the craft: the weapon survey is what

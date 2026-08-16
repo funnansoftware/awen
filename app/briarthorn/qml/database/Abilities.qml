@@ -13,6 +13,7 @@ QtObject {
     readonly property list<Ability> registry: [
         AbilityFlare {},
         AbilityLaunchGuided {},
+        AbilityLaunchGun {},
         AbilityLaunchKinetic {}
     ]
 
