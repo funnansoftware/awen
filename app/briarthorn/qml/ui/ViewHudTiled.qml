@@ -38,10 +38,11 @@ Item {
     property string selectedContact: ""
     property string shootableContact: ""
 
-    // The rack's press and touch report, and the designation pick and its
-    // touch report — from the scope's marks or (later) the track list's
-    // rows, one contract either way. Main routes all four.
+    // The rack's press, release and touch report, and the designation pick
+    // and its touch report — from the scope's marks or (later) the track
+    // list's rows, one contract either way. Main routes them all.
     signal invoked(string ability)
+    signal released(string ability)
     signal touched
     signal contactChosen(string contactId)
     signal contactTouched
@@ -212,6 +213,7 @@ Item {
             device: root.device
             racks: root.racks
             onInvoked: ability => root.invoked(ability)
+            onReleased: ability => root.released(ability)
             onTouched: root.touched()
         }
     }

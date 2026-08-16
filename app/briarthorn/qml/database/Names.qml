@@ -36,6 +36,7 @@ QtObject {
         readonly property string abscond: "abscond"
         readonly property string advance: "advance"
         readonly property string bail: "bail"
+        readonly property string brawl: "brawl"
         readonly property string crank: "crank"
         readonly property string defeat: "defeat"
         readonly property string defend: "defend"

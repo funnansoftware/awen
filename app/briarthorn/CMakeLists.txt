@@ -63,17 +63,20 @@ awen_add_executable(${PROJECT_NAME}
         qml/database/SwitchThreat.qml
         qml/database/abilities/AbilityFlare.qml
         qml/database/abilities/AbilityLaunchGuided.qml
+        qml/database/abilities/AbilityLaunchGun.qml
         qml/database/abilities/AbilityLaunchKinetic.qml
         qml/database/entities/DataAircraftFighter.qml
         qml/database/entities/DataAircraftFighterLight.qml
         qml/database/entities/DataDecoy.qml
         qml/database/entities/DataSiteAntiAir.qml
+        qml/database/entities/DataTurret.qml
         qml/database/entities/DataUnknown.qml
         qml/database/personalities/PersonalityAggressive.qml
         qml/database/personalities/PersonalityDefensive.qml
         qml/database/personalities/PersonalityDuelist.qml
         qml/database/personalities/PersonalityFearful.qml
         qml/database/personalities/PersonalityTactical.qml
+        qml/database/weapons/DataBullet.qml
         qml/database/weapons/DataMissileGuided.qml
         qml/database/weapons/DataMissileKinetic.qml
         qml/input/AbilityInput.qml

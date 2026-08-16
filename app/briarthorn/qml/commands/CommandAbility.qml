@@ -1,7 +1,9 @@
 import awen.command
 
 // Ability intent: invokes one of the flown entity's abilities by name —
-// launch a weapon, pop a flare. Discrete, so every press posts one record.
+// launch a weapon, pop a flare. Discrete presses post one record each;
+// automatic abilities post the falling edge too, as active false, so the
+// store can stand a held trigger back down.
 Command {
     id: root
 
@@ -11,6 +13,6 @@ Command {
     name: Verbs.ability
 
     function payload(): var {
-        return { ability: root.ability };
+        return { ability: root.ability, active: true };
     }
 }

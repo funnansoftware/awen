@@ -46,9 +46,11 @@ Row {
     }
 
     // Carries the pressed ability's name out, so the row stays a control and
-    // never touches the bus, and reports a press that came from a thumb, so the
-    // HUD can hand the interface back to the touch controls.
+    // never touches the bus, its release for the automatic slots that stop on
+    // it, and reports a press that came from a thumb, so the HUD can hand the
+    // interface back to the touch controls.
     signal invoked(string ability)
+    signal released(string ability)
     signal touched
 
     spacing: 8
@@ -68,7 +70,7 @@ Row {
 
             label: button.modelData.def ? button.modelData.def.label : ""
             charges: button.modelData.charges
-            valid: button.modelData.valid
+            valid: button.modelData.willing
             armed: button.modelData.armed
             impediment: button.modelData.impediment
             cooling: button.modelData.cooling
@@ -86,6 +88,8 @@ Row {
             // a loadout typo must not reach the bus.
             onTapped: if (button.modelData.def)
                 root.invoked(button.ability)
+            onReleased: if (button.modelData.def)
+                root.released(button.ability)
             onTouched: root.touched()
 
             // The refusal beat is raised by the slot, not by the press: an

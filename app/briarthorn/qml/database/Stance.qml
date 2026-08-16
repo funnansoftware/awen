@@ -33,6 +33,10 @@ QtObject {
     property bool holdFire: false
     property real holdoff: -1
 
+    // The launch ability the trigger fires while current, by registry name;
+    // "" keeps the ability the entity was spawned with.
+    property string ability: ""
+
     // Outgoing transitions in priority order, checked after the
     // personality's own.
     property list<Switch> switches

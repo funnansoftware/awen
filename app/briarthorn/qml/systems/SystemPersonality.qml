@@ -39,7 +39,8 @@ System {
         const def = Personalities.defFor(entity.personality);
         entity.mind = root.mindFactory.createObject(entity, {
             def: def,
-            baseHoldoff: entity.engageHoldoff
+            baseHoldoff: entity.engageHoldoff,
+            baseAbility: entity.engageAbility
         }) as PersonalityState;
         if (def === null) {
             console.warn("SystemPersonality: no registered personality named \"" + entity.personality + "\"");
@@ -59,14 +60,18 @@ System {
         root.vet(def);
     }
 
-    // Warns about any switch destination the definition lacks, so a typo'd
-    // stance name surfaces at spawn instead of as a silent hold mid-fight.
+    // Warns about any switch destination the definition lacks and any stance
+    // firing an unregistered launch, so a typo'd name surfaces at spawn
+    // instead of as a silent hold mid-fight.
     function vet(def: Personality) {
         for (let i = 0; i < def.switches.length; ++i)
             root.vetSwitch(def, def.switches[i]);
         for (let i = 0; i < def.stances.length; ++i) {
-            for (let j = 0; j < def.stances[i].switches.length; ++j)
-                root.vetSwitch(def, def.stances[i].switches[j]);
+            const stance = def.stances[i];
+            if (stance.ability !== "" && !(Abilities.defFor(stance.ability) instanceof AbilityLaunch))
+                console.warn("SystemPersonality: personality \"" + def.name + "\" stance \"" + stance.name + "\" fires \"" + stance.ability + "\", which names no registered launch ability");
+            for (let j = 0; j < stance.switches.length; ++j)
+                root.vetSwitch(def, stance.switches[j]);
         }
     }
 
@@ -207,6 +212,7 @@ System {
         }
         entity.engageHold = stance.holdFire;
         entity.engageHoldoff = stance.holdoff >= 0 ? stance.holdoff : mind.baseHoldoff;
+        entity.engageAbility = stance.ability !== "" ? stance.ability : mind.baseAbility;
     }
 
     // What the stance's maneuver flies against: the inbound round or the

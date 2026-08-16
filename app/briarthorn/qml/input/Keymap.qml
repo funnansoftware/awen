@@ -111,7 +111,8 @@ QtObject {
             [Gamepad.Button.West]: "X",
             [Gamepad.Button.North]: "Y",
             [Gamepad.Button.LeftShoulder]: "LB",
-            [Gamepad.Button.RightShoulder]: "RB"
+            [Gamepad.Button.RightShoulder]: "RB",
+            [Gamepad.Button.RightStick]: "RS"
         })
 
     function keyFor(name: string): int {

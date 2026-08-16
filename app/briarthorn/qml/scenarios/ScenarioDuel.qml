@@ -58,6 +58,9 @@ Scenario {
                 def: Abilities.defFor("guided")
             },
             AbilitySlot {
+                def: Abilities.defFor("gun")
+            },
+            AbilitySlot {
                 def: Abilities.defFor("flare")
                 charges: 6
             }

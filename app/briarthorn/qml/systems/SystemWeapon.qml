@@ -175,11 +175,13 @@ System {
         missile.commandedSteer = Math.max(-1, Math.min(1, error / root.cutAngle));
     }
 
-    // Consumes launches: a slot fires on a raised intent or on a shot held
-    // armed, and only where the survey above says every check passes — a
-    // guided round with nothing to lock keeps its charge and stays armed
-    // instead, waiting for the pilot to fix what the scope is showing them.
-    // One arming is one round, so a launch stands the slot back down. The
+    // Consumes launches: a slot fires on a raised intent, on a shot held
+    // armed, or — automatic fire — every time its cooldown allows while the
+    // trigger is held down, and only where the survey above says every check
+    // passes — a guided round with nothing to lock keeps its charge and
+    // stays armed instead, waiting for the pilot to fix what the scope is
+    // showing them. One arming is one round, so a launch stands the slot
+    // back down; a held trigger stands down only when its owner lets go. The
     // spawned missile takes its whole flight envelope from its database row
     // and inherits the launcher's side.
     function consumeLaunches() {
@@ -197,9 +199,10 @@ System {
                     // might.
                     slot.pending = false;
                     slot.armed = false;
+                    slot.held = false;
                     continue;
                 }
-                const raised = slot.pending || slot.armed;
+                const raised = slot.pending || slot.armed || slot.held;
                 slot.pending = false;
                 if (!raised)
                     continue;
@@ -208,8 +211,11 @@ System {
                     // before this one, and the shot can go stale in between.
                     // It is held armed rather than dropped: a press must never
                     // be spent on nothing, which is the whole complaint the
-                    // arming state answers.
-                    slot.armed = true;
+                    // arming state answers. An automatic slot never arms —
+                    // its held trigger re-raises itself every tick it stays
+                    // down, and letting go must stop the fire outright.
+                    if (!slot.def.automatic)
+                        slot.armed = true;
                     continue;
                 }
                 slot.armed = false;

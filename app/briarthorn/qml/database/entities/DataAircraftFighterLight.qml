@@ -19,5 +19,5 @@ DataAircraftFighter {
         stealth: 5
     }
 
-    abilities: ["guided", "flare"]
+    abilities: ["guided", "gun", "flare"]
 }

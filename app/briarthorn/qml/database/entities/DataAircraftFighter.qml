@@ -2,7 +2,8 @@ import QtQuick
 import ".."
 
 // Fast, manoeuvrable combat aircraft — the airframe both sides fly in the
-// duel. Mid-range across the board, with both missile racks and a flare pod.
+// duel. Mid-range across the board, with both missile racks, a nose cannon
+// and a flare pod.
 DataEntity {
     id: root
 
@@ -24,5 +25,5 @@ DataEntity {
         stealth: 5
     }
 
-    abilities: ["guided", "kinetic", "flare"]
+    abilities: ["guided", "kinetic", "gun", "flare"]
 }

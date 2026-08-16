@@ -124,7 +124,8 @@ the database imports nothing back.
   registry, and its `Switch` rows express every distance as a fraction of a
   priced envelope (own weapon reach, the target's, detection range) — never
   metres. `SystemPersonality` attaches the live `PersonalityState` and owns
-  `maneuvers`, `engageHold` and `engageHoldoff` on its entities; scenarios
+  `maneuvers`, `engageHold`, `engageHoldoff` and `engageAbility` on its
+  entities; scenarios
   point `engageTarget` and the personality decides how to fight it, so a
   director-run entity (the menu demo's ownship) stays personality-free.
 - **Ability input is generated, never written.** Adding an ability is four
@@ -145,4 +146,8 @@ the database imports nothing back.
   scope's envelope and the trigger can never disagree. `Entity.invoke()` is
   the press path (one armed slot at a time, second press stands it down);
   `AbilitySlot.activate()` is the raised-intent primitive behaviour systems
-  use and is idempotent.
+  use and is idempotent. An `automatic` ability (the gatling gun) holds
+  instead of arming: `invoke()` puts the slot's `held` trigger down,
+  `Entity.release()` lifts it, and it fires every time its cooldown allows
+  while down — `SystemEngage` grips and releases AI triggers the same way,
+  never touching a target-less entity's slots.

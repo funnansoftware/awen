@@ -6,11 +6,12 @@ import "../database"
 
 // The input wiring for one carried ability: the key and the controller button
 // the keymap names fold into a 0..1 axis, and its rising edge posts the
-// invocation once per press. One of these per slot in the loadout — the whole
-// of what an ability used to cost in hand-written blocks in Main.qml. The code
-// lists bind through the keymap, so a rebind re-pushes them onto these very
-// objects rather than rebuilding anything, and the axis is owned here, so a
-// torn-down binding takes its contribution with it.
+// invocation once per press — an automatic ability posts the falling edge
+// too, so the store hears the trigger let go. One of these per slot in the
+// loadout — the whole of what an ability used to cost in hand-written blocks
+// in Main.qml. The code lists bind through the keymap, so a rebind re-pushes
+// them onto these very objects rather than rebuilding anything, and the axis
+// is owned here, so a torn-down binding takes its contribution with it.
 QtObject {
     id: root
 
@@ -24,6 +25,17 @@ QtObject {
     // definition, which then binds nothing and can never fire — a loadout typo
     // must not reach into the keymap or the bus.
     readonly property string ability: root.def ? root.def.name : ""
+
+    // The trigger position the fold reads out: down while any bound control
+    // is. Its falling edge covers a dropped input too — Main's dropInput()
+    // resets the actions, the fold returns to rest, and the release posts,
+    // so a focus loss can never leave an automatic trigger down.
+    readonly property bool down: root.control.value > root.control.band
+
+    onDownChanged: {
+        if (!root.down && root.def && root.def.automatic)
+            root.invoke.post({ active: false });
+    }
 
     readonly property Axis control: Axis {
         minimum: 0

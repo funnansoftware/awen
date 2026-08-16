@@ -124,7 +124,9 @@ Item {
                 viewRotation: root.viewRotation
                 classification: mark.track ? mark.track.classification : Classification.Kind.Unknown
                 side: mark.track ? mark.track.side : Side.Kind.Unknown
-                showLabel: root.showLabels
+                // Labels ride the view's switch and the kind's own say — a
+                // tracer plots as a bare streak, not a captioned contact.
+                showLabel: root.showLabels && (!mark.track || Database.dataFor(mark.track.classification).trackLabel)
                 label: !mark.track || mark.track.classification === Classification.Kind.Unknown ? "" : mark.track.contactId
                 caption: mark.rangeCaption
                 hasHealth: root.showHealth && mark.track && mark.track.maxHealth > 0

@@ -24,6 +24,10 @@ QtObject {
     // that do not repace it.
     property real baseHoldoff: 6
 
+    // The entity's engageAbility captured at attach, restored by stances
+    // that do not name one of their own.
+    property string baseAbility: "guided"
+
     // One live maneuver per stance in definition order, null where a stance
     // flies nothing — a JS array, because a QML list cannot hold the gaps.
     property var maneuvers: []

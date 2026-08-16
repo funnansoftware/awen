@@ -40,9 +40,11 @@ Item {
     property string selectedContact: ""
     property string shootableContact: ""
 
-    // The ability rack's press and its touch report, and the scope's
-    // designation tap and its own touch report — Main routes all four.
+    // The ability rack's press, its release and its touch report, and the
+    // scope's designation tap and its own touch report — Main routes them
+    // all.
     signal invoked(string ability)
+    signal released(string ability)
     signal touched
     signal contactChosen(string contactId)
     signal contactTouched
@@ -146,6 +148,7 @@ Item {
         loadout: root.ownship.abilities
         device: root.device
         onInvoked: ability => root.invoked(ability)
+        onReleased: ability => root.released(ability)
         onTouched: root.touched()
 
         anchors {

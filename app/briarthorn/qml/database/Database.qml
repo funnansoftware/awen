@@ -15,6 +15,7 @@ QtObject {
     // The registration index. Order is not load-bearing.
     readonly property list<Data> registry: [
         // Perception-only rows, never spawned.
+        DataTurret {},
         DataUnknown {},
         // Spawnable craft.
         DataAircraftFighter {},
@@ -22,6 +23,7 @@ QtObject {
         DataDecoy {},
         DataSiteAntiAir {},
         // Munitions.
+        DataBullet {},
         DataMissileGuided {},
         DataMissileKinetic {}
     ]

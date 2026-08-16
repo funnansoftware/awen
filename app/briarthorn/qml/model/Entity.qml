@@ -57,8 +57,8 @@ QtObject {
 
     // The temperament SystemPersonality flies this entity with, defaulting
     // from its kind; empty opts out. A personality owns maneuvers,
-    // engageHold and engageHoldoff — a director must not share an entity
-    // with one.
+    // engageHold, engageHoldoff and engageAbility — a director must not
+    // share an entity with one.
     property string personality: root.def ? root.def.personality : ""
 
     // The live stance machine, built by SystemPersonality on the first
@@ -73,6 +73,11 @@ QtObject {
     property real engageHoldoff: 6
     property real engageTimer: 0
     property bool engageHold: false
+
+    // The launch ability that trigger fires, by registry name — an aspect,
+    // so a personality stance can put the entity on its gun for the merge
+    // and back on its rack for the standoff.
+    property string engageAbility: "guided"
 
     // Whether this entity's guided locks come from its designated track
     // rather than the radar's automatic pick. The player's craft carries it;
@@ -197,20 +202,23 @@ QtObject {
     }
 
     // A pilot's press on one ability: the second press on an armed slot stands
-    // it down, and arming a slot stands every other one down first. The bare
-    // slot's activate() is the raised-intent primitive behaviour systems use;
-    // this is the only caller that means "again".
+    // it down, and arming a slot stands every other one down first. An
+    // automatic slot takes the press as its trigger going down instead —
+    // nothing arms, and release() is what stops it. The bare slot's
+    // activate() is the raised-intent primitive behaviour systems use; this
+    // is the only caller that means "again".
     function invoke(name: string) {
-        let picked = null;
-        for (let i = 0; i < root.abilities.length; ++i) {
-            const slot = root.abilities[i];
-            if (slot.def !== null && slot.def.name === name) {
-                picked = slot;
-                break;
-            }
-        }
+        const picked = root.slotNamed(name);
         if (picked === null)
             return;
+        if (picked.def.automatic) {
+            if (picked.charges === 0) {
+                picked.refused();
+                return;
+            }
+            picked.held = true;
+            return;
+        }
         if (picked.armed) {
             picked.armed = false;
             return;
@@ -225,6 +233,25 @@ QtObject {
             if (root.abilities[i] !== picked)
                 root.abilities[i].armed = false;
         }
+    }
+
+    // The pilot's trigger coming back up: stands an automatic slot's fire
+    // down. Nothing for any other kind — a discrete press already spent
+    // itself on the way down.
+    function release(name: string) {
+        const picked = root.slotNamed(name);
+        if (picked !== null && picked.def.automatic)
+            picked.held = false;
+    }
+
+    // The live slot carrying the named ability, or null.
+    function slotNamed(name: string): AbilitySlot {
+        for (let i = 0; i < root.abilities.length; ++i) {
+            const slot = root.abilities[i];
+            if (slot.def !== null && slot.def.name === name)
+                return slot;
+        }
+        return null;
     }
 
     // One live slot per named ability. An unregistered name is dropped with a

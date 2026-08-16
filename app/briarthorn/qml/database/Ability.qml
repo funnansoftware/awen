@@ -19,6 +19,11 @@ QtObject {
     // Rounds a fresh slot carries; -1 is unlimited.
     property int charges: -1
 
+    // Whether the trigger is a hold rather than a press: an automatic slot
+    // fires every time its cooldown allows while the trigger is down, and
+    // never arms — letting go is the only way to stop it.
+    property bool automatic: false
+
     // The controls this ability ships bound to: a Qt.Key code and an
     // awen.gamepad Gamepad.Button code, -1 for unbound. The keymap seeds from
     // these, so arming a new ability needs no entry in a binding table.

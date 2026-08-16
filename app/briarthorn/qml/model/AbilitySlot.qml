@@ -39,6 +39,13 @@ QtObject {
     // (a second press through Entity.invoke).
     property bool armed: false
 
+    // The trigger position of an automatic slot: while down, the consuming
+    // system fires a round every time the cooldown allows, and letting go is
+    // the only way to stop. The pilot writes it through Entity.invoke and
+    // Entity.release; SystemEngage grips and releases it for AI shooters.
+    // Meaningless on a slot whose definition is not automatic.
+    property bool held: false
+
     readonly property bool ready: cooldownRemaining <= 0 && charges !== 0
 
     // The munition this slot launches, and whether that round needs a lock
@@ -80,6 +87,11 @@ QtObject {
     // system checks, in the one place the rack, the scope and the trigger all
     // read it from.
     readonly property bool valid: root.ready && (!root.guided || root.lock !== null)
+
+    // What the controls colour themselves by: valid this instant, or an
+    // automatic slot with rounds left — its hold always streams, and a ready
+    // light strobing at the rate of fire would say nothing.
+    readonly property bool willing: root.valid || (root.def !== null && root.def.automatic && root.charges !== 0)
 
     readonly property int impediment: {
         if (root.charges === 0)
